@@ -187,51 +187,6 @@ npm run lint
 npm run build
 ```
 
-## Publicar no GitHub
-
-### Opção A: GitHub CLI
-
-Instale o [GitHub CLI](https://cli.github.com/) e autentique-se:
-
-```bash
-gh auth login
-```
-
-Na raiz do projeto:
-
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "chore: initial project setup"
-gh repo create Erik02T/Biblioteca_de_Estudos --public --source=. --remote=origin --push
-```
-
-Para um repositório privado, troque `--public` por `--private`.
-
-### Opção B: pelo site do GitHub
-
-1. Acesse <https://github.com/new>.
-2. Informe `Biblioteca_de_Estudos` como nome do repositório.
-3. Escolha público ou privado.
-4. Não marque as opções de README, `.gitignore` ou licença, pois os arquivos serão enviados do projeto local.
-5. Crie o repositório e execute, na raiz local:
-
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "chore: initial project setup"
-git remote add origin https://github.com/Erik02T/Biblioteca_de_Estudos.git
-git push -u origin main
-```
-
-Antes do primeiro `git add .`, confirme que `.env`, `backend/.env`, `frontend/.env*`, `node_modules`, builds e arquivos `.zip` estão sendo ignorados:
-
-```bash
-git status --short --ignored
-```
-
 ## Revisão rápida para quem acabou de clonar
 
 - O Docker Compose fornece PostgreSQL e MinIO, mas não cria automaticamente o bucket do MinIO.
