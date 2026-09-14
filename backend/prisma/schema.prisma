@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SectionType {
+  LINGUAGENS
+  FACULDADE
+  PROJETOS
+  OUTROS
+}
+
+enum SubSectionType {
+  ESTUDANDO
+  ESTUDADO
+}
+
+enum AttachmentType {
+  LINK
+  IMAGEM
+  ARQUIVO
+}
+
+model Area {
+  id                 String         @id @default(uuid())
+  userId             String
+  section            SectionType
+  subSection         SubSectionType
+  nome               String
+  categoria          String
+  nivelEntendimento  Int            @default(0)
+  icone              String?
+  conteudo           Json           @default("{}")
+  attachments        Attachment[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@index([userId, section, subSection])
+}
+
+model Attachment {
+  id        String         @id @default(uuid())
+  tipo      AttachmentType
+  url       String
+  nome      String?
+  areaId    String
+  area      Area           @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@index([areaId])
+}

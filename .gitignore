@@ -1,0 +1,21 @@
+# Local environment files
+.env
+.env.*
+backend/.env
+frontend/.env*
+
+# Dependencies and generated output
+**/node_modules/
+backend/dist/
+frontend/.next/
+frontend/out/
+coverage/
+.turbo/
+
+# Logs and local tooling
+*.log
+.DS_Store
+Thumbs.db
+
+# Local archives and test artifacts
+*.zip

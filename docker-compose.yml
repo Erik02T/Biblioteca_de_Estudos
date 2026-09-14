@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: biblioteca
+      POSTGRES_PASSWORD: biblioteca
+      POSTGRES_DB: biblioteca_estudos
+    ports:
+      - "5432:5432"
+    volumes:
+      - biblioteca_pgdata:/var/lib/postgresql/data
+
+  minio:
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: biblioteca_storage
+      MINIO_ROOT_PASSWORD: biblioteca_storage_dev_2026
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - biblioteca_minio_data:/data
+
+volumes:
+  biblioteca_pgdata:
+  biblioteca_minio_data:
