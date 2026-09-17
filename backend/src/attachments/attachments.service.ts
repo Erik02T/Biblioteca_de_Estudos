@@ -7,7 +7,10 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateAttachmentDto } from './dto/create-attachment.dto';
+import {
+  CreateAttachmentDto,
+  isValidAttachmentUrl,
+} from './dto/create-attachment.dto';
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 
 @Injectable()
@@ -15,6 +18,8 @@ export class AttachmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: string, dto: CreateAttachmentDto) {
+    this.validateUrl(dto.url);
+
     const area = await this.prisma.area.findFirst({
       where: { id: dto.areaId, userId },
     });
@@ -46,6 +51,7 @@ export class AttachmentsService {
 
   async update(userId: string, id: string, dto: UpdateAttachmentDto) {
     await this.findOne(userId, id);
+    if (dto.url !== undefined) this.validateUrl(dto.url);
 
     if (dto.areaId) {
       const area = await this.prisma.area.findFirst({
@@ -58,6 +64,14 @@ export class AttachmentsService {
       where: { id },
       data: dto,
     });
+  }
+
+  private validateUrl(url: string) {
+    if (!isValidAttachmentUrl(url)) {
+      throw new BadRequestException(
+        'A URL do anexo deve ser HTTP ou HTTPS e ter um formato válido.',
+      );
+    }
   }
 
   async upload(userId: string, areaId: string, file: Express.Multer.File) {

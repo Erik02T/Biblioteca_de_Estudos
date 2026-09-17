@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AttachmentType } from '@prisma/client';
 import { AttachmentsService } from './attachments.service';
 
@@ -6,6 +6,7 @@ describe('AttachmentsService', () => {
   const prisma = {
     attachment: {
       findFirst: jest.fn(),
+      create: jest.fn(),
       update: jest.fn(),
     },
     area: {
@@ -57,5 +58,33 @@ describe('AttachmentsService', () => {
       where: { id: 'attachment-id' },
       data: { areaId: 'new-area-id', tipo: AttachmentType.LINK },
     });
+  });
+
+  it.each([
+    'javascript:alert(1)',
+    'ftp://example.com/file.pdf',
+    'not-a-url',
+    `https://${'a'.repeat(2040)}.com`,
+  ])('rejects an invalid URL before creating an attachment: %s', async (url) => {
+    await expect(
+      service.create('user-id', {
+        areaId: 'area-id',
+        tipo: AttachmentType.LINK,
+        url,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.area.findFirst).not.toHaveBeenCalled();
+    expect(prisma.attachment.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid URL before updating an attachment', async () => {
+    prisma.attachment.findFirst.mockResolvedValue({ id: 'attachment-id' });
+
+    await expect(
+      service.update('user-id', 'attachment-id', {
+        url: 'javascript:alert(1)',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.attachment.update).not.toHaveBeenCalled();
   });
 });
