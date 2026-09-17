@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UploadedFile,
@@ -15,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserId, UserIdGuard } from '../common/user-id.decorator';
 import { AttachmentsService } from './attachments.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
+import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 
 @UseGuards(UserIdGuard)
 @Controller('attachments')
@@ -52,6 +54,16 @@ export class AttachmentsController {
   ) {
     if (!file) throw new BadRequestException('O campo file é obrigatório');
     return this.attachmentsService.upload(userId, areaId, file);
+  }
+
+  @Get(':id')
+  findOne(@UserId() userId: string, @Param('id') id: string) {
+    return this.attachmentsService.findOne(userId, id);
+  }
+
+  @Patch(':id')
+  update(@UserId() userId: string, @Param('id') id: string, @Body() dto: UpdateAttachmentDto) {
+    return this.attachmentsService.update(userId, id, dto);
   }
 
   @Delete(':id')

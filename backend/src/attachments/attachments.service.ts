@@ -8,6 +8,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
+import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 
 @Injectable()
 export class AttachmentsService {
@@ -76,6 +77,19 @@ export class AttachmentsService {
       nome: file.originalname,
       tipo: file.mimetype.startsWith('image/') ? 'IMAGEM' : 'ARQUIVO',
     };
+  }
+
+  async findOne(userId: string, id: string) {
+    const attachment = await this.prisma.attachment.findFirst({
+      where: { id, area: { userId } },
+    });
+    if (!attachment) throw new NotFoundException('Anexo não encontrado');
+    return attachment;
+  }
+
+  async update(userId: string, id: string, dto: UpdateAttachmentDto) {
+    await this.findOne(userId, id);
+    return this.prisma.attachment.update({ where: { id }, data: dto });
   }
 
   async remove(userId: string, id: string) {

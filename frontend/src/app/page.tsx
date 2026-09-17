@@ -143,6 +143,10 @@ function AttachmentPanel({ areaId, userId }: { areaId: string; userId: string })
   const [link, setLink] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string>();
+  const [editingAttachment, setEditingAttachment] = useState<Attachment | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     fetch(`${apiUrl}/attachments?areaId=${encodeURIComponent(areaId)}`, { headers: { "X-User-Id": userId } })
@@ -178,6 +182,26 @@ function AttachmentPanel({ areaId, userId }: { areaId: string; userId: string })
     } catch (uploadError) { setError(uploadError instanceof Error ? uploadError.message : "Não foi possível enviar o arquivo."); } finally { setIsUploading(false); }
   };
 
+  const startEditing = async (attachment: Attachment) => {
+    setError(undefined); setIsEditing(true);
+    try {
+      const response = await fetch(`${apiUrl}/attachments/${attachment.id}`, { headers: { "X-User-Id": userId } });
+      if (!response.ok) throw new Error("Não foi possível carregar o anexo.");
+      const current = await response.json();
+      setEditingAttachment(current); setEditName(current.nome ?? ""); setEditUrl(current.url);
+    } catch (loadError) { setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar o anexo."); setIsEditing(false); }
+  };
+
+  const saveAttachment = async () => {
+    if (!editingAttachment || !editUrl.trim()) return;
+    setIsEditing(true); setError(undefined);
+    try {
+      const response = await fetch(`${apiUrl}/attachments/${editingAttachment.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", "X-User-Id": userId }, body: JSON.stringify({ nome: editName.trim() || undefined, url: editUrl.trim() }) });
+      if (!response.ok) throw new Error("Não foi possível salvar o anexo.");
+      const updated = await response.json(); setAttachments((current) => current.map((item) => item.id === updated.id ? updated : item)); setEditingAttachment(null);
+    } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o anexo."); } finally { setIsEditing(false); }
+  };
+
   const removeAttachment = async (attachment: Attachment) => {
     if (!window.confirm(`Remover “${attachment.nome ?? attachment.url}”?`)) return;
     const response = await fetch(`${apiUrl}/attachments/${attachment.id}`, { method: "DELETE", headers: { "X-User-Id": userId } });
@@ -185,5 +209,5 @@ function AttachmentPanel({ areaId, userId }: { areaId: string; userId: string })
     setAttachments((current) => current.filter((item) => item.id !== attachment.id));
   };
 
-  return <section className={styles.attachmentPanel}><div className={styles.attachmentToolbar}><strong>Anexos</strong><div className={styles.attachmentButtons}><button type="button" onClick={() => setShowLink((current) => !current)}>＋ Link</button><label>＋ Imagem<input type="file" accept="image/*" onChange={uploadFile} disabled={isUploading} /></label><label>＋ Arquivo<input type="file" onChange={uploadFile} disabled={isUploading} /></label></div></div>{showLink && <div className={styles.linkForm}><input type="url" value={link} onChange={(event) => setLink(event.target.value)} placeholder="https://..." required /><button type="button" className={styles.primaryButton} onClick={addLink} disabled={isUploading}>Adicionar</button></div>}{error && <p className={styles.formError}>{error}</p>}{attachments.length > 0 && <div className={styles.attachmentList}>{attachments.map((attachment) => <div className={styles.attachmentItem} key={attachment.id}>{attachment.tipo === "IMAGEM" ? <img src={attachment.url} alt={attachment.nome ?? "Imagem anexada"} /> : <span className={styles.attachmentType}>{attachment.tipo === "LINK" ? "↗" : "↓"}</span>}<a href={attachment.url} target="_blank" rel="noreferrer">{attachment.nome ?? attachment.url}</a><button type="button" onClick={() => removeAttachment(attachment)} aria-label="Remover anexo">×</button></div>)}</div>}</section>;
+  return <section className={styles.attachmentPanel}>{editingAttachment && <div className={styles.linkForm}><input value={editName} onChange={(event) => setEditName(event.target.value)} placeholder="Nome do anexo" /><input type="url" value={editUrl} onChange={(event) => setEditUrl(event.target.value)} placeholder="https://..." required /><button type="button" className={styles.primaryButton} onClick={saveAttachment} disabled={isEditing}>{isEditing ? "Salvando..." : "Salvar"}</button><button type="button" onClick={() => setEditingAttachment(null)}>Cancelar</button></div>}<div className={styles.attachmentToolbar}><strong>Anexos</strong><div className={styles.attachmentButtons}><button type="button" onClick={() => setShowLink((current) => !current)}>＋ Link</button><label>＋ Imagem<input type="file" accept="image/*" onChange={uploadFile} disabled={isUploading} /></label><label>＋ Arquivo<input type="file" onChange={uploadFile} disabled={isUploading} /></label></div></div>{showLink && <div className={styles.linkForm}><input type="url" value={link} onChange={(event) => setLink(event.target.value)} placeholder="https://..." required /><button type="button" className={styles.primaryButton} onClick={addLink} disabled={isUploading}>Adicionar</button></div>}{error && <p className={styles.formError}>{error}</p>}{attachments.length > 0 && <div className={styles.attachmentList}>{attachments.map((attachment) => <div className={styles.attachmentItem} key={attachment.id}>{attachment.tipo === "IMAGEM" ? <img src={attachment.url} alt={attachment.nome ?? "Imagem anexada"} /> : <span className={styles.attachmentType}>{attachment.tipo === "LINK" ? "↗" : "↓"}</span>}<a href={attachment.url} target="_blank" rel="noreferrer">{attachment.nome ?? attachment.url}</a><button type="button" onClick={() => startEditing(attachment)} aria-label="Editar anexo">Editar</button><button type="button" onClick={() => removeAttachment(attachment)} aria-label="Remover anexo">×</button></div>)}</div>}</section>;
 }
