@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("postgresql://biblioteca:biblioteca@localhost:5432/biblioteca_estudos")
 }
 
 enum SectionType {
