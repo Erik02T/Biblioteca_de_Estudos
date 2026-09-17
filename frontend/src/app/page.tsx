@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { JSONContent } from "@tiptap/core";
 import AreaEditor from "./AreaEditor";
 import styles from "./page.module.css";
@@ -106,21 +106,36 @@ function AreaForm({ section, subSection, area, userId, onCancel, onSaved }: { se
   const [error, setError] = useState<string>();
   const [isContentDirty, setIsContentDirty] = useState(false);
   const [isAutosaving, setIsAutosaving] = useState(false);
+  const contentRef = useRef(values.conteudo);
+  const isContentDirtyRef = useRef(false);
+  const contentSaveTimeoutRef = useRef<number | undefined>(undefined);
   const updateValue = (field: keyof AreaFormValues, value: string | number | JSONContent) => setValues((current) => ({ ...current, [field]: value }));
+
+  const saveContent = useCallback(async (content: JSONContent) => {
+    if (!area || !userId || !isContentDirtyRef.current) return;
+    setIsAutosaving(true);
+    try {
+      const response = await fetch(`${apiUrl}/areas/${area.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", "X-User-Id": userId }, body: JSON.stringify({ conteudo: content }) });
+      if (!response.ok) throw new Error("Não foi possível salvar o conteúdo.");
+      if (JSON.stringify(contentRef.current) === JSON.stringify(content)) {
+        isContentDirtyRef.current = false;
+        setIsContentDirty(false);
+      }
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o conteúdo.");
+    } finally { setIsAutosaving(false); }
+  }, [area, userId]);
 
   useEffect(() => {
     if (!area || !userId || !isContentDirty) return;
-    const timeoutId = window.setTimeout(async () => {
-      try {
-        const response = await fetch(`${apiUrl}/areas/${area.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", "X-User-Id": userId }, body: JSON.stringify({ conteudo: values.conteudo }) });
-        if (!response.ok) throw new Error("Não foi possível salvar o conteúdo.");
-        setIsContentDirty(false);
-      } catch (saveError) {
-        setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o conteúdo.");
-      } finally { setIsAutosaving(false); }
+    contentSaveTimeoutRef.current = window.setTimeout(() => {
+      contentSaveTimeoutRef.current = undefined;
+      void saveContent(values.conteudo);
     }, 700);
-    return () => window.clearTimeout(timeoutId);
-  }, [area, isContentDirty, userId, values.conteudo]);
+    return () => {
+      if (contentSaveTimeoutRef.current !== undefined) window.clearTimeout(contentSaveTimeoutRef.current);
+    };
+  }, [area, isContentDirty, saveContent, userId, values.conteudo]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -134,7 +149,7 @@ function AreaForm({ section, subSection, area, userId, onCancel, onSaved }: { se
       onSaved(await response.json());
     } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Ocorreu um erro inesperado."); } finally { setIsSaving(false); }
   };
-  return <form className={styles.areaForm} onSubmit={handleSubmit}><button type="button" className={styles.backButton} onClick={onCancel}>← Voltar para {subSection === "ESTUDANDO" ? "Estudando" : "Estudado"}</button><div className={styles.formHeader}><div><p className={styles.kicker}>{area ? "Editar bloco" : "Novo bloco"}</p><h1>{area ? "Ajuste este conhecimento" : "Dê um lugar ao que você aprende"}</h1></div>{area && userId && <AttachmentPanel areaId={area.id} userId={userId} />}</div><div className={styles.formGrid}><label>Nome<input value={values.nome} onChange={(event) => updateValue("nome", event.target.value)} autoFocus /></label><label>Categoria<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} /></label><label>Nível de entendimento<select value={values.nivelEntendimento} onChange={(event) => updateValue("nivelEntendimento", Number(event.target.value))}>{[0, 1, 2, 3, 4, 5].map((level) => <option key={level} value={level}>{level} de 5</option>)}</select></label><label>Ícone<input value={values.icone} onChange={(event) => updateValue("icone", event.target.value)} placeholder="Ex.: JS, ✦, #" maxLength={4} /></label><div className={styles.fullField}><label htmlFor="area-content-editor">Conteúdo</label><AreaEditor content={values.conteudo} onChange={(content) => { updateValue("conteudo", content); setIsContentDirty(true); }} onAutosaveStateChange={setIsAutosaving} /></div></div>{error && <p className={styles.formError}>{error}</p>}{area && <p className={styles.autosaveStatus}>{isAutosaving ? "Salvando conteúdo..." : "Conteúdo salvo"}</p>}<div className={styles.formActions}><button type="button" className={styles.secondaryButton} onClick={onCancel}>Cancelar</button><button type="submit" className={styles.primaryButton} disabled={isSaving}>{isSaving ? "Salvando..." : area ? "Salvar alterações" : "Criar bloco"}</button></div></form>;
+  return <form className={styles.areaForm} onSubmit={handleSubmit}><button type="button" className={styles.backButton} onClick={onCancel}>← Voltar para {subSection === "ESTUDANDO" ? "Estudando" : "Estudado"}</button><div className={styles.formHeader}><div><p className={styles.kicker}>{area ? "Editar bloco" : "Novo bloco"}</p><h1>{area ? "Ajuste este conhecimento" : "Dê um lugar ao que você aprende"}</h1></div>{area && userId && <AttachmentPanel areaId={area.id} userId={userId} />}</div><div className={styles.formGrid}><label>Nome<input value={values.nome} onChange={(event) => updateValue("nome", event.target.value)} autoFocus /></label><label>Categoria<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} /></label><label>Nível de entendimento<select value={values.nivelEntendimento} onChange={(event) => updateValue("nivelEntendimento", Number(event.target.value))}>{[0, 1, 2, 3, 4, 5].map((level) => <option key={level} value={level}>{level} de 5</option>)}</select></label><label>Ícone<input value={values.icone} onChange={(event) => updateValue("icone", event.target.value)} placeholder="Ex.: JS, ✦, #" maxLength={4} /></label><div className={styles.fullField}><label htmlFor="area-content-editor">Conteúdo</label><AreaEditor content={values.conteudo} onChange={(content) => { contentRef.current = content; isContentDirtyRef.current = true; updateValue("conteudo", content); setIsContentDirty(true); }} onBlur={() => { if (contentSaveTimeoutRef.current !== undefined) { window.clearTimeout(contentSaveTimeoutRef.current); contentSaveTimeoutRef.current = undefined; } void saveContent(contentRef.current); }} onAutosaveStateChange={setIsAutosaving} /></div></div>{error && <p className={styles.formError}>{error}</p>}{area && <p className={styles.autosaveStatus}>{isAutosaving ? "Salvando conteúdo..." : "Conteúdo salvo"}</p>}<div className={styles.formActions}><button type="button" className={styles.secondaryButton} onClick={onCancel}>Cancelar</button><button type="submit" className={styles.primaryButton} disabled={isSaving}>{isSaving ? "Salvando..." : area ? "Salvar alterações" : "Criar bloco"}</button></div></form>;
 }
 
 function AttachmentPanel({ areaId, userId }: { areaId: string; userId: string }) {
