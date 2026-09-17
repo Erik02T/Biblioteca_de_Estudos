@@ -8,6 +8,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
+import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 
 @Injectable()
 export class AttachmentsService {
@@ -23,7 +24,9 @@ export class AttachmentsService {
   }
 
   async list(userId: string, areaId: string) {
-    const area = await this.prisma.area.findFirst({ where: { id: areaId, userId } });
+    const area = await this.prisma.area.findFirst({
+      where: { id: areaId, userId },
+    });
     if (!area) throw new NotFoundException('Área não encontrada');
 
     return this.prisma.attachment.findMany({
@@ -32,12 +35,41 @@ export class AttachmentsService {
     });
   }
 
-  async upload(userId: string, areaId: string, file: Express.Multer.File) {
-    if (!areaId) {
-      throw new BadRequestException('O upload precisa ser associado a uma Area');
+  async findOne(userId: string, id: string) {
+    const attachment = await this.prisma.attachment.findFirst({
+      where: { id, area: { userId } },
+    });
+    if (!attachment) throw new NotFoundException('Anexo não encontrado');
+
+    return attachment;
+  }
+
+  async update(userId: string, id: string, dto: UpdateAttachmentDto) {
+    await this.findOne(userId, id);
+
+    if (dto.areaId) {
+      const area = await this.prisma.area.findFirst({
+        where: { id: dto.areaId, userId },
+      });
+      if (!area) throw new NotFoundException('Área não encontrada');
     }
 
-    const area = await this.prisma.area.findFirst({ where: { id: areaId, userId } });
+    return this.prisma.attachment.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async upload(userId: string, areaId: string, file: Express.Multer.File) {
+    if (!areaId) {
+      throw new BadRequestException(
+        'O upload precisa ser associado a uma Area',
+      );
+    }
+
+    const area = await this.prisma.area.findFirst({
+      where: { id: areaId, userId },
+    });
     if (!area) throw new NotFoundException('Área não encontrada');
 
     const bucket = process.env.STORAGE_BUCKET;
@@ -68,7 +100,9 @@ export class AttachmentsService {
         }),
       );
     } catch {
-      throw new InternalServerErrorException('Não foi possível salvar o arquivo no storage.');
+      throw new InternalServerErrorException(
+        'Não foi possível salvar o arquivo no storage.',
+      );
     }
 
     return {
