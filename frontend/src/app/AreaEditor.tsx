@@ -9,11 +9,12 @@ type AreaEditorProps = {
   content?: JSONContent;
   onChange: (content: JSONContent) => void;
   onAutosaveStateChange?: (isSaving: boolean) => void;
+  onBlur?: () => void;
 };
 
 const highlightColors = ["#f8d66d", "#f5a3a3", "#a9d8c2", "#a9c9cf", "#d5b4e8"];
 
-export default function AreaEditor({ content, onChange, onAutosaveStateChange }: AreaEditorProps) {
+export default function AreaEditor({ content, onChange, onAutosaveStateChange, onBlur }: AreaEditorProps) {
   const editor = useEditor({
     extensions: editorExtensions,
     content: content ?? { type: "doc", content: [{ type: "paragraph" }] },
@@ -43,6 +44,6 @@ export default function AreaEditor({ content, onChange, onAutosaveStateChange }:
         <button type="button" className={styles.toolbarButton} onClick={() => editor.chain().focus().unsetHighlight().run()}>Limpar</button>
       </div>
     </div>
-    <EditorContent editor={editor} className={styles.editorContent} />
+    <EditorContent editor={editor} className={styles.editorContent} onBlur={onBlur} />
   </div>;
 }
