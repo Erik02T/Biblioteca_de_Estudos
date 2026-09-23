@@ -24,7 +24,7 @@ O projeto foi dividido em fases incrementais, validando a base antes de adiciona
 - **Prisma + PostgreSQL:** fornece migrations versionadas, enums para os valores fixos e uma relação explícita entre áreas e anexos.
 - **Next.js no frontend:** concentra a aplicação web em uma interface React com navegação client-side.
 - **Tiptap:** permite persistir o conteúdo do editor como JSON estruturado, mantendo headings e destaques editáveis.
-- **Identificação por `userId`:** na primeira versão não existe login. O frontend cria um UUID, salva-o no `localStorage` e envia-o no header `X-User-Id`. Isso é adequado para prototipação local, mas não deve ser tratado como autenticação para dados sensíveis.
+- **Autenticação por JWT e sessão:** o frontend usa access tokens curtos e refresh tokens rotativos. O backend deriva o usuário do claim `sub`, persiste sessões para renovação/revogação e aplica ownership nas consultas.
 
 ## Como foi implementado
 
@@ -35,7 +35,7 @@ O banco possui duas entidades principais:
 - **Area:** pertence a um `userId`, possui uma seção (`LINGUAGENS`, `FACULDADE`, `PROJETOS` ou `OUTROS`), uma subseção (`ESTUDANDO` ou `ESTUDADO`), nome, categoria, nível de entendimento, ícone e conteúdo JSON do Tiptap.
 - **Attachment:** representa um link, imagem ou arquivo associado a uma `Area`. A relação usa exclusão em cascata no banco.
 
-O backend também possui upload compatível com S3/R2/MinIO. O upload salva o objeto no storage e retorna uma URL; o frontend registra essa URL como `Attachment` em seguida.
+O backend também possui upload compatível com S3/R2/MinIO. O endpoint de upload salva o objeto e cria o `Attachment` na mesma operação lógica; se a persistência no banco falhar, o objeto enviado é removido do storage como compensação.
 
 ### Estrutura do repositório
 
@@ -118,6 +118,7 @@ O arquivo não deve ser commitado. Os valores mínimos são:
 ```env
 DATABASE_URL="postgresql://biblioteca:biblioteca@localhost:5432/biblioteca_estudos"
 FRONTEND_URL="http://localhost:3001"
+JWT_SECRET="gere-um-segredo-aleatorio-com-pelo-menos-32-bytes"
 STORAGE_BUCKET="biblioteca-estudos"
 STORAGE_PUBLIC_URL="http://localhost:9000/biblioteca-estudos"
 STORAGE_ENDPOINT="http://localhost:9000"
@@ -191,6 +192,8 @@ npm run build
 
 - O Docker Compose fornece PostgreSQL e MinIO, mas não cria automaticamente o bucket do MinIO.
 - O upload de imagem/arquivo depende de um storage configurado; adicionar links não depende dele.
-- O backend usa `X-User-Id` como identificação temporária, não como autenticação real.
+- O backend exige `Authorization: Bearer <accessToken>` nas rotas de áreas e anexos; `X-User-Id` não é aceito.
+- `POST /auth/register` e `POST /auth/login` retornam access token (15 minutos) e refresh token (30 dias). Use `POST /auth/refresh` para renovar e `POST /auth/logout` para revogar a sessão.
+- Gere um `JWT_SECRET` diferente por ambiente e nunca use o valor de exemplo em produção.
 - O frontend espera a API em `http://localhost:3000` e normalmente roda em `http://localhost:3001`.
 - O processo Nest precisa receber `DATABASE_URL`; copiar o arquivo de ambiente sem carregá-lo no processo pode causar erro de conexão.

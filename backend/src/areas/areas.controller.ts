@@ -7,15 +7,13 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { UserId, UserIdGuard } from '../common/user-id.decorator';
+import { UserId } from '../common/user-id.decorator';
 import { AreasService } from './areas.service';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { ListAreasQueryDto } from './dto/list-areas-query.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 
-@UseGuards(UserIdGuard)
 @Controller('areas')
 export class AreasController {
   constructor(private readonly areasService: AreasService) {}
@@ -27,14 +25,17 @@ export class AreasController {
 
   @Get()
   findAll(@UserId() userId: string, @Query() query: ListAreasQueryDto) {
-    return this.areasService.findAll(userId, query.section, query.subSection);
+    return this.areasService.findAll(
+      userId,
+      query.section,
+      query.subSection,
+      query.page,
+      query.limit,
+    );
   }
 
   @Get(':id')
-  findOne(
-    @Param('id') id: string,
-    @UserId() userId: string,
-  ) {
+  findOne(@Param('id') id: string, @UserId() userId: string) {
     return this.areasService.findOne(userId, id);
   }
 
@@ -48,10 +49,7 @@ export class AreasController {
   }
 
   @Delete(':id')
-  remove(
-    @Param('id') id: string,
-    @UserId() userId: string,
-  ) {
+  remove(@Param('id') id: string, @UserId() userId: string) {
     return this.areasService.remove(userId, id);
   }
 }
