@@ -28,6 +28,7 @@ enum AttachmentType {
 model Area {
   id                 String         @id @default(uuid())
   userId             String
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   section            SectionType
   subSection         SubSectionType
   nome               String
@@ -39,7 +40,7 @@ model Area {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
-  @@index([userId, section, subSection])
+  @@index([userId, section, subSection, updatedAt])
 }
 
 model Attachment {
@@ -52,4 +53,27 @@ model Attachment {
   createdAt DateTime       @default(now())
 
   @@index([areaId])
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  areas        Area[]
+  sessions     Session[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  lastUsedAt       DateTime?
+
+  @@index([userId, revokedAt, expiresAt])
 }
