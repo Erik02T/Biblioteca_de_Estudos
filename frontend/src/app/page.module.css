@@ -107,6 +107,9 @@ a.secondary {
 .cardActions { display: flex; gap: 12px; margin-top: 18px; }
 .cardActions button { border: 0; border-bottom: 1px solid #a9afa7; background: none; color: #59645d; cursor: pointer; font: 11px inherit; padding: 3px 0; }
 .cardActions button:last-child { color: #b14b3a; }
+.pagination { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 32px; color: #69736b; font-size: 12px; }
+.pagination .secondaryButton { padding: 8px 0; }
+.pagination .secondaryButton:disabled { cursor: default; opacity: .4; }
 .areaForm { max-width: 900px; }.areaForm .backButton { margin-bottom: 48px; }.formHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin-bottom: 38px; }.formHeader h1 { max-width: 620px; margin-top: 13px; font: 700 clamp(38px, 5vw, 62px)/1 Georgia, serif; }
 .formGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 18px; }.formGrid label { display: flex; flex-direction: column; gap: 9px; color: #59645d; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }.formGrid input, .formGrid select, .formGrid textarea { width: 100%; border: 1px solid #d0cbc0; border-radius: 0; background: #fffaf0; color: #1d2825; font: 16px/1.4 inherit; letter-spacing: 0; outline: none; padding: 13px 14px; text-transform: none; }.formGrid textarea { min-height: 170px; resize: vertical; }.formGrid input:focus, .formGrid select:focus, .formGrid textarea:focus { border-color: #e75d45; }.fullField { grid-column: 1 / -1; }.formError { margin-top: 20px; color: #b14b3a; font-size: 13px; }.formActions { display: flex; justify-content: flex-end; gap: 16px; margin-top: 30px; }.secondaryButton { padding: 12px 0; background: transparent; color: #69736b; font-size: 13px; }
 .autosaveStatus { margin-top: 18px; color: #69736b; font-size: 12px; }
