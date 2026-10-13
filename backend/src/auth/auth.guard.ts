@@ -39,12 +39,20 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Token de acesso ausente');
     }
     try {
-      const payload = await this.jwt.verifyAsync<AuthenticatedRequest['user']>(authorization.slice(7));
+      const payload = await this.jwt.verifyAsync<AuthenticatedRequest['user']>(
+        authorization.slice(7),
+      );
       const activeSession = await this.prisma.session.findFirst({
-        where: { id: payload.sid, userId: payload.sub, revokedAt: null, expiresAt: { gt: new Date() } },
+        where: {
+          id: payload.sid,
+          userId: payload.sub,
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+        },
         select: { id: true },
       });
-      if (!activeSession) throw new UnauthorizedException('Sessão revogada ou expirada');
+      if (!activeSession)
+        throw new UnauthorizedException('Sessão revogada ou expirada');
       request.user = payload;
       return true;
     } catch {

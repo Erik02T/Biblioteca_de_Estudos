@@ -7,9 +7,11 @@ import { AuthRateLimitGuard } from './rate-limit.guard';
 import { AuthGuard } from './auth.guard';
 
 @Module({
-  imports: [JwtModule.registerAsync({
-    useFactory: () => ({ secret: process.env.JWT_SECRET }),
-  })],
+  imports: [
+    JwtModule.registerAsync({
+      useFactory: () => ({ secret: process.env.JWT_SECRET }),
+    }),
+  ],
   controllers: [AuthController],
   providers: [AuthService, AuthRateLimitGuard, AuthGuard, PrismaService],
   exports: [AuthService, JwtModule, AuthGuard, PrismaService],

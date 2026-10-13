@@ -1,9 +1,4 @@
 import {
-  DeleteObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
-import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
@@ -13,53 +8,23 @@ import { randomUUID } from 'node:crypto';
 import { fromBuffer } from 'file-type';
 import { AttachmentType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import {
   CreateAttachmentDto,
   isValidAttachmentUrl,
 } from './dto/create-attachment.dto';
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
+import {
+  getContentDisposition,
+  validateDetectedMimeType,
+} from './utils/file-validation.util';
 
 @Injectable()
 export class AttachmentsService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  private buildStorageClient() {
-    const bucket = process.env.STORAGE_BUCKET;
-    const accessKeyId = process.env.STORAGE_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.STORAGE_SECRET_ACCESS_KEY;
-
-    if (!bucket || !accessKeyId || !secretAccessKey) {
-      return null;
-    }
-
-    return new S3Client({
-      region: process.env.STORAGE_REGION ?? 'auto',
-      endpoint: process.env.STORAGE_ENDPOINT,
-      forcePathStyle: process.env.STORAGE_FORCE_PATH_STYLE === 'true',
-      credentials: { accessKeyId, secretAccessKey },
-    });
-  }
-
-  private resolveStorageKeyFromUrl(url: string) {
-    const publicUrl = process.env.STORAGE_PUBLIC_URL?.replace(/\/$/, '');
-    if (!publicUrl) return null;
-    if (!url.startsWith(`${publicUrl}/`)) return null;
-
-    return decodeURIComponent(url.slice(`${publicUrl}/`.length));
-  }
-
-  private async deleteFromStorage(url?: string | null) {
-    if (!url) return;
-
-    const key = this.resolveStorageKeyFromUrl(url);
-    const bucket = process.env.STORAGE_BUCKET;
-    if (!key || !bucket) return;
-
-    const client = this.buildStorageClient();
-    if (!client) return;
-
-    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   async create(userId: string, dto: CreateAttachmentDto) {
     this.validateUrl(dto.url);
@@ -70,7 +35,8 @@ export class AttachmentsService {
     });
     if (!area) throw new NotFoundException('Área não encontrada');
 
-    return this.prisma.attachment.create({ data: dto });
+    const created = await this.prisma.attachment.create({ data: dto });
+    return this.storage.signAttachmentUrl(created);
   }
 
   async list(userId: string, areaId: string) {
@@ -79,10 +45,11 @@ export class AttachmentsService {
     });
     if (!area) throw new NotFoundException('Área não encontrada');
 
-    return this.prisma.attachment.findMany({
+    const items = await this.prisma.attachment.findMany({
       where: { areaId },
       orderBy: { createdAt: 'desc' },
     });
+    return this.storage.signAttachmentUrls(items);
   }
 
   async findOne(userId: string, id: string) {
@@ -91,11 +58,15 @@ export class AttachmentsService {
     });
     if (!attachment) throw new NotFoundException('Anexo não encontrado');
 
-    return attachment;
+    return this.storage.signAttachmentUrl(attachment);
   }
 
   async update(userId: string, id: string, dto: UpdateAttachmentDto) {
-    const attachment = await this.findOne(userId, id);
+    const attachment = await this.prisma.attachment.findFirst({
+      where: { id, area: { userId } },
+    });
+    if (!attachment) throw new NotFoundException('Anexo não encontrado');
+
     if (dto.url !== undefined) this.validateUrl(dto.url);
     this.validateTypeUrl(
       dto.tipo ?? attachment.tipo,
@@ -109,10 +80,11 @@ export class AttachmentsService {
       if (!area) throw new NotFoundException('Área não encontrada');
     }
 
-    return this.prisma.attachment.update({
+    const updated = await this.prisma.attachment.update({
       where: { id },
       data: dto,
     });
+    return this.storage.signAttachmentUrl(updated);
   }
 
   private validateUrl(url: string) {
@@ -123,11 +95,17 @@ export class AttachmentsService {
     }
   }
 
-  private validateTypeUrl(tipo: AttachmentType, url: string) {
+  private validateTypeUrl(tipo: AttachmentType, url?: string | null) {
     if (tipo === AttachmentType.LINK) return;
+    if (!url) {
+      throw new BadRequestException(
+        'IMAGEM e ARQUIVO só podem usar URLs geradas pelo upload.',
+      );
+    }
 
-    const publicUrl = process.env.STORAGE_PUBLIC_URL?.replace(/\/$/, '');
-    if (!publicUrl || !url.startsWith(`${publicUrl}/`)) {
+    const cleanUrl = url.split('?')[0];
+    const publicUrl = this.storage.getPublicUrl();
+    if (!publicUrl || !cleanUrl.startsWith(`${publicUrl}/`)) {
       throw new BadRequestException(
         'IMAGEM e ARQUIVO só podem usar URLs geradas pelo upload.',
       );
@@ -146,41 +124,34 @@ export class AttachmentsService {
         'Não foi possível validar o tipo MIME real do arquivo.',
       );
     }
+    validateDetectedMimeType(detectedFileType.mime);
 
     const area = await this.prisma.area.findFirst({
       where: { id: areaId, userId },
     });
     if (!area) throw new NotFoundException('Área não encontrada');
 
-    const bucket = process.env.STORAGE_BUCKET;
-    const publicUrl = process.env.STORAGE_PUBLIC_URL?.replace(/\/$/, '');
-    const accessKeyId = process.env.STORAGE_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.STORAGE_SECRET_ACCESS_KEY;
-    if (!bucket || !publicUrl || !accessKeyId || !secretAccessKey) {
+    if (!this.storage.isConfigured()) {
       throw new InternalServerErrorException(
         'Storage não configurado. Defina STORAGE_BUCKET, STORAGE_PUBLIC_URL, STORAGE_ACCESS_KEY_ID e STORAGE_SECRET_ACCESS_KEY.',
       );
     }
 
     const key = `${userId}/${areaId}/${randomUUID()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
-    const client = this.buildStorageClient();
-    if (!client) {
-      throw new InternalServerErrorException(
-        'Storage não configurado. Defina STORAGE_BUCKET, STORAGE_PUBLIC_URL, STORAGE_ACCESS_KEY_ID e STORAGE_SECRET_ACCESS_KEY.',
-      );
-    }
-
-    const url = `${publicUrl}/${key.split('/').map(encodeURIComponent).join('/')}`;
+    const url = this.storage.buildPublicUrlFromKey(key);
+    const contentDisposition = getContentDisposition(
+      detectedFileType.mime,
+      file.originalname,
+    );
 
     try {
-      await client.send(
-        new PutObjectCommand({
-          Bucket: bucket,
-          Key: key,
-          Body: file.buffer,
-          ContentType: detectedFileType.mime,
-        }),
-      );
+      await this.storage.upload({
+        bucket: this.storage.getBucket(),
+        key,
+        body: file.buffer,
+        contentType: detectedFileType.mime,
+        contentDisposition,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Não foi possível salvar o arquivo no storage.',
@@ -197,12 +168,16 @@ export class AttachmentsService {
     };
 
     try {
-      return await this.prisma.attachment.create({ data: attachmentData });
+      const created = await this.prisma.attachment.create({
+        data: attachmentData,
+      });
+      return await this.storage.signAttachmentUrl(created);
     } catch (error) {
       try {
-        await client.send(
-          new DeleteObjectCommand({ Bucket: bucket, Key: key }),
-        );
+        await this.storage.delete({
+          bucket: this.storage.getBucket(),
+          key,
+        });
       } catch (cleanupError) {
         void cleanupError;
       }
@@ -216,7 +191,7 @@ export class AttachmentsService {
     });
     if (!attachment) throw new NotFoundException('Anexo não encontrado');
 
-    await this.deleteFromStorage(attachment.url);
+    await this.storage.deleteByUrl(attachment.url);
     return this.prisma.attachment.delete({ where: { id } });
   }
 }

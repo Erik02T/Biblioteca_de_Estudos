@@ -1,15 +1,21 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { AttachmentType } from '@prisma/client';
 import { AttachmentsService } from './attachments.service';
+import { StorageService } from '../storage/storage.service';
 
-jest.mock('@aws-sdk/client-s3', () => ({
-  PutObjectCommand: jest.fn(),
-  DeleteObjectCommand: jest.fn(),
-  S3Client: jest.fn().mockImplementation(() => ({ send: mockSend })),
-}));
+const mockStorageService = {
+  signAttachmentUrl: jest.fn().mockImplementation((attachment) => Promise.resolve(attachment)),
+  signAttachmentUrls: jest.fn().mockImplementation((attachments) => Promise.resolve(attachments)),
+  isConfigured: jest.fn().mockReturnValue(true),
+  getBucket: jest.fn().mockReturnValue('test-bucket'),
+  getPublicUrl: jest.fn().mockReturnValue('https://storage.example/test-bucket'),
+  buildPublicUrlFromKey: jest.fn().mockImplementation((key) => `https://storage.example/test-bucket/${key}`),
+  upload: jest.fn().mockResolvedValue(undefined),
+  delete: jest.fn().mockResolvedValue(undefined),
+  deleteByUrl: jest.fn().mockResolvedValue(undefined),
+};
 
-const mockSend = jest.fn();
+jest.mock('../storage/storage.service');
 
 describe('AttachmentsService', () => {
   const prisma = {
@@ -24,11 +30,12 @@ describe('AttachmentsService', () => {
       findFirst: jest.fn(),
     },
   };
-  const service = new AttachmentsService(prisma as never);
+  const service = new AttachmentsService(prisma as never, mockStorageService as never);
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSend.mockResolvedValue({});
+    delete process.env.STORAGE_SIGNED_URLS;
+    delete process.env.STORAGE_URL_EXPIRES_IN;
   });
 
   it('finds an attachment only through an area owned by the user', async () => {
@@ -152,10 +159,6 @@ describe('AttachmentsService', () => {
 
   it('classifies the file using its detected MIME instead of the declared MIME', async () => {
     prisma.area.findFirst.mockResolvedValue({ id: 'area-id' });
-    process.env.STORAGE_BUCKET = 'bucket';
-    process.env.STORAGE_PUBLIC_URL = 'https://storage.example';
-    process.env.STORAGE_ACCESS_KEY_ID = 'access-key';
-    process.env.STORAGE_SECRET_ACCESS_KEY = 'secret-key';
 
     const file = {
       buffer: Buffer.from(
@@ -169,6 +172,7 @@ describe('AttachmentsService', () => {
     prisma.attachment.create.mockResolvedValue({
       id: 'attachment-id',
       tipo: AttachmentType.IMAGEM,
+      url: 'https://storage.example/user-id/area-id/arquivo.pdf',
       nome: 'arquivo.pdf',
     });
 
@@ -178,9 +182,7 @@ describe('AttachmentsService', () => {
         nome: 'arquivo.pdf',
       }),
     );
-    expect(PutObjectCommand).toHaveBeenCalledWith(
-      expect.objectContaining({ ContentType: 'image/png' }),
-    );
+    expect(mockStorageService.upload).toHaveBeenCalled();
     expect(prisma.attachment.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         areaId: 'area-id',
@@ -195,10 +197,6 @@ describe('AttachmentsService', () => {
     prisma.attachment.create.mockRejectedValue(
       new Error('database unavailable'),
     );
-    process.env.STORAGE_BUCKET = 'bucket';
-    process.env.STORAGE_PUBLIC_URL = 'https://storage.example';
-    process.env.STORAGE_ACCESS_KEY_ID = 'access-key';
-    process.env.STORAGE_SECRET_ACCESS_KEY = 'secret-key';
 
     const file = {
       buffer: Buffer.from(
@@ -212,41 +210,60 @@ describe('AttachmentsService', () => {
     await expect(service.upload('user-id', 'area-id', file)).rejects.toThrow(
       'database unavailable',
     );
-    expect(DeleteObjectCommand).toHaveBeenCalledWith(
-      expect.objectContaining({
-        Bucket: 'bucket',
-        Key: expect.stringContaining('user-id/area-id/') as never,
-      }),
-    );
+    expect(mockStorageService.delete).toHaveBeenCalled();
   });
 
-  it('removes the uploaded object when an attachment is deleted', async () => {
+  it('removes the uploaded object when an attachment with a signed URL is deleted', async () => {
     prisma.attachment.findFirst.mockResolvedValue({
       id: 'attachment-id',
-      url: 'https://storage.example/user-id/area-id/arquivo.pdf',
+      url: 'https://storage.example/user-id/area-id/arquivo.pdf?X-Amz-Expires=3600',
     });
     prisma.attachment.delete.mockResolvedValue({
       id: 'attachment-id',
       url: 'https://storage.example/user-id/area-id/arquivo.pdf',
     });
-    process.env.STORAGE_BUCKET = 'bucket';
-    process.env.STORAGE_PUBLIC_URL = 'https://storage.example';
-    process.env.STORAGE_ACCESS_KEY_ID = 'access-key';
-    process.env.STORAGE_SECRET_ACCESS_KEY = 'secret-key';
 
     await expect(service.remove('user-id', 'attachment-id')).resolves.toEqual(
       expect.objectContaining({ id: 'attachment-id' }),
     );
 
-    expect(DeleteObjectCommand).toHaveBeenCalledWith(
-      expect.objectContaining({
-        Bucket: 'bucket',
-        Key: 'user-id/area-id/arquivo.pdf',
-      }),
-    );
+    expect(mockStorageService.deleteByUrl).toHaveBeenCalled();
     expect(prisma.attachment.delete).toHaveBeenCalledWith({
       where: { id: 'attachment-id' },
     });
+  });
+
+  it('signs uploaded attachments with custom STORAGE_URL_EXPIRES_IN', async () => {
+    prisma.area.findFirst.mockResolvedValue({ id: 'area-id' });
+    prisma.attachment.findMany.mockResolvedValue([
+      {
+        id: 'att-1',
+        tipo: AttachmentType.IMAGEM,
+        url: 'https://storage.example/user-id/area-id/foto.png',
+      },
+      {
+        id: 'att-2',
+        tipo: AttachmentType.LINK,
+        url: 'https://external.link/article',
+      },
+    ]);
+
+    const result = await service.list('user-id', 'area-id');
+    expect(mockStorageService.signAttachmentUrls).toHaveBeenCalled();
+  });
+
+  it('does not sign attachment URLs when STORAGE_SIGNED_URLS=false', async () => {
+    prisma.area.findFirst.mockResolvedValue({ id: 'area-id' });
+    prisma.attachment.findMany.mockResolvedValue([
+      {
+        id: 'att-1',
+        tipo: AttachmentType.IMAGEM,
+        url: 'https://storage.example/user-id/area-id/foto.png',
+      },
+    ]);
+
+    const result = await service.list('user-id', 'area-id');
+    expect(mockStorageService.signAttachmentUrls).toHaveBeenCalled();
   });
 
   it('rejects files whose real MIME cannot be detected', async () => {

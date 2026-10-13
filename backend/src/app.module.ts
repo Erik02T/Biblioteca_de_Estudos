@@ -4,12 +4,13 @@ import { AppService } from './app.service';
 import { AreasModule } from './areas/areas.module';
 import { AttachmentsModule } from './attachments/attachments.module';
 import { AuthModule } from './auth/auth.module';
+import { StorageModule } from './storage/storage.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthRateLimitGuard } from './auth/rate-limit.guard';
 
 @Module({
-  imports: [AreasModule, AttachmentsModule, AuthModule],
+  imports: [AreasModule, AttachmentsModule, AuthModule, StorageModule],
   controllers: [AppController],
   providers: [
     AppService,

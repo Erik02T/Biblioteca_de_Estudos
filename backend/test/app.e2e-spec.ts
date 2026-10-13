@@ -74,7 +74,9 @@ describe('AppController (e2e)', () => {
       .compile();
     app = moduleFixture.createNestApplication();
     await app.init();
-    accessToken = await app.get(JwtService).signAsync({ sub: userId, email: 'test@example.com' });
+    accessToken = await app
+      .get(JwtService)
+      .signAsync({ sub: userId, email: 'test@example.com' });
   });
 
   it('/ (GET)', () => {
