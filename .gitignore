@@ -19,3 +19,6 @@ Thumbs.db
 
 # Local archives and test artifacts
 *.zip
+
+# Temporary extracted files
+files_extracted/
