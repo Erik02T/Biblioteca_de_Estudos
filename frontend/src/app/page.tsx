@@ -17,10 +17,10 @@ type AreaFormValues = { nome: string; categoria: string; nivelEntendimento: numb
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 type AuthTokens = { accessToken: string; refreshToken: string };
 const sections: Array<{ value: Section; label: string; icon: string; tone: string }> = [
-  { value: "LINGUAGENS", label: "Linguagens", icon: "</>", tone: "coral" },
+  { value: "LINGUAGENS", label: "Idiomas", icon: "◉", tone: "purple" },
   { value: "FACULDADE", label: "Faculdade", icon: "✦", tone: "blue" },
-  { value: "PROJETOS", label: "Projetos", icon: "⌁", tone: "green" },
-  { value: "OUTROS", label: "Outros", icon: "＋", tone: "gold" },
+  { value: "PROJETOS", label: "Projetos", icon: "⌁", tone: "violet" },
+  { value: "OUTROS", label: "Outros", icon: "＋", tone: "slate" },
 ];
 const subsections: Array<{ value: SubSection; label: string; description: string }> = [
   { value: "ESTUDANDO", label: "Estudando", description: "O que está em movimento agora" },
@@ -71,6 +71,20 @@ export default function Home() {
   const [editingArea, setEditingArea] = useState<Area | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (event.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes((event.target as HTMLElement).tagName)) {
+        event.preventDefault();
+        setIsSearchOpen(true);
+      }
+      if (event.key === "Escape") setIsSearchOpen(false);
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
 
   useEffect(() => {
     if (!userId || !selectedSection || !selectedSubSection) return;
@@ -97,15 +111,17 @@ export default function Home() {
 
   const currentSection = sections.find((section) => section.value === selectedSection);
   const currentSubSection = subsections.find((subSection) => subSection.value === selectedSubSection);
+  const visibleAreas = searchQuery.trim() ? areas.filter((area) => `${area.nome} ${area.categoria}`.toLowerCase().includes(searchQuery.trim().toLowerCase())) : areas;
   const goHome = () => { setSelectedSection(undefined); setSelectedSubSection(undefined); setAreaPage(1); setAreas([]); };
   const closeForm = () => { setEditingArea(null); setIsCreating(false); };
   const openCreate = () => { setEditingArea(null); setIsCreating(true); };
   const openEdit = (area: Area) => { setIsCreating(false); setEditingArea({ ...area }); };
   if (!userId) return <AuthView onAuthenticated={(tokens) => { saveTokens(tokens); setUserId(tokens.accessToken); }} />;
+  const logout = () => { window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); setUserId(undefined); goHome(); };
   return <div className={styles.page}>
-    <header className={styles.header}><button className={styles.brand} onClick={goHome} aria-label="Voltar para a biblioteca"><span className={styles.brandMark}>B</span><span>Biblioteca<span className={styles.brandAccent}>.</span></span></button><span className={styles.headerNote}>seu espaço de conhecimento</span></header>
-    <main className={styles.main}><div className={styles.eyebrow}><span /> ORGANIZE PARA LEMBRAR</div>
-      {selectedSubSection && currentSection && currentSubSection ? editingArea || isCreating ? <AreaForm section={currentSection.value} subSection={currentSubSection.value} area={editingArea} userId={userId} onCancel={closeForm} onSaved={(savedArea) => { setAreas((currentAreas) => editingArea ? currentAreas.map((area) => area.id === savedArea.id ? savedArea : area) : areaPage === 1 ? [savedArea, ...currentAreas].slice(0, pagination.limit) : currentAreas); setPagination((current) => ({ ...current, total: current.total + (editingArea ? 0 : 1), totalPages: Math.ceil((current.total + (editingArea ? 0 : 1)) / current.limit) })); if (editingArea) closeForm(); else { setIsCreating(false); setEditingArea({ ...savedArea }); } }} /> : <SubSectionView section={currentSection} subSection={currentSubSection} areas={areas} pagination={pagination} userId={userId} isLoading={isLoading} error={error} onBack={() => { setSelectedSubSection(undefined); setAreaPage(1); }} onCreate={openCreate} onEdit={openEdit} onPageChange={setAreaPage} onRetry={() => setRetryKey((key) => key + 1)} onDelete={(areaId) => { setAreas((currentAreas) => currentAreas.filter((area) => area.id !== areaId)); const nextTotal = Math.max(0, pagination.total - 1); setPagination((current) => ({ ...current, total: nextTotal, totalPages: Math.ceil(nextTotal / current.limit) })); if (areas.length === 1 && areaPage > 1) setAreaPage(areaPage - 1); }} /> : selectedSection && currentSection ? <SectionView section={currentSection} onBack={goHome} onSelect={(subSection) => { setSelectedSubSection(subSection); setAreaPage(1); }} /> : <LibraryView onSelect={setSelectedSection} />}
+    <header className={styles.header}><button className={styles.brand} onClick={goHome} aria-label="Voltar para a biblioteca"><span className={styles.brandMark}>B</span><span>Biblioteca<span className={styles.brandAccent}>.</span></span></button><div className={styles.headerTools}>{isSearchOpen ? <label className={styles.searchField}><span className="sr-only">Buscar nos blocos carregados</span><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Buscar blocos..." onKeyDown={(event) => { if (event.key === "Escape") setIsSearchOpen(false); }} /></label> : <button className={styles.searchButton} type="button" aria-label="Buscar na biblioteca" onClick={() => setIsSearchOpen(true)}>Buscar <kbd>/</kbd></button>}<span className={styles.headerNote}>seu espaço de conhecimento</span><button className={styles.logoutButton} type="button" onClick={logout}>Sair</button></div></header>
+    <main className={styles.main}>
+      {selectedSubSection && currentSection && currentSubSection ? editingArea || isCreating ? <AreaForm section={currentSection.value} subSection={currentSubSection.value} area={editingArea} userId={userId} onCancel={closeForm} onSaved={(savedArea) => { setAreas((currentAreas) => editingArea ? currentAreas.map((area) => area.id === savedArea.id ? savedArea : area) : areaPage === 1 ? [savedArea, ...currentAreas].slice(0, pagination.limit) : currentAreas); setPagination((current) => ({ ...current, total: current.total + (editingArea ? 0 : 1), totalPages: Math.ceil((current.total + (editingArea ? 0 : 1)) / current.limit) })); if (editingArea) closeForm(); else { setIsCreating(false); setEditingArea({ ...savedArea }); } }} /> : <SubSectionView section={currentSection} subSection={currentSubSection} areas={visibleAreas} pagination={pagination} userId={userId} isLoading={isLoading} error={error} onBack={() => { setSelectedSubSection(undefined); setAreaPage(1); }} onCreate={openCreate} onEdit={openEdit} onPageChange={setAreaPage} onRetry={() => setRetryKey((key) => key + 1)} onDelete={(areaId) => { setAreas((currentAreas) => currentAreas.filter((area) => area.id !== areaId)); const nextTotal = Math.max(0, pagination.total - 1); setPagination((current) => ({ ...current, total: nextTotal, totalPages: Math.ceil(nextTotal / current.limit) })); if (areas.length === 1 && areaPage > 1) setAreaPage(areaPage - 1); }} /> : selectedSection && currentSection ? <SectionView section={currentSection} onBack={goHome} onSelect={(subSection) => { setSelectedSubSection(subSection); setAreaPage(1); }} /> : <LibraryView onSelect={setSelectedSection} />}
     </main><footer className={styles.footer}>Uma ideia clara encontra um lugar para ficar.</footer>
   </div>;
 }
@@ -130,7 +146,7 @@ function LibraryView({ onSelect }: { onSelect: (section: Section) => void }) { r
 </>; }
 
 function SectionView({ section, onBack, onSelect }: { section: (typeof sections)[number]; onBack: () => void; onSelect: (subSection: SubSection) => void }) { return <>
-  <button className={styles.backButton} onClick={onBack}>← Biblioteca</button><div className={`${styles.hero} ${styles.compactHero}`}><p className={styles.kicker}>{section.icon} {section.label}</p><h1>O que você quer <em>revisitar?</em></h1><p className={styles.subtitle}>Separe o caminho percorrido do próximo passo.</p></div>
+  <button className={styles.backButton} onClick={onBack}>← Biblioteca</button><div className={`${styles.hero} ${styles.compactHero}`}><p className={styles.breadcrumb}>Biblioteca / {section.label}</p><p className={styles.kicker}>{section.icon} {section.label}</p><h1>O que você quer <em>revisitar?</em></h1><p className={styles.subtitle}>Separe o caminho percorrido do próximo passo.</p></div>
   <div className={styles.subsectionGrid}>{subsections.map((subSection, index) => <button key={subSection.value} className={styles.subsectionCard} onClick={() => onSelect(subSection.value)}><span className={styles.subsectionNumber}>0{index + 1}</span><span><strong>{subSection.label}</strong><small>{subSection.description}</small></span><span className={styles.arrow}>→</span></button>)}</div>
 </>; }
 
