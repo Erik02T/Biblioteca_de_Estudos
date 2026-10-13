@@ -12,7 +12,7 @@ type AreaEditorProps = {
   onBlur?: () => void;
 };
 
-const highlightColors = ["#f8d66d", "#f5a3a3", "#a9d8c2", "#a9c9cf", "#d5b4e8"];
+const highlightColors = ["#A78BFA", "#4F8CFF", "#67E8F9", "#F9A8D4", "#FDE047"];
 
 const headingLabels: Record<number, string> = {
   1: "Título 1",
@@ -89,7 +89,7 @@ export default function AreaEditor({ content, onChange, onAutosaveStateChange, o
           aria-label="Remover destaque"
           title="Remover destaque"
         >
-          Limpar
+          Remover formatação
         </button>
       </div>
     </div>
