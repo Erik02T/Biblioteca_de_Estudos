@@ -186,3 +186,57 @@
 
 /* Avoid accidental old brand colors leaking into the new theme. */
 .coral, .green, .gold { background: var(--surface); color: var(--text); }
+
+/* Tela de edição em modo foco, alinhada ao wireframe. */
+.page:has(.areaForm) { min-height: 100dvh; overflow: hidden; }
+.page:has(.areaForm) .header,
+.page:has(.areaForm) .footer { display: none; }
+.page:has(.areaForm) .main { width: 100%; max-width: none; height: 100dvh; margin: 0; padding: 12px; }
+.areaForm { display: grid; grid-template-columns: 208px minmax(0, 1fr) 320px 96px; grid-template-rows: auto minmax(0, 1fr); gap: 12px; width: 100%; max-width: none; height: calc(100dvh - 24px); margin: 0; padding: 12px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 16px; background: var(--bg); box-shadow: none; }
+.areaForm > .backButton { grid-column: 1; grid-row: 1 / -1; align-self: start; height: 48px; margin: 0; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); text-align: left; }
+.areaForm .formHeader { display: grid; grid-template-columns: minmax(0, 1fr) 320px; grid-column: 2 / 4; grid-row: 1; gap: 12px; min-width: 0; }
+.areaForm .formHeader > div:first-child { min-width: 0; padding: 4px 8px; }
+.areaForm .formHeader .kicker { display: none; }
+.areaForm .formHeader h1 { display: none; }
+.areaForm .formHeader::before { content: "✦  Bloco em edição"; display: block; grid-column: 1; position: absolute; margin-top: 12px; color: var(--text-muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.areaForm .formGrid { display: grid; grid-template-columns: minmax(0, 1fr); grid-column: 2 / 4; grid-row: 2; min-height: 0; gap: 12px; }
+.areaForm .formGrid > label { display: none; }
+.areaForm .formGrid > .fullField { display: flex; min-height: 0; flex-direction: column; }
+.areaForm .fullField > label { display: none; }
+.areaForm .editorShell { display: flex; min-height: 0; height: 100%; flex-direction: column; border-radius: 16px; background: var(--surface); }
+.areaForm .editorContent { min-height: 0; flex: 1; overflow: auto; }
+.areaForm .editorContent :global(.ProseMirror) { max-width: 78ch; min-height: 100%; margin: 0 auto; padding: 36px 42px 80px; font-size: 16px; line-height: 1.7; }
+.areaForm .editorContent :global(.ProseMirror)::before { color: var(--text-muted); }
+.areaForm .editorToolbar { order: 2; border-top: 1px solid var(--border); border-bottom: 0; background: var(--surface-2); }
+.areaForm .attachmentPanel { grid-column: 3; grid-row: 1 / 3; height: 100%; min-height: 0; margin: 0; overflow: auto; box-sizing: border-box; border-radius: 16px; background: var(--surface); }
+.areaForm .attachmentToolbar { align-items: flex-start; flex-direction: column; }
+.areaForm .attachmentButtons { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; margin-top: 8px; }
+.areaForm .attachmentButtons button, .areaForm .attachmentButtons label { min-height: 40px; padding: 8px 4px; font-size: 12px; text-align: center; }
+.areaForm .attachmentList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+.areaForm .attachmentItem { min-height: 108px; flex-direction: column; align-items: stretch; justify-content: center; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.areaForm .attachmentItem button { margin-left: 0; align-self: flex-end; }
+.areaForm .formActions { position: relative; display: flex; grid-column: 4; grid-row: 1 / 3; flex-direction: column; justify-content: flex-end; gap: 8px; border-top: 0; padding: 0; }
+.areaForm .formActions .primaryButton, .areaForm .formActions .secondaryButton { width: 100%; padding: 0 8px; }
+.areaForm .autosaveStatus { position: absolute; top: 8px; left: 0; width: 100%; font-size: 11px; text-align: center; }
+
+@media (max-width: 1279px) and (min-width: 721px) {
+  .areaForm { grid-template-columns: 72px minmax(0, 1fr) 280px 88px; }
+  .areaForm > .backButton { overflow: hidden; padding: 0 10px; font-size: 0; }
+  .areaForm > .backButton::before { content: "←"; font-size: 20px; }
+  .areaForm .formHeader { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+
+@media (max-width: 720px) {
+  .page:has(.areaForm) .main { padding: 0; }
+  .areaForm { display: flex; height: 100dvh; min-height: 0; flex-direction: column; gap: 8px; padding: 8px; border: 0; border-radius: 0; }
+  .areaForm > .backButton { order: 0; width: 48px; height: 44px; overflow: hidden; padding: 0; font-size: 0; text-align: center; }
+  .areaForm > .backButton::before { content: "←"; font-size: 20px; }
+  .areaForm .formHeader { display: flex; order: 1; min-height: 48px; }
+  .areaForm .formHeader > div:first-child { display: none; }
+  .areaForm .attachmentPanel { order: 3; width: 100%; height: auto; max-height: 32dvh; }
+  .areaForm .formGrid { order: 2; flex: 1; min-height: 220px; }
+  .areaForm .formActions { order: 4; flex-direction: row; min-height: 48px; }
+  .areaForm .autosaveStatus { display: none; }
+  .areaForm .editorContent :global(.ProseMirror) { padding: 24px 18px 72px; }
+  .areaForm .attachmentList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
