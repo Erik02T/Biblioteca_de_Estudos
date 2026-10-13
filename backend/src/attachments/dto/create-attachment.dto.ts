@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 
 export const ATTACHMENT_URL_MAX_LENGTH = 2048;
+export const ATTACHMENT_NAME_MAX_LENGTH = 255;
 
 export function isValidAttachmentUrl(value: string): boolean {
   if (value.length > ATTACHMENT_URL_MAX_LENGTH) return false;
@@ -37,6 +38,7 @@ export class CreateAttachmentDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(ATTACHMENT_NAME_MAX_LENGTH)
   nome?: string;
 
   @IsUUID()

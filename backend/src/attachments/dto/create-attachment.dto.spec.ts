@@ -23,4 +23,17 @@ describe('CreateAttachmentDto', () => {
 
     await expect(validate(dto)).resolves.toHaveLength(0);
   });
+
+  it('rejects attachment url exceeding 2048 chars and attachment name exceeding 255 chars', async () => {
+    const dto = new CreateAttachmentDto();
+    dto.tipo = AttachmentType.LINK;
+    dto.url = 'https://example.com/' + 'a'.repeat(2048);
+    dto.nome = 'b'.repeat(256);
+    dto.areaId = '123e4567-e89b-42d3-a456-426614174000';
+
+    const errors = await validate(dto);
+
+    expect(errors.some((error) => error.property === 'url')).toBe(true);
+    expect(errors.some((error) => error.property === 'nome')).toBe(true);
+  });
 });

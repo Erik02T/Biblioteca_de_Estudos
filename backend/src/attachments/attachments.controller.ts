@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,6 +17,10 @@ import { UserId } from '../common/user-id.decorator';
 import { AttachmentsService } from './attachments.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
+import {
+  getContentDisposition,
+  validateFileHeaderAndExtension,
+} from './utils/file-validation.util';
 
 @Controller('attachments')
 export class AttachmentsController {
@@ -37,24 +42,36 @@ export class AttachmentsController {
     FileInterceptor('file', {
       limits: { fileSize: 10 * 1024 * 1024 },
       fileFilter: (_request, file, callback) => {
-        if (!file.mimetype) {
+        try {
+          validateFileHeaderAndExtension(file.mimetype, file.originalname);
+          callback(null, true);
+        } catch (error) {
           callback(
-            new BadRequestException('O arquivo precisa informar o tipo MIME'),
+            error instanceof Error
+              ? error
+              : new BadRequestException('Arquivo inválido'),
             false,
           );
-          return;
         }
-        callback(null, true);
       },
     }),
   )
-  upload(
+  async upload(
     @UserId() userId: string,
     @UploadedFile() file: Express.Multer.File,
     @Body('areaId') areaId: string,
+    @Res({ passthrough: true })
+    res?: { setHeader(name: string, value: string): void },
   ) {
     if (!file) throw new BadRequestException('O campo file é obrigatório');
-    return this.attachmentsService.upload(userId, areaId, file);
+    const result = await this.attachmentsService.upload(userId, areaId, file);
+    if (res && file.mimetype) {
+      res.setHeader(
+        'Content-Disposition',
+        getContentDisposition(file.mimetype, file.originalname),
+      );
+    }
+    return result;
   }
 
   @Get(':id')

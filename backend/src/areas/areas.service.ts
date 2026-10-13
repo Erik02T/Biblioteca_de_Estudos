@@ -1,51 +1,16 @@
-import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 
 @Injectable()
 export class AreasService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  private buildStorageClient() {
-    const bucket = process.env.STORAGE_BUCKET;
-    const accessKeyId = process.env.STORAGE_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.STORAGE_SECRET_ACCESS_KEY;
-
-    if (!bucket || !accessKeyId || !secretAccessKey) {
-      return null;
-    }
-
-    return new S3Client({
-      region: process.env.STORAGE_REGION ?? 'auto',
-      endpoint: process.env.STORAGE_ENDPOINT,
-      forcePathStyle: process.env.STORAGE_FORCE_PATH_STYLE === 'true',
-      credentials: { accessKeyId, secretAccessKey },
-    });
-  }
-
-  private resolveStorageKeyFromUrl(url: string) {
-    const publicUrl = process.env.STORAGE_PUBLIC_URL?.replace(/\/$/, '');
-    if (!publicUrl) return null;
-    if (!url.startsWith(`${publicUrl}/`)) return null;
-
-    return decodeURIComponent(url.slice(`${publicUrl}/`.length));
-  }
-
-  private async deleteStorageObject(url?: string | null) {
-    if (!url) return;
-
-    const key = this.resolveStorageKeyFromUrl(url);
-    const bucket = process.env.STORAGE_BUCKET;
-    if (!key || !bucket) return;
-
-    const client = this.buildStorageClient();
-    if (!client) return;
-
-    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   create(userId: string, dto: CreateAreaDto) {
     const { conteudo, ...data } = dto;
@@ -92,12 +57,32 @@ export class AreasService {
     });
 
     if (!area) throw new NotFoundException('Área não encontrada');
+
+    if (area.attachments && area.attachments.length > 0) {
+      const signedAttachments = await this.storage.signAttachmentUrls(
+        area.attachments,
+      );
+      return { ...area, attachments: signedAttachments };
+    }
+
     return area;
   }
 
   async update(userId: string, id: string, dto: UpdateAreaDto) {
-    await this.findOne(userId, id);
-    const { conteudo, ...data } = dto;
+    const area = await this.findOne(userId, id);
+    const { conteudo, updatedAt, ...data } = dto;
+
+    if (updatedAt) {
+      const expectedUpdatedAt = new Date(updatedAt);
+      const currentUpdatedAt = new Date(area.updatedAt);
+
+      if (expectedUpdatedAt.getTime() !== currentUpdatedAt.getTime()) {
+        throw new ConflictException(
+          'Este bloco foi atualizado por outro usuário. Recarregue a página e tente novamente.',
+        );
+      }
+    }
+
     return this.prisma.area.update({
       where: { id },
       data: {
@@ -113,7 +98,7 @@ export class AreasService {
     const area = await this.findOne(userId, id);
 
     for (const attachment of area.attachments ?? []) {
-      await this.deleteStorageObject(attachment.url);
+      await this.storage.deleteByUrl(attachment.url);
     }
 
     return this.prisma.area.delete({ where: { id } });

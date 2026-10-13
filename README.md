@@ -126,6 +126,8 @@ STORAGE_REGION="us-east-1"
 STORAGE_ACCESS_KEY_ID="..."
 STORAGE_SECRET_ACCESS_KEY="..."
 STORAGE_FORCE_PATH_STYLE="true"
+STORAGE_SIGNED_URLS="true"
+STORAGE_URL_EXPIRES_IN="3600"
 ```
 
 O bucket e as credenciais do MinIO precisam existir antes de testar uploads. Para links, áreas e editor, apenas o PostgreSQL é necessário.
@@ -135,7 +137,8 @@ Para configurar o MinIO localmente, abra `http://localhost:9001` e entre com:
 - Usuário: `biblioteca_storage`
 - Senha: `biblioteca_storage_dev_2026`
 
-Crie o bucket `biblioteca-estudos` e configure leitura pública apenas para desenvolvimento local. Sem essa política, o upload pode funcionar, mas a URL retornada não ficará acessível pelo navegador. Em ambientes reais, use bucket privado e URLs assinadas.
+Crie o bucket `biblioteca-estudos`. O sistema utiliza **storage privado por padrão**, gerando URLs assinadas temporárias com tempo de expiração configurável via `STORAGE_URL_EXPIRES_IN` (padrão 3600s / 1h). Isso garante que arquivos da sua biblioteca pessoal não fiquem expostos publicamente de forma aberta.
+
 
 > Observação: o Prisma CLI lê `backend/.env` durante as migrations. O processo Nest também precisa receber `DATABASE_URL` e as demais variáveis no ambiente em que for iniciado. Em shells que não carregam `.env` automaticamente, exporte-as antes de iniciar o backend ou use uma ferramenta de carregamento de ambiente.
 

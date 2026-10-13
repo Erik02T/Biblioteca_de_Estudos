@@ -1,15 +1,15 @@
 import { AreasService } from './areas.service';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { NotFoundException } from '@nestjs/common';
-import { SectionType, SubSectionType } from '@prisma/client';
+import { AttachmentType, SectionType, SubSectionType } from '@prisma/client';
+import { StorageService } from '../storage/storage.service';
 
-jest.mock('@aws-sdk/client-s3', () => ({
-  DeleteObjectCommand: jest.fn(),
-  S3Client: jest.fn().mockImplementation(() => ({ send: mockSend })),
-  PutObjectCommand: jest.fn(),
-}));
+const mockStorageService = {
+  signAttachmentUrl: jest.fn().mockImplementation((attachment) => Promise.resolve(attachment)),
+  signAttachmentUrls: jest.fn().mockImplementation((attachments) => Promise.resolve(attachments)),
+  deleteByUrl: jest.fn().mockResolvedValue(undefined),
+};
 
-const mockSend = jest.fn();
+jest.mock('../storage/storage.service');
 
 describe('AreasService', () => {
   const prisma = {
@@ -23,11 +23,10 @@ describe('AreasService', () => {
     },
   };
 
-  const service = new AreasService(prisma as never);
+  const service = new AreasService(prisma as never, mockStorageService as never);
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSend.mockResolvedValue({});
   });
 
   it('creates an area scoped to the authenticated user', async () => {
@@ -226,21 +225,32 @@ describe('AreasService', () => {
     });
     prisma.area.delete.mockResolvedValue({ id: 'area-id' });
 
-    process.env.STORAGE_BUCKET = 'bucket';
-    process.env.STORAGE_PUBLIC_URL = 'https://storage.example';
-    process.env.STORAGE_ACCESS_KEY_ID = 'access-key';
-    process.env.STORAGE_SECRET_ACCESS_KEY = 'secret-key';
-
     await expect(service.remove('user-id', 'area-id')).resolves.toEqual({
       id: 'area-id',
     });
 
-    expect(DeleteObjectCommand).toHaveBeenCalledWith({
-      Bucket: 'bucket',
-      Key: 'user-id/area-id/imagem.png',
-    });
+    expect(mockStorageService.deleteByUrl).toHaveBeenCalledWith(
+      'https://storage.example/user-id/area-id/imagem.png',
+    );
     expect(prisma.area.delete).toHaveBeenCalledWith({
       where: { id: 'area-id' },
     });
+  });
+
+  it('signs attachment URLs when retrieving an area via findOne', async () => {
+    prisma.area.findFirst.mockResolvedValue({
+      id: 'area-id',
+      userId: 'user-id',
+      attachments: [
+        {
+          id: 'attachment-1',
+          tipo: AttachmentType.IMAGEM,
+          url: 'https://storage.example/user-id/area-id/imagem.png',
+        },
+      ],
+    });
+
+    const result = await service.findOne('user-id', 'area-id');
+    expect(mockStorageService.signAttachmentUrls).toHaveBeenCalled();
   });
 });
