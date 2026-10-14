@@ -274,4 +274,31 @@
   .areaForm .autosaveStatus { display: none; }
   .areaForm .editorContent :global(.ProseMirror) { padding: 24px 18px 72px; }
   .areaForm .attachmentList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .areaForm .editorSidebar { display: none; }
+  .areaForm .editorName { font-size: 24px; }
 }
+
+/* Editor redesenhado a partir do protótipo: foco no conteúdo, ferramentas discretas. */
+.editorSidebar { grid-column: 1; grid-row: 1 / -1; display: flex; min-width: 0; flex-direction: column; gap: 12px; padding: 8px; border-right: 1px solid var(--border); }
+.sidebarHeading { display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--text); }
+.sidebarIcon, .iconPicker { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--primary-glow); }
+.sidebarSearch input { width: 100%; min-height: 38px; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--text); }
+.sidebarTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.sidebarTab, .sidebarTabActive { min-height: 36px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
+.sidebarTabActive { border-color: var(--primary); background: rgba(124,58,237,.18); color: var(--text); }
+.sidebarBlocks { display: grid; gap: 6px; overflow: auto; }
+.sidebarBlockActive { display: flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 10px; border-left: 3px solid var(--primary); border-radius: 8px; background: rgba(124,58,237,.2); color: var(--text); font-size: 13px; }
+.sidebarBlockActive small { margin-left: auto; color: var(--primary-glow); }
+.sidebarNew { min-height: 42px; margin-top: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--text-muted); cursor: pointer; }
+.editorTitleRow { display: flex; align-items: center; gap: 12px; }
+.editorName { width: min(100%, 620px); min-width: 0; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--text); font-family: Georgia, serif; font-size: 32px; font-weight: 700; outline: 0; }
+.editorName:focus { border-bottom-color: var(--primary-glow); }
+.editorMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 10px 0 0 54px; color: var(--text-muted); font-size: 11px; }
+.editorMeta input { width: 150px; min-height: 30px; padding: 0 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); }
+.levelLabel { margin-left: 8px; }
+.levelDots { display: flex; gap: 6px; }
+.levelDot, .levelDotActive { width: 16px; height: 16px; padding: 0; border: 1px solid var(--text-muted); border-radius: 50%; background: transparent; cursor: pointer; }
+.levelDotActive { border-color: var(--primary); background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: 0 0 10px rgba(124,58,237,.35); }
+.areaForm .formGrid > .hiddenLegacyField { display: none !important; }
+@media (max-width: 1279px) and (min-width: 721px) { .editorSidebar { width: 56px; overflow: hidden; padding-inline: 4px; } .sidebarHeading strong, .sidebarSearch, .sidebarTabs, .sidebarBlocks, .sidebarNew { display: none; } .sidebarIcon { margin: auto; } .editorName { font-size: 28px; } }
+@media (max-width: 720px) { .editorMeta { margin-left: 0; } .editorTitleRow { gap: 8px; } .iconPicker { width: 38px; height: 38px; } }
