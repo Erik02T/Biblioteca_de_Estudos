@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
 import type { JSONContent } from "@tiptap/core";
-import AreaEditor from "./AreaEditor";
+import AreaEditor, { FormatControls } from "./AreaEditor";
+import { ArrowLeft, FilePlus2, ImagePlus, Languages, Link2, Menu, MoreHorizontal, Search } from "lucide-react";
 import styles from "./page.module.css";
 
 type Section = "LINGUAGENS" | "FACULDADE" | "PROJETOS" | "OUTROS";
@@ -248,7 +249,43 @@ function AreaForm({ section, subSection, area, userId, onCancel, onSaved }: { se
   const handleReload = () => {
     window.location.reload();
   };
-  return <form className={styles.areaForm} onSubmit={handleSubmit}><aside className={styles.editorSidebar}><div className={styles.sidebarHeading}><span className={styles.sidebarIcon}>{section === "LINGUAGENS" ? "◉" : "✦"}</span><strong>{section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label}</strong></div><label className={styles.sidebarSearch}><span className="sr-only">Buscar blocos</span><input placeholder="Buscar blocos..." /></label><div className={styles.sidebarTabs}><button type="button" className={styles.sidebarTabActive}>Blocos</button><button type="button" className={styles.sidebarTab}>Índice</button></div><div className={styles.sidebarBlocks}><span className={styles.sidebarBlockActive}>{values.icone || "✦"} {values.nome || "Novo bloco"}<small>{values.nivelEntendimento}/5</small></span></div><button type="button" className={styles.sidebarNew} onClick={onCancel}>← Voltar</button></aside><button type="button" className={styles.backButton} onClick={onCancel} aria-label="Voltar">←</button><div className={styles.formHeader}><div><div className={styles.editorTitleRow}><button type="button" className={styles.iconPicker} aria-label="Ícone do bloco">{values.icone || "✦"}</button><input className={styles.editorName} value={values.nome} onChange={(event) => updateValue("nome", event.target.value)} maxLength={255} autoFocus placeholder="Nome do bloco" /></div><div className={styles.editorMeta}><span>Categoria</span><input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} maxLength={255} aria-label="Categoria" /><span className={styles.levelLabel}>Nível</span><div className={styles.levelDots} role="radiogroup" aria-label="Nível de entendimento">{[1, 2, 3, 4, 5].map((level) => <button key={level} type="button" className={level <= values.nivelEntendimento ? styles.levelDotActive : styles.levelDot} onClick={() => updateValue("nivelEntendimento", level)} aria-label={`${level} de 5`} aria-pressed={level === values.nivelEntendimento} />)}</div></div></div>{area && userId && <AttachmentPanel areaId={area.id} userId={userId} />}</div><div className={styles.formGrid}><label>Nome<input value={values.nome} onChange={(event) => updateValue("nome", event.target.value)} maxLength={255} autoFocus /></label><label>Categoria<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} maxLength={255} /></label><label>Nível de entendimento<select value={values.nivelEntendimento} onChange={(event) => updateValue("nivelEntendimento", Number(event.target.value))}>{[0, 1, 2, 3, 4, 5].map((level) => <option key={level} value={level}>{level} de 5</option>)}</select></label><label>Ícone<input value={values.icone} onChange={(event) => updateValue("icone", event.target.value)} placeholder="Ex.: JS, ✦, #" maxLength={255} /></label><div className={styles.fullField}><label htmlFor="area-content-editor">Conteúdo</label><AreaEditor content={values.conteudo} onChange={(content) => { contentRef.current = content; isContentDirtyRef.current = true; updateValue("conteudo", content); setIsContentDirty(true); }} onBlur={() => { if (contentSaveTimeoutRef.current !== undefined) { window.clearTimeout(contentSaveTimeoutRef.current); contentSaveTimeoutRef.current = undefined; } void saveContent(contentRef.current); }} onAutosaveStateChange={setIsAutosaving} /></div></div>{error && <p className={styles.formError}>{error}{isConflictError && <button type="button" className={styles.primaryButton} onClick={handleReload} style={{ marginLeft: "10px" }}>Recarregar</button>}</p>}{area && <p className={styles.autosaveStatus}>{isAutosaving ? "Salvando conteúdo..." : "Conteúdo salvo"}</p>}<div className={styles.formActions}><button type="button" className={styles.secondaryButton} onClick={onCancel}>Cancelar</button><button type="submit" className={styles.primaryButton} disabled={isSaving}>{isSaving ? "Salvando..." : area ? "Salvar alterações" : "Criar bloco"}</button></div></form>;
+  const categoryOptions = ["Fundamentos", "Gramática", "Vocabulário", "Conversação", "Leitura"];
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [sidebarQuery, setSidebarQuery] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+  const markDirty = () => setIsSaved(false);
+  const handleCancel = () => {
+    if (isContentDirty || values.nome !== (area?.nome ?? "") || values.categoria !== (area?.categoria ?? "")) {
+      if (!window.confirm("Existem alterações não salvas. Deseja cancelar?")) return;
+    }
+    onCancel();
+  };
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); (event.currentTarget as Window).document.querySelector<HTMLButtonElement>('[data-testid="rail-save"]')?.click(); }
+      if (event.key === "Escape") handleCancel();
+    };
+    window.addEventListener("keydown", onKeyDown); return () => window.removeEventListener("keydown", onKeyDown);
+  });
+  return <form className={styles.areaForm} data-testid="editor-root" onSubmit={async (event) => { await handleSubmit(event); setIsSaved(true); }}>
+    <aside className={styles.editorSidebar} data-testid="sidebar">
+      <div className={styles.sidebarHeading} data-testid="sidebar-title"><Languages size={16} className={styles.sidebarIcon} /><strong>{section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label}</strong></div>
+      <label className={styles.sidebarSearch} data-testid="sidebar-search"><Search size={14} /><span className="sr-only">Buscar blocos</span><input value={sidebarQuery} onChange={(event) => setSidebarQuery(event.target.value)} placeholder="Buscar blocos…" /></label>
+      <div className={styles.sidebarTabs}><button type="button" className={styles.sidebarTabActive}>Blocos</button><button type="button" className={styles.sidebarTab}>Índice</button></div>
+      <div className={styles.sidebarBlocks} data-testid="block-list"><span className={styles.sidebarBlockActive}><span>{values.icone || "✦"}</span><span>{values.nome || "Novo bloco"}</span><small>{values.nivelEntendimento}/5</small></span></div>
+      <button type="button" className={styles.sidebarNew} data-testid="sidebar-new" onClick={onCancel}>+ Novo bloco</button>
+    </aside>
+    <section className={styles.editorCenter}>
+      <div className={styles.formHeader} data-testid="topbar"><div>
+        <div className={styles.editorTitleRow}><button type="button" className={styles.iconPicker} data-testid="icon-button" aria-label="Escolher ícone">{values.icone || "✦"}</button><input className={styles.editorName} data-testid="name-input" value={values.nome} onChange={(event) => { updateValue("nome", event.target.value); markDirty(); }} maxLength={255} autoFocus placeholder="Nome do bloco" /></div>
+        <div className={styles.editorMeta}><label className={styles.categoryCombo}><span className="sr-only">Categoria</span><select data-testid="category-combobox" value={values.categoria} onChange={(event) => { updateValue("categoria", event.target.value); markDirty(); }}><option value="">Escolha uma categoria</option>{categoryOptions.map((option) => <option key={option}>{option}</option>)}</select></label><div className={styles.levelDots} data-testid="level-dots" role="radiogroup" aria-label="Nível de entendimento">{[1,2,3,4,5].map((level) => <button key={level} type="button" className={level <= values.nivelEntendimento ? styles.levelDotActive : styles.levelDot} onClick={() => { updateValue("nivelEntendimento", level); markDirty(); }} aria-label={`${["Iniciante","Básico","Intermediário","Bom","Domino"][level-1]}: ${level} de 5`} />)}</div><span className={styles.autosaveStatus} data-testid="save-status">{isAutosaving ? "Salvando…" : isSaved || !isContentDirty ? "Salvo" : "Alterações não salvas"}</span></div>
+      </div></div>
+      <AreaEditor content={values.conteudo} onChange={(conteudo) => { contentRef.current = conteudo; isContentDirtyRef.current = true; setIsContentDirty(true); updateValue("conteudo", conteudo); }} onAutosaveStateChange={setIsAutosaving} />
+    </section>
+    <aside className={styles.toolsColumn} data-testid="tools-column"><AttachmentPanel areaId={area?.id ?? "new"} userId={userId ?? ""} /><FormatControls editor={null as never} /></aside>
+    <aside className={styles.formActions} data-testid="action-rail"><button type="button" className={styles.railButton} data-testid="rail-back" aria-label="Voltar" onClick={handleCancel}><ArrowLeft /></button><div className={styles.railMenuWrap}><button type="button" className={styles.railButton} data-testid="rail-menu" aria-label="Abrir menu" onClick={() => setIsMenuOpen((open) => !open)}><Menu /></button>{isMenuOpen && <div className={styles.railMenu}><button type="button" onClick={() => setIsMenuOpen(false)}>Mover para Estudando</button><button type="button" onClick={() => setIsMenuOpen(false)}>Mover para Estudado</button><button type="button" className={styles.dangerButton} onClick={() => { if (window.confirm("Excluir este bloco?")) onCancel(); }}>Excluir bloco</button><span>Atalhos: Ctrl+S, Esc, Ctrl+K</span></div>}</div><div className={styles.railSpacer} /><button className={styles.primaryButton} data-testid="rail-save" type="submit" disabled={isSaving}>{isSaving ? "Salvando…" : "Salvar"}</button><button className={styles.secondaryButton} data-testid="rail-cancel" type="button" onClick={handleCancel}>Cancelar</button></aside>
+    {error && <p className={styles.formError} role="alert">{error}</p>}{isConflictError && <button type="button" onClick={handleReload}>Recarregar</button>}
+  </form>;
 }
 
 function AttachmentPanel({ areaId, userId }: { areaId: string; userId: string }) {
