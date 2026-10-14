@@ -49,14 +49,7 @@
 .formError { color: #fda4af; }
 .empty, .status { padding: 36px; text-align: center; }
 .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 28px; }
-.attachmentPanel { margin-top: 20px; padding: 18px; border: 1px solid var(--border); border-radius: 12px; }
-.attachmentButtons, .linkForm, .attachmentList { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
-.attachmentButtons button, .attachmentButtons label { padding: 8px 10px; cursor: pointer; font: inherit; }
-.attachmentButtons input { display: none; }
-.attachmentList { flex-direction: column; align-items: stretch; }
-.attachmentItem { display: flex; align-items: center; gap: 10px; }
-.attachmentItem a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.attachmentItem button { margin-left: auto; border: 0; background: transparent; color: var(--danger); cursor: pointer; font-size: 18px; }
+
 .editorLoading, .editorShell { margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; }
 .editorToolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border-bottom: 1px solid var(--border); }
 .toolbarGroup { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -84,7 +77,10 @@
   color: var(--text);
 }
 
-.header, .main, .footer { width: min(1160px, calc(100% - 64px)); }
+  .header, .main, .footer { width: min(1160px, calc(100% - 64px)); }
+  .page:has([data-testid="editor-root"]) .header, .page:has([data-testid="editor-root"]) .footer { display: none; }
+  .page:has([data-testid="editor-root"]) .main { width: 100%; max-width: none; margin: 0; padding: 0; }
+
 .header { border-color: var(--border); }
 .brand { color: var(--text); }
 .brandMark { border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }

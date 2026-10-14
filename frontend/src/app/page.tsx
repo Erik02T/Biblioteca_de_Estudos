@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import NextImage from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { ActionRail, EditorLayout, EditorSidebar, EditorTopBar, FormatPanel, type BlockKind, type MarkKind } from "./EditorLayout";
+import { ActionRail, AttachmentsPanel, EditorLayout, EditorSidebar, EditorTopBar, FormatPanel, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
 import { contentHeadings, wordCount } from "./AreaEditor";
 import { editorExtensions } from "./extensions";
 import styles from "./page.module.css";
@@ -183,72 +182,24 @@ function AreaCard({ area, onEdit, onDelete, isDeleting, isAnyDeleting }: { area:
 function AreaForm({ section, subSection, area, userId, onCancel, onSaved }: { section: Section; subSection: SubSection; area: Area | null; userId?: string; onCancel: () => void; onSaved: (area: Area) => void }) {
   const [values, setValues] = useState<AreaFormValues>({ nome: area?.nome ?? "", categoria: area?.categoria ?? "", nivelEntendimento: area?.nivelEntendimento ?? 0, icone: area?.icone ?? "✦", conteudo: getEditorContent(area?.conteudo), updatedAt: area?.updatedAt });
   const [isSaving, setIsSaving] = useState(false); const [error, setError] = useState<string>(); const [isContentDirty, setIsContentDirty] = useState(false); const [isAutosaving, setIsAutosaving] = useState(false); const [tab, setTab] = useState<"blocos" | "indice">("blocos"); const [query, setQuery] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]); const [attachmentError, setAttachmentError] = useState<string>(); const fileInputRef = useRef<HTMLInputElement>(null); const selectedFileKind = useRef<"image" | "file">("file");
   const editor = useEditor({ extensions: editorExtensions, content: values.conteudo, immediatelyRender: false, onUpdate: ({ editor: current }) => { updateValue("conteudo", current.getJSON()); setIsContentDirty(true); } });
   const updateValue = (field: keyof AreaFormValues, value: string | number | JSONContent) => setValues((current) => ({ ...current, [field]: value }));
   const saveContent = useCallback(async (content: JSONContent) => { if (!area || !userId) return; setIsAutosaving(true); try { const response = await apiFetch(`${apiUrl}/areas/${area.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ conteudo: content, updatedAt: values.updatedAt }) }, userId); if (!response.ok) throw new Error("Não foi possível salvar o conteúdo."); const saved = await response.json(); setValues((current) => ({ ...current, updatedAt: saved.updatedAt })); setIsContentDirty(false); } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o conteúdo."); } finally { setIsAutosaving(false); } }, [area, userId, values.updatedAt]);
   useEffect(() => { if (!isContentDirty) return; const timer = window.setTimeout(() => void saveContent(values.conteudo), 700); return () => window.clearTimeout(timer); }, [isContentDirty, saveContent, values.conteudo]);
   const handleSubmit = async () => { if (!values.nome.trim() || !values.categoria.trim()) { setError("Nome e categoria são obrigatórios."); return; } if (!userId) return; setIsSaving(true); setError(undefined); try { const response = await apiFetch(`${apiUrl}/areas${area ? `/${area.id}` : ""}`, { method: area ? "PATCH" : "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ section, subSection, nome: values.nome.trim(), categoria: values.categoria.trim(), nivelEntendimento: values.nivelEntendimento, icone: values.icone.trim(), conteudo: values.conteudo, ...(area && values.updatedAt ? { updatedAt: values.updatedAt } : {}) }) }, userId); if (!response.ok) throw new Error(area ? "Não foi possível salvar as alterações." : "Não foi possível criar este bloco."); onSaved(await response.json()); } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Ocorreu um erro inesperado."); } finally { setIsSaving(false); } };
   useEffect(() => { const shortcut = (event: KeyboardEvent) => { if (event.key === "Escape") onCancel(); if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); void handleSubmit(); } }; window.addEventListener("keydown", shortcut); return () => window.removeEventListener("keydown", shortcut); });
+  useEffect(() => {
+    if (!area?.id || !userId) return;
+    apiFetch(`${apiUrl}/attachments?areaId=${encodeURIComponent(area.id)}`, { headers: authHeaders(userId) }, userId).then(async (response) => { if (!response.ok) throw new Error("Não foi possível carregar os anexos."); setAttachments(await response.json()); }).catch((loadError) => setAttachmentError(loadError instanceof Error ? loadError.message : "Não foi possível carregar os anexos."));
+  }, [area?.id, userId]);
+  const uploadAttachment = async (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file || !area?.id || !userId) return; try { const formData = new FormData(); formData.append("file", file); formData.append("areaId", area.id); const response = await apiFetch(`${apiUrl}/attachments/upload`, { method: "POST", headers: authHeaders(userId), body: formData }, userId); if (!response.ok) throw new Error("Não foi possível enviar o arquivo."); const attachment = await response.json(); setAttachments((current) => [attachment, ...current]); } catch (uploadError) { setAttachmentError(uploadError instanceof Error ? uploadError.message : "Não foi possível enviar o arquivo."); } };
+  const addAttachment = async (kind: AttachmentItem["kind"]) => { if (kind === "link") { const url = window.prompt("URL do link", "https://"); if (!url?.trim() || !area?.id || !userId) return; try { const response = await apiFetch(`${apiUrl}/attachments`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ areaId: area.id, tipo: "LINK", url: url.trim(), nome: url.trim().slice(0, 255) }) }, userId); if (!response.ok) throw new Error("Não foi possível adicionar o link."); const attachment = await response.json(); setAttachments((current) => [attachment, ...current]); } catch (linkError) { setAttachmentError(linkError instanceof Error ? linkError.message : "Não foi possível adicionar o link."); } return; } selectedFileKind.current = kind; fileInputRef.current?.click(); };
+  const removeAttachment = async (id: string) => { if (!userId) return; try { const response = await apiFetch(`${apiUrl}/attachments/${id}`, { method: "DELETE", headers: authHeaders(userId) }, userId); if (!response.ok) throw new Error("Não foi possível remover o anexo."); setAttachments((current) => current.filter((item) => item.id !== id)); } catch (removeError) { setAttachmentError(removeError instanceof Error ? removeError.message : "Não foi possível remover o anexo."); } };
+  const attachmentItems: AttachmentItem[] = attachments.map((attachment) => ({ id: attachment.id, kind: attachment.tipo === "LINK" ? "link" : attachment.tipo === "IMAGEM" ? "image" : "file", label: attachment.nome ?? attachment.url, href: attachment.url, previewUrl: attachment.tipo === "IMAGEM" ? attachment.url : undefined }));
   const items = useMemo(() => { const source = tab === "indice" ? contentHeadings(values.conteudo).map((name, index) => ({ id: `heading-${index}`, icon: "#", name, level: 1 })) : [{ id: area?.id ?? "new", icon: values.icone, name: values.nome || "Novo bloco", level: values.nivelEntendimento }]; return source.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())); }, [area?.id, query, tab, values]);
   const activeBlock: BlockKind | null = editor?.isActive("heading", { level: 1 }) ? "h1" : editor?.isActive("heading", { level: 2 }) ? "h2" : editor?.isActive("heading", { level: 3 }) ? "h3" : editor?.isActive("heading", { level: 4 }) ? "h4" : editor?.isActive("heading", { level: 5 }) ? "h5" : editor?.isActive("heading", { level: 6 }) ? "h6" : editor?.isActive("paragraph") ? "p" : null;
   const marks: Partial<Record<MarkKind, boolean>> = { bold: editor?.isActive("bold"), italic: editor?.isActive("italic"), strike: editor?.isActive("strike"), bulletList: editor?.isActive("bulletList"), orderedList: editor?.isActive("orderedList"), blockquote: editor?.isActive("blockquote"), codeBlock: editor?.isActive("codeBlock") };
   const iconSlot = <button type="button" className="icon-picker" aria-label="Escolher ícone" onClick={() => updateValue("icone", window.prompt("Ícone do bloco", values.icone) ?? values.icone)}>{values.icone}</button>;
-  return <EditorLayout sidebar={<EditorSidebar title={section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label ?? "Blocos"} query={query} onQuery={setQuery} tab={tab} onTab={setTab} items={items} onSelect={() => undefined} onNew={onCancel} />} topbar={<EditorTopBar iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} categorySlot={<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} aria-label="Categoria" list="cats" />} level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} dirty={isAutosaving || isContentDirty} />} editor={editor ? <EditorContent editor={editor} /> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<AttachmentPanel areaId={area?.id ?? ""} userId={userId ?? ""} />} format={<FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} onBlock={(block) => { if (!editor) return; block === "p" ? editor.chain().focus().setParagraph().run() : editor.chain().focus().toggleHeading({ level: Number(block.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6 }).run(); }} onMark={(mark) => { if (!editor) return; const chain = editor.chain().focus(); if (mark === "bold" || mark === "italic" || mark === "strike") chain.toggleMark(mark).run(); else if (mark === "bulletList") chain.toggleBulletList().run(); else if (mark === "orderedList") chain.toggleOrderedList().run(); else if (mark === "blockquote") chain.toggleBlockquote().run(); else if (mark === "codeBlock") chain.toggleCodeBlock().run(); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); color ? chain.toggleHighlight({ color }).run() : chain.unsetHighlight().run(); } }} onClear={() => editor?.chain().focus().unsetAllMarks().clearNodes().run()} />} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} onCancel={onCancel} saving={isSaving} menuItems={[{ label: "Mover para Estudado/Estudando", onClick: () => undefined }, { label: "Excluir bloco", danger: true, onClick: () => { if (area && window.confirm(`Excluir o bloco “${area.nome}”?`)) void apiFetch(`${apiUrl}/areas/${area.id}`, { method: "DELETE", headers: authHeaders(userId ?? "") }, userId ?? "").then(() => onCancel()); } }, { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva e Esc cancela.") }]} />} />;
-}
-
-function AttachmentPanel({ areaId, userId }: { areaId: string; userId: string }) {
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [showLink, setShowLink] = useState(false);
-  const [link, setLink] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string>();
-  const [removingAttachmentId, setRemovingAttachmentId] = useState<string>();
-
-  useEffect(() => {
-    apiFetch(`${apiUrl}/attachments?areaId=${encodeURIComponent(areaId)}`, { headers: authHeaders(userId) }, userId)
-      .then(async (response) => { if (!response.ok) throw new Error("Não foi possível carregar os anexos."); setAttachments(await response.json()); })
-      .catch((loadError) => setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar os anexos."));
-  }, [areaId, userId]);
-
-  const addLink = async () => {
-    if (!link.trim()) return;
-    setIsUploading(true); setError(undefined);
-    try {
-      const response = await apiFetch(`${apiUrl}/attachments`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ areaId, tipo: "LINK", url: link.trim(), nome: link.trim().slice(0, 255) }) }, userId);
-      if (!response.ok) throw new Error("Não foi possível adicionar o link.");
-      const attachment = await response.json();
-      setAttachments((current) => [attachment, ...current]); setLink(""); setShowLink(false);
-    } catch (linkError) { setError(linkError instanceof Error ? linkError.message : "Não foi possível adicionar o link."); } finally { setIsUploading(false); }
-  };
-
-  const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    setIsUploading(true); setError(undefined);
-    try {
-      const formData = new FormData(); formData.append("file", file); formData.append("areaId", areaId);
-      const response = await apiFetch(`${apiUrl}/attachments/upload`, { method: "POST", headers: authHeaders(userId), body: formData }, userId);
-      if (!response.ok) throw new Error((await response.json().catch(() => null))?.message ?? "Não foi possível enviar o arquivo.");
-      const attachment = await response.json();
-      setAttachments((current) => [attachment, ...current]);
-    } catch (uploadError) { setError(uploadError instanceof Error ? uploadError.message : "Não foi possível enviar o arquivo."); } finally { setIsUploading(false); }
-  };
-
-  const removeAttachment = async (attachment: Attachment) => {
-    if (!window.confirm(`Remover "${attachment.nome ?? attachment.url}"?`)) return;
-    setError(undefined);
-    setRemovingAttachmentId(attachment.id);
-    try {
-      const response = await apiFetch(`${apiUrl}/attachments/${attachment.id}`, { method: "DELETE", headers: authHeaders(userId) }, userId);
-      if (!response.ok) throw new Error("Não foi possível remover o anexo.");
-      setAttachments((current) => current.filter((item) => item.id !== attachment.id));
-    } catch (removeError) {
-      setError(removeError instanceof Error ? removeError.message : "Não foi possível remover o anexo.");
-    } finally {
-      setRemovingAttachmentId(undefined);
-    }
-  };
-
-  return <section className={styles.attachmentPanel}><div className={styles.attachmentToolbar}><strong>Anexos</strong><div className={styles.attachmentButtons}><button type="button" onClick={() => setShowLink((current) => !current)}>＋ Link</button><label>＋ Imagem<input type="file" accept="image/*" onChange={uploadFile} disabled={isUploading} /></label><label>＋ Arquivo<input type="file" onChange={uploadFile} disabled={isUploading} /></label></div></div>{showLink && <div className={styles.linkForm}><input type="url" value={link} onChange={(event) => setLink(event.target.value)} placeholder="https://..." maxLength={2048} required /><button type="button" className={styles.primaryButton} onClick={addLink} disabled={isUploading}>Adicionar</button></div>}{error && <p className={styles.formError}>{error}</p>}{attachments.length > 0 ? <div className={styles.attachmentList}>{attachments.map((attachment) => <div className={styles.attachmentItem} key={attachment.id}>{attachment.tipo === "IMAGEM" ? <NextImage src={attachment.url} alt={attachment.nome ?? "Imagem anexada"} width={34} height={34} style={{ objectFit: "cover" }} /> : <span className={styles.attachmentType}>{attachment.tipo === "LINK" ? "↗" : "↓"}</span>}<a href={attachment.url} target="_blank" rel="noreferrer">{attachment.nome ?? attachment.url}</a><button type="button" onClick={() => removeAttachment(attachment)} disabled={removingAttachmentId !== undefined} aria-busy={removingAttachmentId === attachment.id} aria-label={removingAttachmentId === attachment.id ? "Removendo anexo" : "Remover anexo"}>{removingAttachmentId === attachment.id ? "..." : "×"}</button></div>)}</div> : <div className={styles.attachmentList}><p className={styles.empty}>Nenhum anexo ainda.</p></div>}</section>;
+  return <EditorLayout sidebar={<EditorSidebar title={section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label ?? "Blocos"} query={query} onQuery={setQuery} tab={tab} onTab={setTab} items={items} onSelect={() => undefined} onNew={onCancel} />} topbar={<EditorTopBar iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} categorySlot={<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} aria-label="Categoria" list="cats" />} level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} dirty={isAutosaving || isContentDirty} />} editor={editor ? <EditorContent editor={editor} /> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<><input ref={fileInputRef} type="file" accept={selectedFileKind.current === "image" ? "image/*" : undefined} onChange={uploadAttachment} hidden /><AttachmentsPanel items={attachmentItems} onAdd={addAttachment} onRemove={removeAttachment} />{attachmentError && <p className={styles.formError}>{attachmentError}</p>}</>} format={<FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} onBlock={(block) => { if (!editor) return; block === "p" ? editor.chain().focus().setParagraph().run() : editor.chain().focus().toggleHeading({ level: Number(block.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6 }).run(); }} onMark={(mark) => { if (!editor) return; const chain = editor.chain().focus(); if (mark === "bold" || mark === "italic" || mark === "strike") chain.toggleMark(mark).run(); else if (mark === "bulletList") chain.toggleBulletList().run(); else if (mark === "orderedList") chain.toggleOrderedList().run(); else if (mark === "blockquote") chain.toggleBlockquote().run(); else if (mark === "codeBlock") chain.toggleCodeBlock().run(); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); color ? chain.toggleHighlight({ color }).run() : chain.unsetHighlight().run(); } }} onClear={() => editor?.chain().focus().unsetAllMarks().clearNodes().run()} />} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} onCancel={onCancel} saving={isSaving} menuItems={[{ label: "Mover para Estudado/Estudando", onClick: () => undefined }, { label: "Excluir bloco", danger: true, onClick: () => { if (area && window.confirm(`Excluir o bloco “${area.nome}”?`)) void apiFetch(`${apiUrl}/areas/${area.id}`, { method: "DELETE", headers: authHeaders(userId ?? "") }, userId ?? "").then(() => onCancel()); } }, { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva e Esc cancela.") }]} />} />;
 }
