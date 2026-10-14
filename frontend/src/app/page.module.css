@@ -192,7 +192,7 @@
 .page:has(.areaForm) .header,
 .page:has(.areaForm) .footer { display: none; }
 .page:has(.areaForm) .main { width: 100%; max-width: none; height: 100dvh; margin: 0; padding: 12px; }
-.areaForm { display: grid; grid-template-columns: 208px minmax(0, 1fr) 320px 96px; grid-template-rows: auto minmax(0, 1fr); gap: 12px; width: 100%; max-width: none; height: calc(100dvh - 24px); margin: 0; padding: 12px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 16px; background: var(--bg); box-shadow: none; }
+.areaForm { display: grid; grid-template-columns: 208px minmax(0, 1fr) 320px 124px; grid-template-rows: auto minmax(0, 1fr); gap: 12px; width: 100%; max-width: none; height: calc(100dvh - 24px); margin: 0; padding: 12px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 16px; background: var(--bg); box-shadow: none; }
 .areaForm > .backButton { grid-column: 1; grid-row: 1 / -1; align-self: start; height: 48px; margin: 0; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); text-align: left; }
 .areaForm .formHeader { display: grid; grid-template-columns: minmax(0, 1fr) 320px; grid-column: 2 / 4; grid-row: 1; gap: 12px; min-width: 0; }
 .areaForm .formHeader > div:first-child { min-width: 0; padding: 4px 8px; }
@@ -224,6 +224,41 @@
   .areaForm > .backButton { overflow: hidden; padding: 0 10px; font-size: 0; }
   .areaForm > .backButton::before { content: "←"; font-size: 20px; }
   .areaForm .formHeader { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+
+/* Editor focus layout: compact controls, no nested scrolling, clear writing surface. */
+.areaForm .formHeader { display: contents; }
+.areaForm .formHeader > div:first-child { grid-column: 2; grid-row: 1; align-self: center; padding: 0 8px; }
+.areaForm .formHeader::before { display: none; }
+.areaForm .attachmentPanel { grid-column: 3; grid-row: 1 / 3; margin: 0; padding: 16px; overflow-y: auto; overflow-x: hidden; }
+.areaForm .attachmentToolbar { gap: 12px; }
+.areaForm .attachmentToolbar strong { color: var(--primary-glow); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.areaForm .attachmentButtons { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 0; }
+.areaForm .attachmentButtons button, .areaForm .attachmentButtons label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.areaForm .formGrid { grid-column: 2; grid-row: 2; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+.areaForm .formGrid > label:nth-child(1), .areaForm .formGrid > label:nth-child(2) { display: grid; min-width: 0; gap: 6px; padding: 0 4px; color: var(--text-muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.areaForm .formGrid > label:nth-child(1) { grid-column: 1; grid-row: 1; }
+.areaForm .formGrid > label:nth-child(2) { grid-column: 1; grid-row: 1; margin-left: 52%; }
+.areaForm .formGrid > label:nth-child(1) input, .areaForm .formGrid > label:nth-child(2) input { min-height: 38px; padding: 0 10px; font-size: 14px; text-transform: none; }
+.areaForm .formGrid > label:nth-child(3), .areaForm .formGrid > label:nth-child(4) { display: none; }
+.areaForm .formGrid > .fullField { grid-column: 1; grid-row: 2; }
+.areaForm .editorShell { border-radius: 12px; }
+.areaForm .editorToolbar { order: 0; align-content: flex-start; gap: 6px; padding: 10px 12px; }
+.areaForm .toolbarGroup { gap: 5px; }
+.areaForm .toolbarButton, .areaForm .toolbarButtonActive { min-width: 32px; min-height: 32px; padding: 0 8px; }
+.areaForm .editorContent :global(.ProseMirror) { max-width: 760px; padding: 34px 40px 72px; }
+.areaForm .editorContent :global(.ProseMirror) > p:first-child:empty::before { content: "Comece a escrever…"; color: var(--text-muted); pointer-events: none; }
+.areaForm .editorContent :global(.ProseMirror) h1 { margin: 0 0 24px; font-family: Georgia, serif; font-size: clamp(32px, 4vw, 48px); line-height: 1.08; }
+.areaForm .editorContent :global(.ProseMirror) p { margin: 0 0 12px; }
+.areaForm .attachmentList { gap: 8px; }
+.areaForm .attachmentItem { min-height: 76px; padding: 10px; }
+.areaForm .formActions { grid-column: 4; min-width: 0; padding: 0 4px; }
+.areaForm .formActions .primaryButton, .areaForm .formActions .secondaryButton { min-width: 0; padding: 0 10px; white-space: nowrap; }
+.areaForm .autosaveStatus { top: 8px; }
+
+@media (max-width: 1279px) and (min-width: 721px) {
+  .areaForm .formHeader > div:first-child { grid-column: 2; }
+  .areaForm .attachmentPanel { grid-column: 3; }
 }
 
 @media (max-width: 720px) {
