@@ -45,12 +45,12 @@ export default function AreaEditor({ content, onChange, onAutosaveStateChange, o
   return <div className={styles.editorShell}>
     <div className={styles.editorToolbar} role="toolbar" aria-label="Barra de ferramentas de formatação de texto">
       <div className={styles.toolbarGroup} role="group" aria-label="Estilos de cabeçalho e parágrafo">
-        {[1, 2, 3, 4, 5, 6].map((level) => (
+        {[1, 2, 3].map((level) => (
           <button
             key={level}
             type="button"
             className={editor.isActive("heading", { level }) ? styles.toolbarButtonActive : styles.toolbarButton}
-            onClick={() => editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 | 4 | 5 | 6 }).run()}
+            onClick={() => editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run()}
             aria-label={headingLabels[level]}
             aria-pressed={editor.isActive("heading", { level })}
             title={headingLabels[level]}
@@ -68,6 +68,22 @@ export default function AreaEditor({ content, onChange, onAutosaveStateChange, o
         >
           P
         </button>
+      </div>
+      <div className={styles.toolbarGroup} role="group" aria-label="Formatação de texto">
+        {[
+          ["bold", "Negrito", "B"],
+          ["italic", "Itálico", "I"],
+          ["underline", "Sublinhado", "U"],
+          ["strike", "Riscado", "S"],
+        ].map(([mark, label, symbol]) => (
+          <button key={mark} type="button" className={editor.isActive(mark) ? styles.toolbarButtonActive : styles.toolbarButton} onClick={() => editor.chain().focus().toggleMark(mark).run()} aria-label={label} aria-pressed={editor.isActive(mark)} title={label}>{symbol}</button>
+        ))}
+      </div>
+      <div className={styles.toolbarGroup} role="group" aria-label="Listas e blocos">
+        <button type="button" className={editor.isActive("bulletList") ? styles.toolbarButtonActive : styles.toolbarButton} onClick={() => editor.chain().focus().toggleBulletList().run()} aria-label="Lista com marcadores" aria-pressed={editor.isActive("bulletList")} title="Lista com marcadores">•</button>
+        <button type="button" className={editor.isActive("orderedList") ? styles.toolbarButtonActive : styles.toolbarButton} onClick={() => editor.chain().focus().toggleOrderedList().run()} aria-label="Lista numerada" aria-pressed={editor.isActive("orderedList")} title="Lista numerada">1.</button>
+        <button type="button" className={editor.isActive("blockquote") ? styles.toolbarButtonActive : styles.toolbarButton} onClick={() => editor.chain().focus().toggleBlockquote().run()} aria-label="Citação" aria-pressed={editor.isActive("blockquote")} title="Citação">“</button>
+        <button type="button" className={editor.isActive("codeBlock") ? styles.toolbarButtonActive : styles.toolbarButton} onClick={() => editor.chain().focus().toggleCodeBlock().run()} aria-label="Bloco de código" aria-pressed={editor.isActive("codeBlock")} title="Bloco de código">&lt;/&gt;</button>
       </div>
       <div className={styles.toolbarGroup} role="group" aria-label="Cores de destaque">
         {highlightColors.map((color) => (

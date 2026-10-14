@@ -60,7 +60,9 @@ function getEditorContent(content?: AreaContent): JSONContent {
 }
 
 export default function Home() {
-  const [userId, setUserId] = useState<string | undefined>(() => (typeof window === "undefined" ? undefined : getAccessToken() ?? undefined));
+  // Bypass temporário para permitir revisar as telas sem autenticação.
+  const previewUserId = "preview-user";
+  const [userId, setUserId] = useState<string | undefined>(() => (typeof window === "undefined" ? previewUserId : getAccessToken() ?? previewUserId));
   const [selectedSection, setSelectedSection] = useState<Section>();
   const [selectedSubSection, setSelectedSubSection] = useState<SubSection>();
   const [areas, setAreas] = useState<Area[]>([]);
@@ -117,7 +119,7 @@ export default function Home() {
   const openCreate = () => { setEditingArea(null); setIsCreating(true); };
   const openEdit = (area: Area) => { setIsCreating(false); setEditingArea({ ...area }); };
   if (!userId) return <AuthView onAuthenticated={(tokens) => { saveTokens(tokens); setUserId(tokens.accessToken); }} />;
-  const logout = () => { window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); setUserId(undefined); goHome(); };
+  const logout = () => { window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); setUserId(previewUserId); goHome(); };
   return <div className={styles.page}>
     <header className={styles.header}><button className={styles.brand} onClick={goHome} aria-label="Voltar para a biblioteca"><span className={styles.brandMark}>B</span><span>Biblioteca<span className={styles.brandAccent}>.</span></span></button><div className={styles.headerTools}>{isSearchOpen ? <label className={styles.searchField}><span className="sr-only">Buscar nos blocos carregados</span><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Buscar blocos..." onKeyDown={(event) => { if (event.key === "Escape") setIsSearchOpen(false); }} /></label> : <button className={styles.searchButton} type="button" aria-label="Buscar na biblioteca" onClick={() => setIsSearchOpen(true)}>Buscar <kbd>/</kbd></button>}<span className={styles.headerNote}>seu espaço de conhecimento</span><button className={styles.logoutButton} type="button" onClick={logout}>Sair</button></div></header>
     <main className={styles.main}>
