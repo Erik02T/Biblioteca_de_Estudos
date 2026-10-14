@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import NextImage from "next/image";
 import type { JSONContent } from "@tiptap/core";
 import AreaEditor from "./AreaEditor";
@@ -178,77 +178,18 @@ function SubSectionView({ section, subSection, areas, pagination, userId, isLoad
 function AreaCard({ area, onEdit, onDelete, isDeleting, isAnyDeleting }: { area: Area; onEdit: () => void; onDelete: () => void; isDeleting?: boolean; isAnyDeleting?: boolean }) { const level = Math.min(5, Math.max(0, area.nivelEntendimento)); const percentage = level * 20; return <article className={styles.areaCard}><div className={styles.areaTop}><span className={styles.areaIcon}>{area.icone || "✦"}</span><span className={styles.level}>{level}/5</span></div><h2>{area.nome}</h2><p>{area.categoria}</p><div className={styles.progress}><span style={{ width: `${percentage}%` }} /></div><small>nível de entendimento</small><div className={styles.cardActions}><button onClick={onEdit} disabled={isAnyDeleting}>Editar</button><button onClick={onDelete} disabled={isAnyDeleting} aria-busy={isDeleting}>{isDeleting ? "Removendo..." : "Excluir"}</button></div></article>; }
 
 function AreaForm({ section, subSection, area, userId, onCancel, onSaved }: { section: Section; subSection: SubSection; area: Area | null; userId?: string; onCancel: () => void; onSaved: (area: Area) => void }) {
-  const [values, setValues] = useState<AreaFormValues>({ nome: area?.nome ?? "", categoria: area?.categoria ?? "", nivelEntendimento: area?.nivelEntendimento ?? 0, icone: area?.icone ?? "", conteudo: getEditorContent(area?.conteudo), updatedAt: area?.updatedAt });
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string>();
-  const [isConflictError, setIsConflictError] = useState(false);
-  const [isContentDirty, setIsContentDirty] = useState(false);
-  const [isAutosaving, setIsAutosaving] = useState(false);
-  const contentRef = useRef(values.conteudo);
-  const isContentDirtyRef = useRef(false);
-  const contentSaveTimeoutRef = useRef<number | undefined>(undefined);
+  const [values, setValues] = useState<AreaFormValues>({ nome: area?.nome ?? "", categoria: area?.categoria ?? "", nivelEntendimento: area?.nivelEntendimento ?? 0, icone: area?.icone ?? "✦", conteudo: getEditorContent(area?.conteudo), updatedAt: area?.updatedAt });
+  const [isSaving, setIsSaving] = useState(false); const [error, setError] = useState<string>(); const [isContentDirty, setIsContentDirty] = useState(false); const [isAutosaving, setIsAutosaving] = useState(false);
   const updateValue = (field: keyof AreaFormValues, value: string | number | JSONContent) => setValues((current) => ({ ...current, [field]: value }));
-
-  const saveContent = useCallback(async (content: JSONContent) => {
-    if (!area || !userId || !isContentDirtyRef.current) return;
-    setIsAutosaving(true);
-    try {
-      const response = await apiFetch(`${apiUrl}/areas/${area.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ conteudo: content, updatedAt: values.updatedAt }) }, userId);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        if (response.status === 409) {
-          setIsConflictError(true);
-          throw new Error(errorData?.message ?? "Este bloco foi atualizado por outro usuário. Recarregue a página e tente novamente.");
-        }
-        throw new Error("Não foi possível salvar o conteúdo.");
-      }
-      const updatedArea = await response.json();
-      if (JSON.stringify(contentRef.current) === JSON.stringify(content)) {
-        isContentDirtyRef.current = false;
-        setIsContentDirty(false);
-      }
-      setValues((current) => ({ ...current, updatedAt: updatedArea.updatedAt }));
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o conteúdo.");
-    } finally { setIsAutosaving(false); }
-  }, [area, userId, values.updatedAt]);
-
-  useEffect(() => {
-    if (!area || !userId || !isContentDirty) return;
-    contentSaveTimeoutRef.current = window.setTimeout(() => {
-      contentSaveTimeoutRef.current = undefined;
-      void saveContent(values.conteudo);
-    }, 700);
-    return () => {
-      if (contentSaveTimeoutRef.current !== undefined) window.clearTimeout(contentSaveTimeoutRef.current);
-    };
-  }, [area, isContentDirty, saveContent, userId, values.conteudo]);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!values.nome.trim() || !values.categoria.trim()) { setError("Nome e categoria são obrigatórios."); return; }
-    if (!userId) { setError("Não foi possível identificar este usuário."); return; }
-    setIsSaving(true); setError(undefined); setIsConflictError(false);
-    try {
-      const payload = { section, subSection, nome: values.nome.trim(), categoria: values.categoria.trim(), nivelEntendimento: values.nivelEntendimento, ...(values.icone.trim() ? { icone: values.icone.trim() } : {}), conteudo: values.conteudo, ...(area && values.updatedAt ? { updatedAt: values.updatedAt } : {}) };
-      const response = await apiFetch(`${apiUrl}/areas${area ? `/${area.id}` : ""}`, { method: area ? "PATCH" : "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify(payload) }, userId);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        if (response.status === 409) {
-          setIsConflictError(true);
-          throw new Error(errorData?.message ?? "Este bloco foi atualizado por outro usuário. Recarregue a página e tente novamente.");
-        }
-        throw new Error(area ? "Não foi possível salvar as alterações." : "Não foi possível criar este bloco.");
-      }
-      const savedArea = await response.json();
-      onSaved(savedArea);
-    } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Ocorreu um erro inesperado."); } finally { setIsSaving(false); }
-  };
-
-  const handleReload = () => {
-    window.location.reload();
-  };
-  return <form className={styles.areaForm} onSubmit={handleSubmit}><aside className={styles.editorSidebar}><div className={styles.sidebarHeading}><span className={styles.sidebarIcon}>{section === "LINGUAGENS" ? "◉" : "✦"}</span><strong>{section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label}</strong></div><label className={styles.sidebarSearch}><span className="sr-only">Buscar blocos</span><input placeholder="Buscar blocos..." /></label><div className={styles.sidebarTabs}><button type="button" className={styles.sidebarTabActive}>Blocos</button><button type="button" className={styles.sidebarTab}>Índice</button></div><div className={styles.sidebarBlocks}><span className={styles.sidebarBlockActive}>{values.icone || "✦"} {values.nome || "Novo bloco"}<small>{values.nivelEntendimento}/5</small></span></div><button type="button" className={styles.sidebarNew} onClick={onCancel}>← Voltar</button></aside><button type="button" className={styles.backButton} onClick={onCancel} aria-label="Voltar">←</button><div className={styles.formHeader}><div><div className={styles.editorTitleRow}><button type="button" className={styles.iconPicker} aria-label="Ícone do bloco">{values.icone || "✦"}</button><input className={styles.editorName} value={values.nome} onChange={(event) => updateValue("nome", event.target.value)} maxLength={255} autoFocus placeholder="Nome do bloco" /></div><div className={styles.editorMeta}><span>Categoria</span><input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} maxLength={255} aria-label="Categoria" /><span className={styles.levelLabel}>Nível</span><div className={styles.levelDots} role="radiogroup" aria-label="Nível de entendimento">{[1, 2, 3, 4, 5].map((level) => <button key={level} type="button" className={level <= values.nivelEntendimento ? styles.levelDotActive : styles.levelDot} onClick={() => updateValue("nivelEntendimento", level)} aria-label={`${level} de 5`} aria-pressed={level === values.nivelEntendimento} />)}</div></div></div>{area && userId && <AttachmentPanel areaId={area.id} userId={userId} />}</div><div className={styles.formGrid}><label>Nome<input value={values.nome} onChange={(event) => updateValue("nome", event.target.value)} maxLength={255} autoFocus /></label><label>Categoria<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} maxLength={255} /></label><label>Nível de entendimento<select value={values.nivelEntendimento} onChange={(event) => updateValue("nivelEntendimento", Number(event.target.value))}>{[0, 1, 2, 3, 4, 5].map((level) => <option key={level} value={level}>{level} de 5</option>)}</select></label><label>Ícone<input value={values.icone} onChange={(event) => updateValue("icone", event.target.value)} placeholder="Ex.: JS, ✦, #" maxLength={255} /></label><div className={styles.fullField}><label htmlFor="area-content-editor">Conteúdo</label><AreaEditor content={values.conteudo} onChange={(content) => { contentRef.current = content; isContentDirtyRef.current = true; updateValue("conteudo", content); setIsContentDirty(true); }} onBlur={() => { if (contentSaveTimeoutRef.current !== undefined) { window.clearTimeout(contentSaveTimeoutRef.current); contentSaveTimeoutRef.current = undefined; } void saveContent(contentRef.current); }} onAutosaveStateChange={setIsAutosaving} /></div></div>{error && <p className={styles.formError}>{error}{isConflictError && <button type="button" className={styles.primaryButton} onClick={handleReload} style={{ marginLeft: "10px" }}>Recarregar</button>}</p>}{area && <p className={styles.autosaveStatus}>{isAutosaving ? "Salvando conteúdo..." : "Conteúdo salvo"}</p>}<div className={styles.formActions}><button type="button" className={styles.secondaryButton} onClick={onCancel}>Cancelar</button><button type="submit" className={styles.primaryButton} disabled={isSaving}>{isSaving ? "Salvando..." : area ? "Salvar alterações" : "Criar bloco"}</button></div></form>;
+  const saveContent = useCallback(async (content: JSONContent) => { if (!area || !userId) return; setIsAutosaving(true); try { const response = await apiFetch(`${apiUrl}/areas/${area.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ conteudo: content, updatedAt: values.updatedAt }) }, userId); if (!response.ok) throw new Error("Não foi possível salvar o conteúdo."); const saved = await response.json(); setValues((current) => ({ ...current, updatedAt: saved.updatedAt })); setIsContentDirty(false); } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o conteúdo."); } finally { setIsAutosaving(false); } }, [area, userId, values.updatedAt]);
+  useEffect(() => { if (!isContentDirty) return; const timer = window.setTimeout(() => void saveContent(values.conteudo), 700); return () => window.clearTimeout(timer); }, [isContentDirty, saveContent, values.conteudo]);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => { event.preventDefault(); if (!values.nome.trim() || !values.categoria.trim()) { setError("Nome e categoria são obrigatórios."); return; } if (!userId) return; setIsSaving(true); setError(undefined); try { const response = await apiFetch(`${apiUrl}/areas${area ? `/${area.id}` : ""}`, { method: area ? "PATCH" : "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ section, subSection, nome: values.nome.trim(), categoria: values.categoria.trim(), nivelEntendimento: values.nivelEntendimento, icone: values.icone.trim(), conteudo: values.conteudo, ...(area && values.updatedAt ? { updatedAt: values.updatedAt } : {}) }) }, userId); if (!response.ok) throw new Error(area ? "Não foi possível salvar as alterações." : "Não foi possível criar este bloco."); onSaved(await response.json()); } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Ocorreu um erro inesperado."); } finally { setIsSaving(false); } };
+  return <form className={styles.areaForm} onSubmit={handleSubmit} data-testid="editor-root">
+    <aside className={styles.side} data-testid="sidebar"><h2>◉ <b>{section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label}</b></h2><label className={styles.search}><input placeholder="Buscar blocos…" aria-label="Buscar blocos" /></label><div className={styles.tabs}><button type="button" className={styles.btn}>Blocos</button><button type="button" className={styles.btn}>Índice</button></div><ul className={styles.list}><li><button type="button" className={styles.act}><b>{values.icone}</b><span>{values.nome || "Novo bloco"}</span><small>{values.nivelEntendimento}/5</small></button></li></ul><button type="button" className={styles.btn} onClick={onCancel}>＋ <b>Novo bloco</b></button></aside>
+    <section className={styles.center}><header className={`${styles.card} ${styles.top}`}><div className={styles.row1}><button type="button" className={`${styles.btn} ${styles.ico}`} aria-label="Escolher ícone" onClick={() => updateValue("icone", window.prompt("Ícone do bloco", values.icone) ?? values.icone)}>{values.icone}</button><input className={styles.name} data-testid="name-input" value={values.nome} onChange={(event) => updateValue("nome", event.target.value)} aria-label="Nome do bloco" autoFocus /></div><div className={styles.row2}><input className={styles.cat} data-testid="category-combobox" value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} aria-label="Categoria" list="cats" /><datalist id="cats"><option value="Fundamentos" /><option value="Gramática" /><option value="Vocabulário" /></datalist><span className={styles.dots} role="group" aria-label="Nível de entendimento">Nível {[1,2,3,4,5].map((level) => <button type="button" key={level} className={level <= values.nivelEntendimento ? styles.f : ""} onClick={() => updateValue("nivelEntendimento", level)} aria-label={`${level} de 5`} />)}</span><span className={styles.status}>{isAutosaving || isContentDirty ? "Alterações não salvas" : "Salvo"}</span></div></header><div className={`${styles.card} ${styles.edwrap}`}><AreaEditor content={values.conteudo} onChange={(content) => { updateValue("conteudo", content); setIsContentDirty(true); }} onAutosaveStateChange={setIsContentDirty} /><span className={styles.wc}>{JSON.stringify(values.conteudo).match(/"text":/g)?.length ?? 0} palavras</span></div></section>
+    <aside className={styles.tools}><AttachmentPanel areaId={area?.id ?? ""} userId={userId ?? ""} /><section className={`${styles.card} ${styles.fmt}`}><h3>Formatar</h3><p className={styles.empty}>Use os controles no editor.</p></section></aside>
+    <nav className={`${styles.card} ${styles.rail}`}><div><button type="button" className={styles.btn} onClick={onCancel} aria-label="Voltar">←</button><button type="button" className={styles.btn} aria-label="Menu">☰</button></div><div><button type="submit" className={`${styles.btn} ${styles.save}`} disabled={isSaving}>Salvar</button><button type="button" className={styles.btn} onClick={onCancel}>Cancelar</button></div></nav>{error && <p className={styles.formError} role="alert">{error}</p>}
+  </form>;
 }
 
 function AttachmentPanel({ areaId, userId }: { areaId: string; userId: string }) {
