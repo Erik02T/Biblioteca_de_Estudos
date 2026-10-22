@@ -1,4 +1,6 @@
 import { AuthService } from './auth.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
 
 describe('AuthService', () => {
   const user = {
@@ -8,22 +10,37 @@ describe('AuthService', () => {
   };
   const prisma = {
     user: {
-      findUnique: jest.fn(),
-      create: jest.fn().mockResolvedValue(user),
+      findUnique: jest.fn<Promise<typeof user | null>, [object]>(),
+      create: jest.fn<Promise<typeof user>, [object]>().mockResolvedValue(user),
     },
     session: {
-      create: jest.fn().mockResolvedValue({ id: 'session-id' }),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      updateMany: jest.fn(),
+      create: jest
+        .fn<Promise<{ id: string }>, [object]>()
+        .mockResolvedValue({ id: 'session-id' }),
+      findUnique: jest.fn<
+        Promise<{
+          id: string;
+          revokedAt: Date | null;
+          expiresAt: Date;
+          user: typeof user;
+        } | null>,
+        [object]
+      >(),
+      update: jest.fn<Promise<unknown>, [object]>(),
+      updateMany: jest.fn<Promise<unknown>, [object]>(),
     },
-  };
-  const jwt = { signAsync: jest.fn().mockResolvedValue('access-token') };
-  const service = new AuthService(prisma as never, jwt as never);
+  } as unknown as jest.Mocked<PrismaService>;
+  const jwt = {
+    signAsync: jest
+      .fn<Promise<string>, [object, object?]>()
+      .mockResolvedValue('access-token'),
+  } as unknown as jest.Mocked<JwtService>;
+  const service = new AuthService(prisma, jwt);
 
   beforeEach(() => jest.clearAllMocks());
 
   it('creates a user and issues a session on registration', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Jest mock method returns any, test-specific pattern
     prisma.user.findUnique.mockResolvedValue(null);
     await expect(
       service.register({
@@ -33,21 +50,35 @@ describe('AuthService', () => {
     ).resolves.toEqual(
       expect.objectContaining({
         accessToken: 'access-token',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
         refreshToken: expect.any(String),
       }),
     );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+    const createUserCall = expect.objectContaining({
+      email: 'user@example.com',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+      passwordHash: expect.any(String),
+    });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.user.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        email: 'user@example.com',
-        passwordHash: expect.any(String),
-      }),
+      data: createUserCall, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     });
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+    const createSessionCall = expect.objectContaining({
+      userId: 'user-id',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+      refreshTokenHash: expect.any(String),
+    });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.session.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        userId: 'user-id',
-        refreshTokenHash: expect.any(String),
-      }),
+      data: createSessionCall, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function and matcher, test-specific pattern
     expect(jwt.signAsync).toHaveBeenCalledWith(
       { sub: 'user-id', email: 'user@example.com', sid: 'session-id' },
       expect.any(Object),
@@ -55,6 +86,7 @@ describe('AuthService', () => {
   });
 
   it('rotates a valid refresh token and revokes the old session', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Jest mock method returns any, test-specific pattern
     prisma.session.findUnique.mockResolvedValue({
       id: 'old-session',
       revokedAt: null,
@@ -64,12 +96,21 @@ describe('AuthService', () => {
     await expect(service.refresh('refresh-token')).resolves.toEqual(
       expect.objectContaining({ accessToken: 'access-token' }),
     );
-    expect(prisma.session.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'old-session' },
-        data: expect.objectContaining({ revokedAt: expect.any(Date) }),
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+    const updateSessionCall = expect.objectContaining({
+      where: { id: 'old-session' },
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+      data: expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+        revokedAt: expect.any(Date),
       }),
-    );
+    });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
+    expect(prisma.session.update).toHaveBeenCalledWith(updateSessionCall);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.session.create).toHaveBeenCalled();
   });
 
@@ -77,10 +118,14 @@ describe('AuthService', () => {
     await expect(service.revoke('refresh-token')).resolves.toEqual({
       success: true,
     });
-    expect(prisma.session.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ revokedAt: null }),
-      }),
-    );
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+    const revokeCall = expect.objectContaining({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Jest matcher returns any, test-specific pattern
+      where: expect.objectContaining({ revokedAt: null }),
+    });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
+    expect(prisma.session.updateMany).toHaveBeenCalledWith(revokeCall);
   });
 });

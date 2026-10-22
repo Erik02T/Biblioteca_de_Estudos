@@ -14,7 +14,7 @@ describe('AppController', () => {
           provide: AppService,
           useValue: {
             getHello: () => 'Hello World!',
-            getHealth: jest.fn().mockResolvedValue({
+            getHealth: jest.fn().mockReturnValue({
               status: 'ok',
               timestamp: '2026-01-01T00:00:00.000Z',
             }),
@@ -39,12 +39,13 @@ describe('AppController', () => {
   });
 
   describe('health', () => {
-    it('should return status ok', async () => {
-      const result = await appController.health();
+    it('should return status ok', () => {
+      const result = appController.health();
       expect(result).toEqual({
         status: 'ok',
         timestamp: '2026-01-01T00:00:00.000Z',
       });
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
       expect(appService.getHealth).toHaveBeenCalled();
     });
   });
@@ -57,6 +58,7 @@ describe('AppController', () => {
         timestamp: '2026-01-01T00:00:00.000Z',
         checks: { database: 'connected' },
       });
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
       expect(appService.getReadiness).toHaveBeenCalled();
     });
   });

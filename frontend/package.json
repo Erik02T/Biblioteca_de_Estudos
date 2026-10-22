@@ -36,7 +36,7 @@
   "jest": {
     "testEnvironment": "jest-environment-jsdom",
     "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
+      "<rootDir>/jest.setup.mjs"
     ],
     "testMatch": [
       "**/*.test.tsx",

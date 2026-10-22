@@ -10,6 +10,35 @@ import * as bcrypt from 'bcrypt';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 
+interface HealthResponse {
+  status: string;
+  timestamp: string;
+  checks?: Record<string, string>;
+}
+
+interface ReadinessResponse {
+  status: string;
+  timestamp: string;
+  checks: { database: string };
+}
+
+interface ErrorResponse {
+  statusCode: number;
+  timestamp: string;
+  path: string;
+  message: string;
+}
+
+interface AreaResponse {
+  items: Array<{ id: string; userId: string }>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('hashed-password'),
   compare: jest.fn().mockResolvedValue(true),
@@ -117,11 +146,12 @@ describe('AppController (e2e)', () => {
         .get('/health')
         .expect(200);
 
-      expect(response.body.status).toBe('ok');
-      expect(response.body.timestamp).toBeDefined();
-      expect(response.body).not.toHaveProperty('password');
-      expect(response.body).not.toHaveProperty('secret');
-      expect(response.body).not.toHaveProperty('token');
+      const body = response.body as HealthResponse;
+      expect(body.status).toBe('ok');
+      expect(body.timestamp).toBeDefined();
+      expect(body).not.toHaveProperty('password');
+      expect(body).not.toHaveProperty('secret');
+      expect(body).not.toHaveProperty('token');
     });
 
     it('should not require JWT authorization header', async () => {
@@ -129,7 +159,8 @@ describe('AppController (e2e)', () => {
         .get('/health')
         .expect(200);
 
-      expect(response.body.status).toBe('ok');
+      const body = response.body as HealthResponse;
+      expect(body.status).toBe('ok');
     });
   });
 
@@ -141,9 +172,10 @@ describe('AppController (e2e)', () => {
         .get('/health/ready')
         .expect(200);
 
-      expect(response.body.status).toBe('ok');
-      expect(response.body.checks.database).toBe('connected');
-      expect(response.body.timestamp).toBeDefined();
+      const body = response.body as ReadinessResponse;
+      expect(body.status).toBe('ok');
+      expect(body.checks.database).toBe('connected');
+      expect(body.timestamp).toBeDefined();
     });
 
     it('should return degraded status when database query fails', async () => {
@@ -153,21 +185,23 @@ describe('AppController (e2e)', () => {
         .get('/health/ready')
         .expect(200);
 
-      expect(response.body.status).toBe('degraded');
-      expect(response.body.checks.database).toBe('disconnected');
-      expect(response.body.timestamp).toBeDefined();
+      const body = response.body as ReadinessResponse;
+      expect(body.status).toBe('degraded');
+      expect(body.checks.database).toBe('disconnected');
+      expect(body.timestamp).toBeDefined();
     });
 
     it('should not reveal internal error details in response', async () => {
-      prisma.area.$queryRaw.mockRejectedValue(new Error('connection refused'));
+      prisma.$queryRaw.mockRejectedValue(new Error('connection refused'));
 
       const response = await request(app.getHttpServer())
         .get('/health/ready')
         .expect(200);
 
-      expect(response.body).not.toHaveProperty('stack');
-      expect(response.body).not.toHaveProperty('error');
-      expect(response.body.message).toBeUndefined();
+      const body = response.body as ReadinessResponse;
+      expect(body).not.toHaveProperty('stack');
+      expect(body).not.toHaveProperty('error');
+      expect(body.message).toBeUndefined();
     });
   });
 
@@ -205,9 +239,14 @@ describe('AppController (e2e)', () => {
         .send({ email: 'new@example.com', password: 'secure-password-123' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('accessToken');
-      expect(response.body).toHaveProperty('refreshToken');
-      expect(response.body).not.toHaveProperty('passwordHash');
+      const body = response.body as {
+        accessToken: string;
+        refreshToken: string;
+        passwordHash?: string;
+      };
+      expect(body).toHaveProperty('accessToken');
+      expect(body).toHaveProperty('refreshToken');
+      expect(body).not.toHaveProperty('passwordHash');
     });
 
     it('should reject duplicate email registration', async () => {
@@ -254,8 +293,12 @@ describe('AppController (e2e)', () => {
         .send({ email: 'test@example.com', password: 'correct-password-123' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('accessToken');
-      expect(response.body).toHaveProperty('refreshToken');
+      const body = response.body as {
+        accessToken: string;
+        refreshToken: string;
+      };
+      expect(body).toHaveProperty('accessToken');
+      expect(body).toHaveProperty('refreshToken');
     });
 
     it('should reject invalid credentials', async () => {
@@ -288,8 +331,12 @@ describe('AppController (e2e)', () => {
         .send({ refreshToken: 'valid-refresh-token' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('accessToken');
-      expect(response.body).toHaveProperty('refreshToken');
+      const body = response.body as {
+        accessToken: string;
+        refreshToken: string;
+      };
+      expect(body).toHaveProperty('accessToken');
+      expect(body).toHaveProperty('refreshToken');
     });
 
     it('should reject invalid refresh token', async () => {
@@ -311,7 +358,8 @@ describe('AppController (e2e)', () => {
         .send({ refreshToken: 'valid-refresh-token' })
         .expect(201);
 
-      expect(response.body.success).toBe(true);
+      const body = response.body as { success: boolean };
+      expect(body.success).toBe(true);
     });
   });
   describe('POST /areas (authenticated)', () => {
@@ -340,8 +388,9 @@ describe('AppController (e2e)', () => {
         })
         .expect(201);
 
-      expect(response.body.id).toBe('area-1');
-      expect(response.body.userId).toBe(userId);
+      const body = response.body as { id: string; userId: string };
+      expect(body.id).toBe('area-1');
+      expect(body.userId).toBe(userId);
     });
 
     it('should reject missing authentication token', async () => {
@@ -400,8 +449,9 @@ describe('AppController (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
-      expect(response.body.items).toHaveLength(1);
-      expect(response.body.items[0].userId).toBe(userId);
+      const body = response.body as AreaResponse;
+      expect(body.items).toHaveLength(1);
+      expect(body.items[0].userId).toBe(userId);
     });
 
     it('should reject missing authentication', async () => {
@@ -445,9 +495,10 @@ describe('AppController (e2e)', () => {
         })
         .expect(500);
 
-      expect(response.body.statusCode).toBe(500);
-      expect(response.body.message).toBe('Erro interno do servidor');
-      expect(response.body).not.toHaveProperty('stack');
+      const body = response.body as ErrorResponse;
+      expect(body.statusCode).toBe(500);
+      expect(body.message).toBe('Erro interno do servidor');
+      expect(body).not.toHaveProperty('stack');
     });
   });
 });

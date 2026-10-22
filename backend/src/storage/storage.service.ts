@@ -111,7 +111,7 @@ export class StorageService {
           ContentDisposition: options.contentDisposition,
         }),
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Não foi possível salvar o arquivo no storage.',
       );
@@ -137,7 +137,7 @@ export class StorageService {
         }),
         { expiresIn },
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Não foi possível gerar URL assinada.',
       );
@@ -156,7 +156,7 @@ export class StorageService {
           Key: options.key,
         }),
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Não foi possível remover o arquivo do storage.',
       );

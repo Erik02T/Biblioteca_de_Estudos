@@ -1,7 +1,6 @@
 import { AreasService } from './areas.service';
 import { NotFoundException } from '@nestjs/common';
 import { AttachmentType, SectionType, SubSectionType } from '@prisma/client';
-import { StorageService } from '../storage/storage.service';
 
 const mockStorageService = {
   signAttachmentUrl: jest
@@ -257,7 +256,7 @@ describe('AreasService', () => {
       ],
     });
 
-    const result = await service.findOne('user-id', 'area-id');
+    await service.findOne('user-id', 'area-id');
     expect(mockStorageService.signAttachmentUrls).toHaveBeenCalled();
   });
 });

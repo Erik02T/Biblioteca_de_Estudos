@@ -1,7 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AttachmentType } from '@prisma/client';
 import { AttachmentsService } from './attachments.service';
-import { StorageService } from '../storage/storage.service';
 
 const mockStorageService = {
   signAttachmentUrl: jest
@@ -259,7 +258,7 @@ describe('AttachmentsService', () => {
       },
     ]);
 
-    const result = await service.list('user-id', 'area-id');
+    await service.list('user-id', 'area-id');
     expect(mockStorageService.signAttachmentUrls).toHaveBeenCalled();
   });
 
@@ -273,7 +272,7 @@ describe('AttachmentsService', () => {
       },
     ]);
 
-    const result = await service.list('user-id', 'area-id');
+    await service.list('user-id', 'area-id');
     expect(mockStorageService.signAttachmentUrls).toHaveBeenCalled();
   });
 

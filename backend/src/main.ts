@@ -48,20 +48,23 @@ async function bootstrap() {
 
   const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];
   for (const signal of signals) {
-    process.on(signal, async () => {
-      logger.log(`Recebido ${signal}, encerrando aplicação...`);
-      try {
-        await app.close();
-        logger.log('Aplicação encerrada com sucesso');
-        process.exit(0);
-      } catch (error) {
-        logger.error(
-          'Erro ao encerrar a aplicação',
-          error instanceof Error ? error.stack : String(error),
-        );
-        process.exit(1);
-      }
+    process.on(signal, () => {
+      void (async () => {
+        logger.log(`Recebido ${signal}, encerrando aplicação...`);
+        try {
+          await app.close();
+          logger.log('Aplicação encerrada com sucesso');
+          process.exit(0);
+        } catch (error) {
+          logger.error(
+            'Erro ao encerrar a aplicação',
+            error instanceof Error ? error.stack : String(error),
+          );
+          process.exit(1);
+        }
+      })();
     });
   }
 }
-bootstrap();
+
+void bootstrap();

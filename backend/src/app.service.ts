@@ -11,7 +11,7 @@ export class AppService {
     return 'Hello World!';
   }
 
-  async getHealth(): Promise<{ status: string; timestamp: string }> {
+  getHealth(): { status: string; timestamp: string } {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
