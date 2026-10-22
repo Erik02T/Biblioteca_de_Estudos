@@ -120,9 +120,7 @@ export class StorageService {
 
   async signUrl(options: StorageSignedUrlOptions): Promise<string> {
     if (!this.client || !this.bucket) {
-      throw new InternalServerErrorException(
-        'Storage não configurado.',
-      );
+      throw new InternalServerErrorException('Storage não configurado.');
     }
 
     const expiresIn =
@@ -148,9 +146,7 @@ export class StorageService {
 
   async delete(options: StorageDeleteOptions): Promise<void> {
     if (!this.client || !this.bucket) {
-      throw new InternalServerErrorException(
-        'Storage não configurado.',
-      );
+      throw new InternalServerErrorException('Storage não configurado.');
     }
 
     try {
@@ -182,9 +178,7 @@ export class StorageService {
 
   getBucket(): string {
     if (!this.bucket) {
-      throw new InternalServerErrorException(
-        'Storage bucket não configurado.',
-      );
+      throw new InternalServerErrorException('Storage bucket não configurado.');
     }
     return this.bucket;
   }
@@ -199,9 +193,9 @@ export class StorageService {
     return this.signedUrlsEnabled;
   }
 
-  async signAttachmentUrl<
-    T extends { tipo?: AttachmentType; url?: string },
-  >(attachment: T): Promise<T> {
+  async signAttachmentUrl<T extends { tipo?: AttachmentType; url?: string }>(
+    attachment: T,
+  ): Promise<T> {
     if (!attachment || !attachment.url || !attachment.tipo) {
       return attachment;
     }

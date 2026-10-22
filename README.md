@@ -116,15 +116,15 @@ cp env.example backend/.env
 O arquivo não deve ser commitado. Os valores mínimos são:
 
 ```env
-DATABASE_URL="postgresql://biblioteca:biblioteca@localhost:5432/biblioteca_estudos"
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/biblioteca_estudos"
 FRONTEND_URL="http://localhost:3001"
-JWT_SECRET="gere-um-segredo-aleatorio-com-pelo-menos-32-bytes"
+JWT_SECRET="substitua-por-um-segredo-aleatorio-real-de-pelo-menos-32-bytes"
 STORAGE_BUCKET="biblioteca-estudos"
 STORAGE_PUBLIC_URL="http://localhost:9000/biblioteca-estudos"
 STORAGE_ENDPOINT="http://localhost:9000"
 STORAGE_REGION="us-east-1"
-STORAGE_ACCESS_KEY_ID="..."
-STORAGE_SECRET_ACCESS_KEY="..."
+STORAGE_ACCESS_KEY_ID="SUA_ACCESS_KEY"
+STORAGE_SECRET_ACCESS_KEY="SUA_SECRET_KEY"
 STORAGE_FORCE_PATH_STYLE="true"
 STORAGE_SIGNED_URLS="true"
 STORAGE_URL_EXPIRES_IN="3600"
@@ -134,8 +134,8 @@ O bucket e as credenciais do MinIO precisam existir antes de testar uploads. Par
 
 Para configurar o MinIO localmente, abra `http://localhost:9001` e entre com:
 
-- Usuário: `biblioteca_storage`
-- Senha: `biblioteca_storage_dev_2026`
+- Usuário: `SEU_USUARIO_MINIO`
+- Senha: `SUA_SENHA_MINIO`
 
 Crie o bucket `biblioteca-estudos`. O sistema utiliza **storage privado por padrão**, gerando URLs assinadas temporárias com tempo de expiração configurável via `STORAGE_URL_EXPIRES_IN` (padrão 3600s / 1h). Isso garante que arquivos da sua biblioteca pessoal não fiquem expostos publicamente de forma aberta.
 

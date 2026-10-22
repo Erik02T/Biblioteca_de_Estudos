@@ -25,7 +25,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message =
         typeof exceptionResponse === 'string'
           ? exceptionResponse
-          : (exceptionResponse as any)?.message ?? message;
+          : ((exceptionResponse as any)?.message ?? message);
     } else if (exception instanceof Error) {
       // Não vaza stack traces nem detalhes internos para o cliente
       this.logger.error(

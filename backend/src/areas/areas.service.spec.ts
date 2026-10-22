@@ -4,8 +4,12 @@ import { AttachmentType, SectionType, SubSectionType } from '@prisma/client';
 import { StorageService } from '../storage/storage.service';
 
 const mockStorageService = {
-  signAttachmentUrl: jest.fn().mockImplementation((attachment) => Promise.resolve(attachment)),
-  signAttachmentUrls: jest.fn().mockImplementation((attachments) => Promise.resolve(attachments)),
+  signAttachmentUrl: jest
+    .fn()
+    .mockImplementation((attachment) => Promise.resolve(attachment)),
+  signAttachmentUrls: jest
+    .fn()
+    .mockImplementation((attachments) => Promise.resolve(attachments)),
   deleteByUrl: jest.fn().mockResolvedValue(undefined),
 };
 
@@ -23,7 +27,10 @@ describe('AreasService', () => {
     },
   };
 
-  const service = new AreasService(prisma as never, mockStorageService as never);
+  const service = new AreasService(
+    prisma as never,
+    mockStorageService as never,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

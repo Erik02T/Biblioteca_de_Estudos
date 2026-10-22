@@ -4,12 +4,20 @@ import { AttachmentsService } from './attachments.service';
 import { StorageService } from '../storage/storage.service';
 
 const mockStorageService = {
-  signAttachmentUrl: jest.fn().mockImplementation((attachment) => Promise.resolve(attachment)),
-  signAttachmentUrls: jest.fn().mockImplementation((attachments) => Promise.resolve(attachments)),
+  signAttachmentUrl: jest
+    .fn()
+    .mockImplementation((attachment) => Promise.resolve(attachment)),
+  signAttachmentUrls: jest
+    .fn()
+    .mockImplementation((attachments) => Promise.resolve(attachments)),
   isConfigured: jest.fn().mockReturnValue(true),
   getBucket: jest.fn().mockReturnValue('test-bucket'),
-  getPublicUrl: jest.fn().mockReturnValue('https://storage.example/test-bucket'),
-  buildPublicUrlFromKey: jest.fn().mockImplementation((key) => `https://storage.example/test-bucket/${key}`),
+  getPublicUrl: jest
+    .fn()
+    .mockReturnValue('https://storage.example/test-bucket'),
+  buildPublicUrlFromKey: jest
+    .fn()
+    .mockImplementation((key) => `https://storage.example/test-bucket/${key}`),
   upload: jest.fn().mockResolvedValue(undefined),
   delete: jest.fn().mockResolvedValue(undefined),
   deleteByUrl: jest.fn().mockResolvedValue(undefined),
@@ -30,7 +38,10 @@ describe('AttachmentsService', () => {
       findFirst: jest.fn(),
     },
   };
-  const service = new AttachmentsService(prisma as never, mockStorageService as never);
+  const service = new AttachmentsService(
+    prisma as never,
+    mockStorageService as never,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
