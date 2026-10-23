@@ -111,7 +111,7 @@ export class StorageService {
           ContentDisposition: options.contentDisposition,
         }),
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Não foi possível salvar o arquivo no storage.',
       );
@@ -120,9 +120,7 @@ export class StorageService {
 
   async signUrl(options: StorageSignedUrlOptions): Promise<string> {
     if (!this.client || !this.bucket) {
-      throw new InternalServerErrorException(
-        'Storage não configurado.',
-      );
+      throw new InternalServerErrorException('Storage não configurado.');
     }
 
     const expiresIn =
@@ -139,7 +137,7 @@ export class StorageService {
         }),
         { expiresIn },
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Não foi possível gerar URL assinada.',
       );
@@ -148,9 +146,7 @@ export class StorageService {
 
   async delete(options: StorageDeleteOptions): Promise<void> {
     if (!this.client || !this.bucket) {
-      throw new InternalServerErrorException(
-        'Storage não configurado.',
-      );
+      throw new InternalServerErrorException('Storage não configurado.');
     }
 
     try {
@@ -160,7 +156,7 @@ export class StorageService {
           Key: options.key,
         }),
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Não foi possível remover o arquivo do storage.',
       );
@@ -182,9 +178,7 @@ export class StorageService {
 
   getBucket(): string {
     if (!this.bucket) {
-      throw new InternalServerErrorException(
-        'Storage bucket não configurado.',
-      );
+      throw new InternalServerErrorException('Storage bucket não configurado.');
     }
     return this.bucket;
   }
@@ -199,9 +193,9 @@ export class StorageService {
     return this.signedUrlsEnabled;
   }
 
-  async signAttachmentUrl<
-    T extends { tipo?: AttachmentType; url?: string },
-  >(attachment: T): Promise<T> {
+  async signAttachmentUrl<T extends { tipo?: AttachmentType; url?: string }>(
+    attachment: T,
+  ): Promise<T> {
     if (!attachment || !attachment.url || !attachment.tipo) {
       return attachment;
     }

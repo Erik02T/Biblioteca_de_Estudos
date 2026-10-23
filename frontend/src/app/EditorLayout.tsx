@@ -40,6 +40,7 @@ export function EditorLayout(props: {
   attachments: ReactNode; // <AttachmentsPanel />
   format: ReactNode; // <FormatPanel />
   rail: ReactNode; // <ActionRail />
+  error?: string; // Optional error message
 }) {
   return (
     <main className={styles.root} data-testid="editor-root">
@@ -52,6 +53,7 @@ export function EditorLayout(props: {
             {props.wordCount} {props.wordCount === 1 ? "palavra" : "palavras"}
           </span>
         </div>
+        {props.error && <p className={styles.formError}>{props.error}</p>}
       </section>
       <aside className={styles.tools} data-testid="tools-column">
         {props.attachments}
