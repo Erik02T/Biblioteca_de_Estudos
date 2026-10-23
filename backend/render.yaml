@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: biblioteca-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npx prisma generate && npm run build
+    startCommand: node dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+    autoDeploy: true
