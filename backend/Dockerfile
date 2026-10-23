@@ -12,7 +12,7 @@ RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
 
 # Instala dependências de produção
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copia o restante do código fonte
 COPY . .
