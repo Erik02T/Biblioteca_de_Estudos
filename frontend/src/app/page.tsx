@@ -16,10 +16,7 @@ type AreaPage = { items: Area[]; pagination: { page: number; limit: number; tota
 type Attachment = { id: string; tipo: "LINK" | "IMAGEM" | "ARQUIVO"; url: string; nome: string | null; createdAt: string };
 type AreaFormValues = { nome: string; categoria: string; nivelEntendimento: number; icone: string; conteudo: JSONContent; updatedAt?: string };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-if (!apiUrl) {
-  throw new Error("NEXT_PUBLIC_API_URL é obrigatório. Configure esta variável de ambiente.");
-}
+const apiUrl = (process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3000").replace(/\/+$/, "");
 type AuthTokens = { accessToken: string; refreshToken: string };
 const sections: Array<{ value: Section; label: string; icon: string; tone: string }> = [
   { value: "LINGUAGENS", label: "Idiomas", icon: "◉", tone: "purple" },
@@ -122,7 +119,20 @@ export default function Home() {
   const openCreate = () => { setEditingArea(null); setIsCreating(true); };
   const openEdit = (area: Area) => { setIsCreating(false); setEditingArea({ ...area }); };
   if (!userId) return <AuthView onAuthenticated={(tokens) => { saveTokens(tokens); setUserId(tokens.accessToken); }} />;
-  const logout = () => { window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); setUserId(undefined); goHome(); };
+  const logout = async () => {
+    const refreshToken = window.localStorage.getItem("biblioteca-refresh-token");
+    if (refreshToken) {
+      try {
+        await fetch(`${apiUrl}/auth/logout`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ refreshToken }) });
+      } catch {
+        // A limpeza local continua mesmo quando a API está indisponível.
+      }
+    }
+    window.localStorage.removeItem("biblioteca-access-token");
+    window.localStorage.removeItem("biblioteca-refresh-token");
+    setUserId(undefined);
+    goHome();
+  };
   return <div className={styles.page}>
     <header className={styles.header}><button className={styles.brand} onClick={goHome} aria-label="Voltar para a biblioteca"><span className={styles.brandMark}>B</span><span>Biblioteca<span className={styles.brandAccent}>.</span></span></button><div className={styles.headerTools}>{isSearchOpen ? <label className={styles.searchField}><span className="sr-only">Buscar nos blocos carregados</span><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Buscar blocos..." onKeyDown={(event) => { if (event.key === "Escape") setIsSearchOpen(false); }} /></label> : <button className={styles.searchButton} type="button" aria-label="Buscar na biblioteca" onClick={() => setIsSearchOpen(true)}>Buscar <kbd>/</kbd></button>}<span className={styles.headerNote}>seu espaço de conhecimento</span><button className={styles.logoutButton} type="button" onClick={logout}>Sair</button></div></header>
     <main className={styles.main}>
@@ -136,13 +146,23 @@ function AuthView({ onAuthenticated }: { onAuthenticated: (tokens: AuthTokens) =
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const submit = async (event: React.FormEvent) => {
-    event.preventDefault(); setError(undefined);
-    const response = await fetch(`${apiUrl}/auth/${isRegistering ? "register" : "login"}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
-    if (!response.ok) { setError((await response.json().catch(() => null))?.message ?? "Não foi possível autenticar."); return; }
-    onAuthenticated(await response.json() as AuthTokens);
+    event.preventDefault();
+    setError(undefined);
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`${apiUrl}/auth/${isRegistering ? "register" : "login"}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.trim(), password }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) { setError(Array.isArray(payload?.message) ? payload.message.join(" ") : payload?.message ?? "Não foi possível autenticar."); return; }
+      onAuthenticated(payload as AuthTokens);
+    } catch {
+      setError("Não foi possível conectar à API. Verifique se o backend está disponível.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  return <div className={styles.page}><main className={styles.main}><form className={styles.areaForm} onSubmit={submit}><p className={styles.kicker}>Biblioteca privada</p><h1>{isRegistering ? "Crie sua conta" : "Entre na sua biblioteca"}</h1><div className={styles.formGrid}><label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><label>Senha<input type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label></div>{error && <p className={styles.formError}>{error}</p>}<button className={styles.primaryButton} type="submit">{isRegistering ? "Cadastrar" : "Entrar"}</button><button className={styles.secondaryButton} type="button" onClick={() => setIsRegistering((value) => !value)}>{isRegistering ? "Já tenho uma conta" : "Criar uma conta"}</button></form></main></div>;
+  return <div className={styles.page}><main className={styles.main}><form className={styles.areaForm} onSubmit={submit}><p className={styles.kicker}>Biblioteca privada</p><h1>{isRegistering ? "Crie sua conta" : "Entre na sua biblioteca"}</h1><div className={styles.formGrid}><label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><label>Senha<input type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label></div>{error && <p className={styles.formError}>{error}</p>}<button className={styles.primaryButton} type="submit" disabled={isSubmitting}>{isSubmitting ? "Aguarde..." : isRegistering ? "Cadastrar" : "Entrar"}</button><button className={styles.secondaryButton} type="button" onClick={() => setIsRegistering((value) => !value)}>{isRegistering ? "Já tenho uma conta" : "Criar uma conta"}</button></form></main></div>;
 }
 
 function LibraryView({ onSelect }: { onSelect: (section: Section) => void }) { return <>
