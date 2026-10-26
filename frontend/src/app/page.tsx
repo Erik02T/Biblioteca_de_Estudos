@@ -16,7 +16,7 @@ type AreaPage = { items: Area[]; pagination: { page: number; limit: number; tota
 type Attachment = { id: string; tipo: "LINK" | "IMAGEM" | "ARQUIVO"; url: string; nome: string | null; createdAt: string };
 type AreaFormValues = { nome: string; categoria: string; nivelEntendimento: number; icone: string; conteudo: JSONContent; updatedAt?: string };
 
-const apiUrl = (process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3000").replace(/\/+$/, "");
+const apiUrl = (process.env.NEXT_PUBLIC_API_URL?.trim() || "https://biblioteca-de-estudos.onrender.com").replace(/\/+$/, "");
 type AuthTokens = { accessToken: string; refreshToken: string };
 const sections: Array<{ value: Section; label: string; icon: string; tone: string }> = [
   { value: "LINGUAGENS", label: "Idiomas", icon: "◉", tone: "purple" },
