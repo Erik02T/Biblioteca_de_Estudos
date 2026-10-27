@@ -1,6 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   getContentDisposition,
+  isAsfContainer,
+  validateBufferSafety,
   validateDetectedMimeType,
   validateFileHeaderAndExtension,
 } from './file-validation.util';
@@ -152,6 +154,38 @@ describe('file-validation.util', () => {
       expect(disposition).toContain(
         "filename*=UTF-8''meu%20anexo%20%28final%29.pdf",
       );
+    });
+  });
+
+  describe('validateBufferSafety & isAsfContainer', () => {
+    const asfGuidHeader = Buffer.from([
+      0x30, 0x26, 0xb2, 0x75, 0x8e, 0x66, 0xcf, 0x11, 0xa6, 0xd9, 0x00, 0xaa,
+      0x00, 0x62, 0xce, 0x6c, 0x00, 0x00, 0x00, 0x00,
+    ]);
+
+    it('detects ASF GUID signature correctly', () => {
+      expect(isAsfContainer(asfGuidHeader)).toBe(true);
+      expect(isAsfContainer(Buffer.from('PNG content'))).toBe(false);
+      expect(isAsfContainer(Buffer.alloc(5))).toBe(false);
+    });
+
+    it('rejects empty or null buffer', () => {
+      expect(() => validateBufferSafety(Buffer.alloc(0))).toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('rejects ASF files before passing to parser to mitigate DoS (GHSA-5v7r-6r5c-r473)', () => {
+      expect(() => validateBufferSafety(asfGuidHeader)).toThrow(
+        'Formato de arquivo ASF não é suportado',
+      );
+    });
+
+    it('allows valid non-ASF buffers', () => {
+      const pngBuffer = Buffer.from([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      ]);
+      expect(() => validateBufferSafety(pngBuffer)).not.toThrow();
     });
   });
 });

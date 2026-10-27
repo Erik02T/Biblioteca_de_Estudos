@@ -53,7 +53,7 @@ describe('AttachmentsController', () => {
     const result = await controller.upload('user-1', file, 'area-1', resMock);
 
     expect(result).toEqual(attachmentRecord);
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
+
     expect(service.upload).toHaveBeenCalledWith('user-1', 'area-1', file);
     expect(resMock.setHeader).toHaveBeenCalledWith(
       'Content-Disposition',

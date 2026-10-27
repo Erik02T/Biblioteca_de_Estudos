@@ -16,6 +16,7 @@ import {
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 import {
   getContentDisposition,
+  validateBufferSafety,
   validateDetectedMimeType,
 } from './utils/file-validation.util';
 
@@ -118,6 +119,7 @@ export class AttachmentsService {
         'O upload precisa ser associado a uma Area',
       );
     }
+    validateBufferSafety(file.buffer);
     const detectedFileType = await fromBuffer(file.buffer);
     if (!detectedFileType) {
       throw new BadRequestException(

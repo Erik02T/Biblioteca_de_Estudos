@@ -61,7 +61,6 @@ describe('AuthService', () => {
       passwordHash: expect.any(String),
     });
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.user.create).toHaveBeenCalledWith({
       data: createUserCall, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     });
@@ -73,12 +72,10 @@ describe('AuthService', () => {
       refreshTokenHash: expect.any(String),
     });
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.session.create).toHaveBeenCalledWith({
       data: createSessionCall, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     });
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function and matcher, test-specific pattern
     expect(jwt.signAsync).toHaveBeenCalledWith(
       { sub: 'user-id', email: 'user@example.com', sid: 'session-id' },
       expect.any(Object),
@@ -107,10 +104,8 @@ describe('AuthService', () => {
       }),
     });
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.session.update).toHaveBeenCalledWith(updateSessionCall);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.session.create).toHaveBeenCalled();
   });
 
@@ -125,7 +120,6 @@ describe('AuthService', () => {
       where: expect.objectContaining({ revokedAt: null }),
     });
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
     expect(prisma.session.updateMany).toHaveBeenCalledWith(revokeCall);
   });
 });
