@@ -16,10 +16,7 @@ type AreaPage = { items: Area[]; pagination: { page: number; limit: number; tota
 type Attachment = { id: string; tipo: "LINK" | "IMAGEM" | "ARQUIVO"; url: string; nome: string | null; createdAt: string };
 type AreaFormValues = { nome: string; categoria: string; nivelEntendimento: number; icone: string; conteudo: JSONContent; updatedAt?: string };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-if (!apiUrl) {
-  throw new Error("NEXT_PUBLIC_API_URL é obrigatório. Configure esta variável de ambiente.");
-}
+const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "https://biblioteca-de-estudos.onrender.com").replace(/\/$/, "");
 
 function getApiErrorMessage(payload: unknown, fallback: string) {
   if (typeof payload === "object" && payload !== null && "message" in payload) {

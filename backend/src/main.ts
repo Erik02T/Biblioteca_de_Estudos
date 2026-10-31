@@ -31,9 +31,22 @@ async function bootstrap() {
 
   app.use(helmet());
 
-  app.enableCors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
-  });
+  const configuredOrigins = (process.env.FRONTEND_URL ?? '')
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  const localOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
+      if (!origin || localOrigins.includes(origin) || configuredOrigins.includes(origin) || /^https:\/\/[^/]+\.vercel\.app$/.test(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Origem não autorizada pelo CORS'));
+    },
+  };
+  app.enableCors(corsOptions);
 
   app.useGlobalPipes(
     new ValidationPipe({
