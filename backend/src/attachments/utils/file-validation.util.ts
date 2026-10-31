@@ -53,7 +53,30 @@ export const DISALLOWED_EXTENSIONS = new Set([
   '.vbs',
   '.ps1',
   '.jar',
+  '.asf',
+  '.wmv',
+  '.wma',
 ]);
+
+// ASF Header Object GUID: 30 26 b2 75 8e 66 cf 11 a6 d9 00 aa 00 62 ce 6c
+const ASF_HEADER_GUID = Buffer.from([
+  0x30, 0x26, 0xb2, 0x75, 0x8e, 0x66, 0xcf, 0x11, 0xa6, 0xd9, 0x00, 0xaa, 0x00,
+  0x62, 0xce, 0x6c,
+]);
+
+export function isAsfContainer(buffer: Buffer): boolean {
+  if (!buffer || buffer.length < 16) return false;
+  return buffer.subarray(0, 16).equals(ASF_HEADER_GUID);
+}
+
+export function validateBufferSafety(buffer: Buffer): void {
+  if (!buffer || buffer.length === 0) {
+    throw new BadRequestException('Arquivo vazio ou inválido.');
+  }
+  if (isAsfContainer(buffer)) {
+    throw new BadRequestException('Formato de arquivo ASF não é suportado.');
+  }
+}
 
 export function extractFileExtension(filename: string): string {
   if (!filename) return '';

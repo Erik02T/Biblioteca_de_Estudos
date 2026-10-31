@@ -45,7 +45,7 @@ describe('AppController', () => {
         status: 'ok',
         timestamp: '2026-01-01T00:00:00.000Z',
       });
-      // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
+
       expect(appService.getHealth).toHaveBeenCalled();
     });
   });
@@ -58,7 +58,7 @@ describe('AppController', () => {
         timestamp: '2026-01-01T00:00:00.000Z',
         checks: { database: 'connected' },
       });
-      // eslint-disable-next-line @typescript-eslint/unbound-method -- Jest mock function, test-specific pattern
+
       expect(appService.getReadiness).toHaveBeenCalled();
     });
   });

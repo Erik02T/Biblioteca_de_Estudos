@@ -20,6 +20,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "validate:phase1": "ts-node scripts/validate-phase1.ts"
   },
+  "overrides": {
+    "multer": "^2.5.0"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",
     "@aws-sdk/s3-request-presigner": "^3.1142.0",
