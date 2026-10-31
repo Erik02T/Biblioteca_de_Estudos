@@ -16,9 +16,18 @@ type AreaPage = { items: Area[]; pagination: { page: number; limit: number; tota
 type Attachment = { id: string; tipo: "LINK" | "IMAGEM" | "ARQUIVO"; url: string; nome: string | null; createdAt: string };
 type AreaFormValues = { nome: string; categoria: string; nivelEntendimento: number; icone: string; conteudo: JSONContent; updatedAt?: string };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 if (!apiUrl) {
   throw new Error("NEXT_PUBLIC_API_URL é obrigatório. Configure esta variável de ambiente.");
+}
+
+function getApiErrorMessage(payload: unknown, fallback: string) {
+  if (typeof payload === "object" && payload !== null && "message" in payload) {
+    const message = payload.message;
+    if (Array.isArray(message)) return message.join(" ");
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  return fallback;
 }
 type AuthTokens = { accessToken: string; refreshToken: string };
 const sections: Array<{ value: Section; label: string; icon: string; tone: string }> = [
@@ -136,13 +145,31 @@ function AuthView({ onAuthenticated }: { onAuthenticated: (tokens: AuthTokens) =
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const submit = async (event: React.FormEvent) => {
-    event.preventDefault(); setError(undefined);
-    const response = await fetch(`${apiUrl}/auth/${isRegistering ? "register" : "login"}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
-    if (!response.ok) { setError((await response.json().catch(() => null))?.message ?? "Não foi possível autenticar."); return; }
-    onAuthenticated(await response.json() as AuthTokens);
+    event.preventDefault();
+    if (isSubmitting) return;
+    setError(undefined);
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`${apiUrl}/auth/${isRegistering ? "register" : "login"}`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ email: email.trim(), password }) });
+      const payload: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        setError(getApiErrorMessage(payload, response.status >= 500 ? "O servidor está indisponível no momento. Tente novamente." : "Não foi possível autenticar."));
+        return;
+      }
+      if (typeof payload !== "object" || payload === null || !("accessToken" in payload) || !("refreshToken" in payload)) {
+        setError("A resposta da autenticação está incompleta. Tente novamente.");
+        return;
+      }
+      onAuthenticated(payload as AuthTokens);
+    } catch {
+      setError("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  return <div className={styles.page}><main className={styles.main}><form className={styles.areaForm} onSubmit={submit}><p className={styles.kicker}>Biblioteca privada</p><h1>{isRegistering ? "Crie sua conta" : "Entre na sua biblioteca"}</h1><div className={styles.formGrid}><label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><label>Senha<input type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label></div>{error && <p className={styles.formError}>{error}</p>}<button className={styles.primaryButton} type="submit">{isRegistering ? "Cadastrar" : "Entrar"}</button><button className={styles.secondaryButton} type="button" onClick={() => setIsRegistering((value) => !value)}>{isRegistering ? "Já tenho uma conta" : "Criar uma conta"}</button></form></main></div>;
+  return <div className={styles.page}><main className={styles.main}><form className={styles.areaForm} onSubmit={submit} aria-busy={isSubmitting}><p className={styles.kicker}>Biblioteca privada</p><h1>{isRegistering ? "Crie sua conta" : "Entre na sua biblioteca"}</h1><div className={styles.formGrid}><label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={isSubmitting} /></label><label>Senha<input type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required disabled={isSubmitting} /></label></div>{error && <p className={styles.formError} role="alert">{error}</p>}<button className={styles.primaryButton} type="submit" disabled={isSubmitting}>{isSubmitting ? "Aguarde..." : isRegistering ? "Cadastrar" : "Entrar"}</button><button className={styles.secondaryButton} type="button" onClick={() => { setError(undefined); setIsRegistering((value) => !value); }} disabled={isSubmitting}>{isRegistering ? "Já tenho uma conta" : "Criar uma conta"}</button></form></main></div>;
 }
 
 function LibraryView({ onSelect }: { onSelect: (section: Section) => void }) { return <>
