@@ -16,7 +16,10 @@ type AreaPage = { items: Area[]; pagination: { page: number; limit: number; tota
 type Attachment = { id: string; tipo: "LINK" | "IMAGEM" | "ARQUIVO"; url: string; nome: string | null; createdAt: string };
 type AreaFormValues = { nome: string; categoria: string; nivelEntendimento: number; icone: string; conteudo: JSONContent; updatedAt?: string };
 
-const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "https://biblioteca-de-estudos.onrender.com").replace(/\/$/, "");
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const fallbackApiUrl = "https://biblioteca-de-estudos.onrender.com";
+const isLocalApiUrl = configuredApiUrl ? /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(configuredApiUrl) : false;
+const apiUrl = configuredApiUrl && (!isLocalApiUrl || typeof window === "undefined" || /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) ? configuredApiUrl : fallbackApiUrl;
 
 function getApiErrorMessage(payload: unknown, fallback: string) {
   if (typeof payload === "object" && payload !== null && "message" in payload) {
