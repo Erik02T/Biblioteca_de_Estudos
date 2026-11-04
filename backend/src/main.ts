@@ -38,8 +38,16 @@ async function bootstrap() {
   const localOrigins = ['http://localhost:3000', 'http://localhost:3001'];
 
   const corsOptions = {
-    origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
-      if (!origin || localOrigins.includes(origin) || configuredOrigins.includes(origin) || /^https:\/\/[^/]+\.vercel\.app$/.test(origin)) {
+    origin: (
+      origin: string | undefined,
+      callback: (error: Error | null, allowed?: boolean) => void,
+    ) => {
+      if (
+        !origin ||
+        localOrigins.includes(origin) ||
+        configuredOrigins.includes(origin) ||
+        /^https:\/\/[^/]+\.vercel\.app$/.test(origin)
+      ) {
         callback(null, true);
         return;
       }

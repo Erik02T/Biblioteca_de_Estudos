@@ -29,18 +29,20 @@ describe('AuthService', () => {
       update: jest.fn<Promise<unknown>, [object]>(),
       updateMany: jest.fn<Promise<unknown>, [object]>(),
     },
-  } as unknown as jest.Mocked<PrismaService>;
+  };
   const jwt = {
     signAsync: jest
       .fn<Promise<string>, [object, object?]>()
       .mockResolvedValue('access-token'),
-  } as unknown as jest.Mocked<JwtService>;
-  const service = new AuthService(prisma, jwt);
+  };
+  const service = new AuthService(
+    prisma as unknown as PrismaService,
+    jwt as unknown as JwtService,
+  );
 
   beforeEach(() => jest.clearAllMocks());
 
   it('creates a user and issues a session on registration', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Jest mock method returns any, test-specific pattern
     prisma.user.findUnique.mockResolvedValue(null);
     await expect(
       service.register({
@@ -83,7 +85,6 @@ describe('AuthService', () => {
   });
 
   it('rotates a valid refresh token and revokes the old session', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Jest mock method returns any, test-specific pattern
     prisma.session.findUnique.mockResolvedValue({
       id: 'old-session',
       revokedAt: null,
