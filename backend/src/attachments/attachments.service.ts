@@ -16,8 +16,10 @@ import {
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 import {
   getContentDisposition,
+  isTextMimeAndExt,
   validateBufferSafety,
   validateDetectedMimeType,
+  validateTextBufferSafety,
 } from './utils/file-validation.util';
 
 @Injectable()
@@ -121,12 +123,20 @@ export class AttachmentsService {
     }
     validateBufferSafety(file.buffer);
     const detectedFileType = await fromBuffer(file.buffer);
-    if (!detectedFileType) {
+
+    let resolvedMime: string;
+    if (detectedFileType?.mime) {
+      resolvedMime = detectedFileType.mime;
+    } else if (isTextMimeAndExt(file.mimetype, file.originalname)) {
+      validateTextBufferSafety(file.buffer);
+      resolvedMime = file.mimetype.toLowerCase().trim();
+    } else {
       throw new BadRequestException(
         'Não foi possível validar o tipo MIME real do arquivo.',
       );
     }
-    validateDetectedMimeType(detectedFileType.mime);
+
+    validateDetectedMimeType(resolvedMime);
 
     const area = await this.prisma.area.findFirst({
       where: { id: areaId, userId },
@@ -142,7 +152,7 @@ export class AttachmentsService {
     const key = `${userId}/${areaId}/${randomUUID()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
     const url = this.storage.buildPublicUrlFromKey(key);
     const contentDisposition = getContentDisposition(
-      detectedFileType.mime,
+      resolvedMime,
       file.originalname,
     );
 
@@ -151,7 +161,7 @@ export class AttachmentsService {
         bucket: this.storage.getBucket(),
         key,
         body: file.buffer,
-        contentType: detectedFileType.mime,
+        contentType: resolvedMime,
         contentDisposition,
       });
     } catch {
@@ -164,7 +174,7 @@ export class AttachmentsService {
       areaId,
       url,
       nome: file.originalname,
-      tipo: detectedFileType.mime.startsWith('image/')
+      tipo: resolvedMime.startsWith('image/')
         ? AttachmentType.IMAGEM
         : AttachmentType.ARQUIVO,
     };

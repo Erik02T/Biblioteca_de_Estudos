@@ -1,5 +1,6 @@
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import 'dotenv/config';
 import helmet from 'helmet';
@@ -28,6 +29,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'],
   });
+
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   app.use(helmet());
 
@@ -74,13 +78,10 @@ async function bootstrap() {
         logger.log(`Recebido ${signal}, encerrando aplicação...`);
         try {
           await app.close();
-          logger.log('Aplicação encerrada com sucesso');
+          logger.log('Aplicação encerrada com sucesso.');
           process.exit(0);
         } catch (error) {
-          logger.error(
-            'Erro ao encerrar a aplicação',
-            error instanceof Error ? error.stack : String(error),
-          );
+          logger.error('Erro durante encerramento gracioso:', error);
           process.exit(1);
         }
       })();

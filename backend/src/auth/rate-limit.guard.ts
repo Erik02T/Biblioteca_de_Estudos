@@ -18,10 +18,9 @@ export class AuthRateLimitGuard implements CanActivate {
 
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<Request>();
-    const key = `${request.ip ?? 'unknown'}:${request.headers['user-agent'] ?? 'unknown'}`;
-    const limit = request.path.startsWith('/auth/')
-      ? this.authLimit
-      : this.apiLimit;
+    const isAuth = request.path.startsWith('/auth/');
+    const key = `${isAuth ? 'auth' : 'api'}:${request.ip ?? 'unknown'}:${request.headers['user-agent'] ?? 'unknown'}`;
+    const limit = isAuth ? this.authLimit : this.apiLimit;
     const now = Date.now();
     const bucket = this.buckets.get(key);
     if (!bucket || bucket.resetAt <= now) {

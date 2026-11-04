@@ -20,6 +20,7 @@ interface ReadinessResponse {
   status: string;
   timestamp: string;
   checks: { database: string };
+  message?: string;
 }
 
 interface ErrorResponse {
@@ -88,7 +89,6 @@ describe('AppController (e2e)', () => {
         findFirst: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
-        $queryRaw: jest.fn(),
       },
       attachment: {
         create: jest.fn(),

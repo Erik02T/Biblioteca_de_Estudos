@@ -85,6 +85,32 @@ export function extractFileExtension(filename: string): string {
   return filename.slice(lastDot).toLowerCase();
 }
 
+export function isTextMimeAndExt(
+  mimetype: string,
+  originalname: string,
+): boolean {
+  const mime = mimetype.toLowerCase().trim();
+  const ext = extractFileExtension(originalname ?? '');
+  return (
+    (mime === 'text/plain' && ext === '.txt') ||
+    (mime === 'text/csv' && ext === '.csv')
+  );
+}
+
+export function validateTextBufferSafety(buffer: Buffer): void {
+  if (buffer.includes(0x00)) {
+    throw new BadRequestException(
+      'Arquivo de texto contém bytes binários inválidos.',
+    );
+  }
+  const text = buffer.toString('utf8');
+  if (/<[a-z!/][\s\S]*>/i.test(text)) {
+    throw new BadRequestException(
+      'Arquivos de texto contendo tags HTML ou scripts não são permitidos.',
+    );
+  }
+}
+
 export function validateFileHeaderAndExtension(
   mimetype?: string,
   originalname?: string,
