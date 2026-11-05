@@ -51,8 +51,11 @@ describe('CreateAreaDto', () => {
     dto.subSection = SubSectionType.ESTUDANDO;
     dto.nome = 'Valid Name';
     dto.categoria = 'Valid Category';
-    // Create a large JSON object > 1MB (1,048,576 bytes)
-    dto.conteudo = { type: 'doc', largeText: 'x'.repeat(1024 * 1024 + 100) };
+    // Create a large JSON object > 50 MB (52,428,800 bytes)
+    dto.conteudo = {
+      type: 'doc',
+      largeText: 'x'.repeat(50 * 1024 * 1024 + 100),
+    };
 
     const errors = await validate(dto);
 

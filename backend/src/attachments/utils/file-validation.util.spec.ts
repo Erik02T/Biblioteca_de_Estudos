@@ -1,10 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   getContentDisposition,
   isAsfContainer,
   validateBufferSafety,
   validateDetectedMimeType,
   validateFileHeaderAndExtension,
+  validateFilePathSafety,
+  validateTextFileSafety,
 } from './file-validation.util';
 
 describe('file-validation.util', () => {
@@ -15,31 +20,19 @@ describe('file-validation.util', () => {
       ).toThrow(BadRequestException);
     });
 
-    it('rejects SVG files via MIME image/svg+xml', () => {
-      expect(() =>
-        validateFileHeaderAndExtension('image/svg+xml', 'icon.svg'),
-      ).toThrow('Arquivos SVG e HTML não são permitidos');
-    });
-
-    it('rejects HTML files via MIME text/html', () => {
+    it('allows HTML files via MIME text/html', () => {
       expect(() =>
         validateFileHeaderAndExtension('text/html', 'index.html'),
-      ).toThrow('Arquivos SVG e HTML não são permitidos');
+      ).not.toThrow();
     });
 
-    it('rejects SVG extensions even if MIME is falsified', () => {
+    it('allows SVG files via MIME image/svg+xml', () => {
       expect(() =>
-        validateFileHeaderAndExtension('image/png', 'malicious.svg'),
-      ).toThrow('Extensão de arquivo ".svg" não é permitida');
+        validateFileHeaderAndExtension('image/svg+xml', 'icon.svg'),
+      ).not.toThrow();
     });
 
-    it('rejects HTML extensions even if MIME is falsified', () => {
-      expect(() =>
-        validateFileHeaderAndExtension('image/png', 'page.html'),
-      ).toThrow('Extensão de arquivo ".html" não é permitida');
-    });
-
-    it('rejects dangerous executable extensions like .exe, .sh, .js', () => {
+    it('rejects dangerous executable extensions like .exe, .sh, .bat', () => {
       expect(() =>
         validateFileHeaderAndExtension('application/pdf', 'malware.exe'),
       ).toThrow('Extensão de arquivo ".exe" não é permitida');
@@ -49,8 +42,8 @@ describe('file-validation.util', () => {
       ).toThrow('Extensão de arquivo ".sh" não é permitida');
 
       expect(() =>
-        validateFileHeaderAndExtension('text/plain', 'app.js'),
-      ).toThrow('Extensão de arquivo ".js" não é permitida');
+        validateFileHeaderAndExtension('text/plain', 'batch.bat'),
+      ).toThrow('Extensão de arquivo ".bat" não é permitida');
     });
 
     it('rejects unallowed MIME types', () => {
@@ -68,7 +61,7 @@ describe('file-validation.util', () => {
       ).toThrow('Extensão ".pdf" é incompatível com o tipo MIME "image/png"');
     });
 
-    it('allows valid image types (PNG, JPEG, GIF, WEBP)', () => {
+    it('allows valid image types (PNG, JPEG, GIF, WEBP, SVG)', () => {
       expect(() =>
         validateFileHeaderAndExtension('image/png', 'photo.png'),
       ).not.toThrow();
@@ -84,9 +77,12 @@ describe('file-validation.util', () => {
       expect(() =>
         validateFileHeaderAndExtension('image/webp', 'image.webp'),
       ).not.toThrow();
+      expect(() =>
+        validateFileHeaderAndExtension('image/svg+xml', 'diagram.svg'),
+      ).not.toThrow();
     });
 
-    it('allows valid document types (PDF, DOCX, XLSX, TXT, CSV, ZIP)', () => {
+    it('allows valid document types (PDF, DOCX, XLSX, TXT, CSV, HTML, ZIP, MD)', () => {
       expect(() =>
         validateFileHeaderAndExtension('application/pdf', 'doc.pdf'),
       ).not.toThrow();
@@ -97,21 +93,18 @@ describe('file-validation.util', () => {
         validateFileHeaderAndExtension('text/csv', 'data.csv'),
       ).not.toThrow();
       expect(() =>
+        validateFileHeaderAndExtension('text/html', 'pagina.html'),
+      ).not.toThrow();
+      expect(() =>
+        validateFileHeaderAndExtension('text/markdown', 'readme.md'),
+      ).not.toThrow();
+      expect(() =>
         validateFileHeaderAndExtension('application/zip', 'archive.zip'),
       ).not.toThrow();
     });
   });
 
   describe('validateDetectedMimeType', () => {
-    it('rejects detected SVG or HTML mime types', () => {
-      expect(() => validateDetectedMimeType('image/svg+xml')).toThrow(
-        'Arquivos SVG e HTML não são permitidos',
-      );
-      expect(() => validateDetectedMimeType('text/html')).toThrow(
-        'Arquivos SVG e HTML não são permitidos',
-      );
-    });
-
     it('rejects detected unallowed mime types', () => {
       expect(() =>
         validateDetectedMimeType('application/x-executable'),
@@ -121,6 +114,7 @@ describe('file-validation.util', () => {
     it('allows detected valid mime types', () => {
       expect(() => validateDetectedMimeType('image/png')).not.toThrow();
       expect(() => validateDetectedMimeType('application/pdf')).not.toThrow();
+      expect(() => validateDetectedMimeType('text/html')).not.toThrow();
     });
   });
 
@@ -140,7 +134,13 @@ describe('file-validation.util', () => {
       expect(disposition).toContain('filename="relatorio.pdf"');
     });
 
-    it('returns attachment disposition for SVG if ever evaluated', () => {
+    it('returns attachment disposition for HTML to prevent browser script execution', () => {
+      const disposition = getContentDisposition('text/html', 'estudo.html');
+      expect(disposition).toContain('attachment');
+      expect(disposition).toContain('filename="estudo.html"');
+    });
+
+    it('returns attachment disposition for SVG if evaluated', () => {
       const disposition = getContentDisposition('image/svg+xml', 'diagram.svg');
       expect(disposition).toContain('attachment');
     });
@@ -186,6 +186,50 @@ describe('file-validation.util', () => {
         0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
       ]);
       expect(() => validateBufferSafety(pngBuffer)).not.toThrow();
+    });
+  });
+
+  describe('disk-backed file validation', () => {
+    let directory: string;
+
+    beforeEach(async () => {
+      directory = await mkdtemp(join(tmpdir(), 'biblioteca-validation-test-'));
+    });
+
+    afterEach(async () => {
+      await rm(directory, { recursive: true, force: true });
+    });
+
+    it('rejects empty files and ASF signatures without loading the entire file', async () => {
+      const emptyFile = join(directory, 'empty');
+      const asfFile = join(directory, 'asf');
+      await writeFile(emptyFile, Buffer.alloc(0));
+      await writeFile(
+        asfFile,
+        Buffer.from([
+          0x30, 0x26, 0xb2, 0x75, 0x8e, 0x66, 0xcf, 0x11, 0xa6, 0xd9, 0x00,
+          0xaa, 0x00, 0x62, 0xce, 0x6c,
+        ]),
+      );
+
+      await expect(validateFilePathSafety(emptyFile)).rejects.toThrow(
+        'Arquivo vazio ou inválido.',
+      );
+      await expect(validateFilePathSafety(asfFile)).rejects.toThrow(
+        'Formato de arquivo ASF não é suportado.',
+      );
+    });
+
+    it('scans text uploads for binary NUL bytes', async () => {
+      const validFile = join(directory, 'valid.txt');
+      const invalidFile = join(directory, 'invalid.txt');
+      await writeFile(validFile, Buffer.from('notas de estudo'));
+      await writeFile(invalidFile, Buffer.from([0x61, 0x00, 0x62]));
+
+      await expect(validateTextFileSafety(validFile)).resolves.toBeUndefined();
+      await expect(validateTextFileSafety(invalidFile)).rejects.toThrow(
+        'Arquivo de texto contém bytes binários inválidos.',
+      );
     });
   });
 });

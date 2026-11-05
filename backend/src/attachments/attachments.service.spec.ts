@@ -1,5 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AttachmentType } from '@prisma/client';
+import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Readable } from 'node:stream';
 import { AttachmentsService } from './attachments.service';
 
 const mockStorageService = {
@@ -200,6 +204,54 @@ describe('AttachmentsService', () => {
         nome: 'arquivo.pdf',
       }) as never,
     });
+  });
+
+  it('streams disk-backed uploads and removes the temporary file afterward', async () => {
+    prisma.area.findFirst.mockResolvedValue({ id: 'area-id' });
+    prisma.attachment.create.mockResolvedValue({
+      id: 'attachment-id',
+      tipo: AttachmentType.IMAGEM,
+      url: 'https://storage.example/user-id/area-id/image.png',
+      nome: 'image.png',
+    });
+
+    const directory = await mkdtemp(join(tmpdir(), 'biblioteca-upload-test-'));
+    const filePath = join(directory, 'upload');
+    const png = Buffer.from(
+      '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489',
+      'hex',
+    );
+
+    try {
+      await writeFile(filePath, png);
+      mockStorageService.upload.mockImplementationOnce(
+        async ({ body }: { body: Buffer | Readable }) => {
+          if (!(body instanceof Readable)) {
+            throw new Error('Disk-backed uploads must use a readable stream.');
+          }
+          let receivedBytes = 0;
+          for await (const chunk of body) {
+            if (Buffer.isBuffer(chunk)) receivedBytes += chunk.length;
+          }
+          expect(receivedBytes).toBe(png.length);
+        },
+      );
+
+      await service.upload('user-id', 'area-id', {
+        path: filePath,
+        size: png.length,
+        mimetype: 'image/png',
+        originalname: 'image.png',
+      } as Express.Multer.File);
+
+      await expect(stat(filePath)).rejects.toMatchObject({ code: 'ENOENT' });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+
+    expect(mockStorageService.upload).toHaveBeenCalledWith(
+      expect.objectContaining({ contentLength: png.length }),
+    );
   });
 
   it('removes the uploaded object when attachment creation fails', async () => {

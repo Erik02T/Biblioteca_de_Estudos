@@ -7,11 +7,13 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { AttachmentType } from '@prisma/client';
+import type { Readable } from 'node:stream';
 
 export interface StorageUploadOptions {
   bucket: string;
   key: string;
-  body: Buffer;
+  body: Buffer | Readable;
+  contentLength?: number;
   contentType: string;
   contentDisposition?: string;
 }
@@ -107,6 +109,7 @@ export class StorageService {
           Bucket: this.bucket,
           Key: options.key,
           Body: options.body,
+          ContentLength: options.contentLength,
           ContentType: options.contentType,
           ContentDisposition: options.contentDisposition,
         }),
