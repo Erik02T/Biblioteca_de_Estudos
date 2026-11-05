@@ -41,27 +41,22 @@ O backend também possui upload compatível com S3/R2/MinIO. O endpoint de uploa
 
 ```text
 .
-├── backend/
-│   ├── prisma/
-│   │   ├── migrations/
-│   │   └── schema.prisma
-│   ├── scripts/
-│   └── src/
-│       ├── areas/
-│       ├── attachments/
-│       ├── common/
-│       └── prisma/
-├── frontend/
-│   ├── public/
-│   └── src/app/
-│       ├── AreaEditor.tsx
-│       ├── extensions.ts
-│       ├── page.tsx
-│       └── *.css
-├── docker-compose.yml
-├── env.example
-└── prompts-biblioteca-estudos.md
+├── backend/                 # API NestJS
+│   ├── prisma/             # Schema e migrations do banco
+│   ├── scripts/            # Scripts de validação
+│   └── src/                # Código fonte (areas, attachments, auth, etc.)
+├── frontend/               # Aplicação Next.js
+│   ├── public/             # Arquivos estáticos
+│   └── src/app/            # Componentes e páginas
+├── docs/                   # Documentação organizada
+│   ├── development/        # Guias de desenvolvimento e testes
+│   ├── deployment/         # Documentação de produção e homologação
+│   └── archive/            # Relatórios históricos de fases
+├── docker-compose.yml      # Infraestrutura local (PostgreSQL + MinIO)
+└── env.example             # Template de variáveis de ambiente
 ```
+
+Para mais detalhes, consulte a [documentação completa](docs/README.md).
 
 ## Como usar
 

@@ -217,11 +217,10 @@
 #### 3.3 Deploy Backend (Render)
 
 1. Conectar repositório GitHub ao Render
-2. Criar Web Service
-3. Configurar build command: `npm install && npm run build`
-4. Configurar start command: `npm run start:prod`
-5. Adicionar variáveis de ambiente
-6. Deploy automatico ao push em develop
+2. Criar Web Service com root directory `backend`
+3. Usar os comandos de build, start e health check definidos em `backend/render.yaml`
+4. Adicionar variáveis de ambiente
+5. Manter auto-deploy desativado (`autoDeploy: false`) e iniciar deploys manualmente no painel
 
 #### 3.4 Deploy Frontend (Vercel)
 
@@ -230,7 +229,7 @@
 3. Configurar build command: `npm run build`
 4. Configurar output directory: `.next`
 5. Adicionar variáveis de ambiente
-6. Deploy automático ao push em develop
+6. Desativar deploys automáticos/previews se a política exigir que todo deploy seja manual; publicar manualmente pelo painel
 
 #### 3.5 Configurar CORS e URLs
 

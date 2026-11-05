@@ -39,10 +39,11 @@ Variáveis expostas ao navegador. Devem ser definidas antes do `next build`, poi
 
 | Variável | Obrigatório | Propósito | Exemplo de placeholder |
 |---|---|---|---|
-| `NEXT_PUBLIC_API_URL` | Sim | URL base do backend API | `https://api.exemplo.com` |
+| `NEXT_PUBLIC_API_URL` | Recomendado | URL base do backend API. O código possui fallback para o backend configurado no projeto. | `https://api.exemplo.com` |
 | `NEXT_PUBLIC_STORAGE_URL` | Não | URL base do storage para `next/image` | `https://cdn.exemplo.com` |
 
-**Importante:** `NEXT_PUBLIC_API_URL` é lida em `frontend/src/app/page.tsx` no nível do módulo. Se ausente, o build do frontend falha. Deve estar configurada antes de executar `npm run build` no frontend.
+**Importante:** configure `NEXT_PUBLIC_API_URL` explicitamente no provedor do frontend para evitar depender do fallback. A variável é embutida no bundle durante `next build`. URLs de loopback são aceitas apenas em desenvolvimento; em produção, o build falha explicitamente se `NEXT_PUBLIC_API_URL` ou `NEXT_PUBLIC_STORAGE_URL` apontar para localhost, `127.0.0.1`, `::1` ou outro host de loopback.
+`NEXT_PUBLIC_STORAGE_URL` não tem fallback e pode ser omitida quando não for necessária.
 
 ---
 
@@ -53,9 +54,10 @@ Qualquer PostgreSQL 14+ hospedado (ex.: Amazon RDS, Google Cloud SQL, Azure Data
 
 ### Configuração
 1. Crie uma instância PostgreSQL.
-2. Crie um banco e um usuário com privilégios de `CREATE`, `ALTER`, `DROP`, `INSERT`, `UPDATE`, `DELETE`, `SELECT`.
-3. Defina `DATABASE_URL` no backend com a string de conexão fornecida pelo provedor.
-4. Verifique se o backend consegue alcançar o host/porta do banco (grupos de segurança, firewall, SSL).
+2. Crie uma conta de runtime com `CONNECT` no banco, `USAGE` no schema, `SELECT`, `INSERT`, `UPDATE` e `DELETE` nas tabelas, e `USAGE`/`SELECT` nas sequences. Não conceda privilégios de DDL (`CREATE`, `ALTER`, `DROP`) à aplicação em execução.
+3. Use uma conta de migração separada, com os privilégios DDL necessários, somente no job controlado de migração.
+4. Defina `DATABASE_URL` no serviço com a credencial de runtime; no job de migração, injete temporariamente a credencial de migração como `DATABASE_URL`.
+5. Verifique se o backend consegue alcançar o host/porta do banco (grupos de segurança, firewall, SSL).
 
 ### Migrações
 O diretório `backend/prisma/migrations/` contém três migrations versionadas:
@@ -68,9 +70,12 @@ O arquivo `backend/prisma/migrations/migration_lock.toml` está versionado e dev
 ### Comando para aplicar migrações em produção
 ```bash
 cd backend
+npm install --include=dev
 npx prisma migrate deploy
 npx prisma generate
 ```
+
+O Prisma CLI é dependência de desenvolvimento e não é incluído no runtime final. Execute a migração em um job controlado de deploy/manutenção que instale as dependências de desenvolvimento e use a credencial de migração do ambiente-alvo. Não substitua a credencial de runtime do serviço pela credencial de migração.
 
 > **Não execute migrations contra um banco de produção sem autorização explícita.** Execute primeiro em um ambiente de teste/estágio isolado para validar.
 
@@ -107,20 +112,24 @@ O backend utiliza cliente S3-compatível (`@aws-sdk/client-s3`). Funciona com:
 Não há dependência de diretórios locais do servidor. Arquivos ficam no bucket externo. Reinício ou troca de instância não causa perda de anexos.
 
 ### Validação de arquivos
-O backend valida o tipo MIME real do conteúdo do buffer via `file-type` antes de enviar ao storage. Não há limite de tamanho imposto pelo código; limites devem ser configurados no proxy/reverse proxy ou no provedor de storage, se necessário.
+O backend valida o tipo MIME real via `file-type` antes de enviar o arquivo ao storage. Uploads têm limite de 100 MiB por arquivo, são temporariamente gravados em disco e transmitidos ao storage sem manter o arquivo inteiro em memória. Arquivos temporários são removidos após o processamento. Atualizações JSON de áreas aceitam corpos de até 52 MiB para preservar o limite de conteúdo de 50 MiB definido no DTO; os demais corpos JSON e URL-encoded estão limitados a 1 MiB. A infraestrutura pode impor limites adicionais.
+
+`npm audit` ainda reporta um advisory moderado em `file-type@16.5.4` (GHSA-5v7r-6r5c-r473). O fluxo atual rejeita assinaturas ASF antes de chamar `file-type`, inclusive para uploads em disco; mantenha essa validação e reavalie a dependência antes de uma futura atualização major.
+
+A instalação de build também reporta advisories altos em dependências transitivas do Prisma CLI (`deepmerge-ts` e `effect`). O CLI foi classificado como dependência de desenvolvimento e removido do runtime junto com dependências opcionais; atualizar Prisma para a correção indicada exigiria uma migração major e não foi feito automaticamente.
 
 ---
 
 ## 4. Segredos (Secrets Management)
 
 ### JWT_SECRET
-- Atualmente configurado com valor de **exemplo/placeholder** em `.env` e `backend/.env`.
-- **Este é um bloqueio crítico para produção.** Gere um segredo aleatório real (mínimo 32 bytes) e defina em `backend/.env` ou no gerenciador de segredos da plataforma de hospedagem.
-- Nunca reuse o mesmo `JWT_SECRET` entre ambientes (desenvolvimento, estágio, produção).
+- O valor configurado no provedor de produção não pode ser verificado a partir do repositório.
+- Confirme no gerenciador de segredos da plataforma que o segredo é aleatório, tem pelo menos 32 bytes e não é compartilhado com desenvolvimento ou estágio.
+- Não exiba nem copie o valor do segredo em relatórios, documentação ou arquivos versionados.
 
 ### Credenciais de Storage
-- `STORAGE_ACCESS_KEY_ID` e `STORAGE_SECRET_ACCESS_KEY` estão com valores de desenvolvimento no `backend/.env`.
-- Para produção, substitua pelas credenciais reais do bucket.
+- A configuração efetiva de storage não pode ser verificada a partir do repositório.
+- Confirme no provedor que as credenciais de produção têm somente as permissões necessárias ao bucket.
 - Nunca armazene essas credenciais no frontend nem no repositório Git.
 
 ### Arquivos `.env`
@@ -165,7 +174,7 @@ Cada `Attachment` no banco armazena a `url` do objeto no bucket. Ao restaurar:
 ### Backend
 ```bash
 cd backend
-npm install
+npm install --include=dev
 npx prisma generate
 npm run build
 npm run start:prod
@@ -179,7 +188,12 @@ npm install
 npm run build
 npm run start
 ```
-O frontend requer `NEXT_PUBLIC_API_URL` (e opcionalmente `NEXT_PUBLIC_STORAGE_URL`) **antes** do `next build`.
+Configure explicitamente `NEXT_PUBLIC_API_URL` (e opcionalmente `NEXT_PUBLIC_STORAGE_URL`) antes do `next build`; se omitida, o código usa o fallback definido no projeto.
+Não use valores de localhost no build de produção. `NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_STORAGE_URL` podem ser omitidas quando aplicável; se qualquer variável definida apontar para um host de loopback, `next build` e `next start` falham explicitamente. Um `.env.local` de desenvolvimento com MinIO local não deve ser levado para o ambiente de produção.
+
+### Deploy manual
+
+O manifesto `backend/render.yaml` define `autoDeploy: false`; o backend deve ser implantado manualmente pelo painel do Render. Confirme que a configuração efetiva do serviço no painel corresponde ao manifesto. Para cumprir uma política de deploy exclusivamente manual, desative também os deploys automáticos e previews do projeto Vercel no painel; essa configuração externa não é verificável nem alterada pelo repositório.
 
 ### Ordem recomendada
 1. Provisione banco e storage.
@@ -204,20 +218,19 @@ O frontend requer `NEXT_PUBLIC_API_URL` (e opcionalmente `NEXT_PUBLIC_STORAGE_UR
 
 | Pendência | Status | Motivo |
 |---|---|---|
-| `JWT_SECRET` real | Configurado | Valor de exemplo substituído por segredo real (fornecido fora deste documento). |
-| Credenciais de storage de produção | Pendente de configuração externa | `STORAGE_ACCESS_KEY_ID` / `STORAGE_SECRET_ACCESS_KEY` ainda são valores de desenvolvimento no `backend/.env`. |
-| Bucket de produção criado | Pendente de configuração externa | Não existe infraestrutura externa provisionada. |
-| Banco de produção provisionado | Pendente de configuração externa | Não existe instância PostgreSQL de produção. |
-| Backups configurados | Pendente de configuração externa | Nenhuma política de backup confirmada nos provedores. |
+| `JWT_SECRET` real | Pendente de verificação externa | Conferir o gerenciador de segredos do serviço sem revelar o valor. |
+| Credenciais de storage de produção | Pendente de verificação externa | Confirmar bucket, permissões e credenciais nos painéis do provedor. |
+| Bucket de produção criado | Pendente de verificação externa | O estado do bucket não é verificável pelo repositório. |
+| Banco de produção provisionado | Pendente de verificação externa | Conferir vínculo, URL e isolamento no painel do provedor. |
+| Backups configurados | Pendente de configuração externa | Confirmar retenção e restauração nos provedores. |
 
 ---
 
 ## 9. Riscos Residuais
 
-1. **JWT_SECRET de exemplo:** Se não for alterado antes da produção, tokens JWT podem ser falsificados.
-2. **Credenciais de desenvolvimento no `.env` local:** Valores de `STORAGE_ACCESS_KEY_ID` e `STORAGE_SECRET_ACCESS_KEY` no `backend/.env` são de desenvolvimento. Não devem ser usados em produção.
-3. **Backup não automatizado:** Não há evidência de que backups automáticos estejam ativos. Perda de dados possível em caso de falha.
-4. **NEXT_PUBLIC_API_URL em tempo de build:** Se ausente durante o `next build`, o frontend falha. Deve ser injetado no ambiente de build da plataforma de hospedagem (Vercel, Netlify, etc.).
+1. **Segredos de produção não verificados:** Confirme as configurações nos painéis dos provedores sem exibir seus valores.
+2. **Backup não confirmado:** Não há evidência no repositório de que backups automáticos estejam ativos. Perda de dados é possível em caso de falha.
+3. **NEXT_PUBLIC_API_URL em tempo de build:** Configure explicitamente no provedor do frontend; sem ela, o código usa o fallback definido no projeto.
 
 ---
 
@@ -241,10 +254,10 @@ O backend expõe dois endpoints públicos de saúde, sem exigência de autentica
 | Endpoint | Método | Propósito | Resposta de sucesso |
 |---|---|---|---|
 | `GET /health` | GET | Saúde do processo | HTTP 200 com `{ status: "ok", timestamp }` |
-| `GET /health/ready` | GET | Prontidão dos serviços essenciais | HTTP 200 com status do banco de dados |
+| `GET /health/ready` | GET | Prontidão dos serviços essenciais | HTTP 200 se o banco estiver conectado; HTTP 503 se degradado |
 
 - `/health` verifica apenas que o processo está respondendo.
-- `/health/ready` executa `SELECT 1` no PostgreSQL via Prisma. Retorna `status: "degraded"` se o banco estiver indisponível, sem gerar sequência excessiva de consultas (cada chamada faz apenas uma verificação pontual).
+- `/health/ready` executa `SELECT 1` no PostgreSQL via Prisma. Retorna `status: "degraded"` e HTTP 503 se o banco estiver indisponível, para que verificações de prontidão do provedor detectem a falha.
 - Nenhum segredo, stack trace ou detalhe interno é revelado nesses endpoints.
 
 ---
@@ -291,7 +304,7 @@ O backend utiliza o `AuthRateLimitGuard` (guard global) com os seguintes limites
 | Rotas de autenticação (`/auth/*`) | 10 requisições | 15 minutos |
 | Demais rotas da API | 120 requisições | 15 minutos |
 
-A identificação do cliente usa `request.ip` combinado com `user-agent`. Os limites podem ser ajustados por ambiente modificando as constantes no código, sem enfraquecer a proteção padrão.
+A identificação do cliente usa `request.ip`, sem depender do `user-agent`. Buckets expirados são removidos periodicamente e o número de IPs rastreados é limitado a 10.000 por processo. Atrás de proxy, confirme a configuração confiável de encaminhamento de IP antes de habilitar `trust proxy`.
 
 ---
 
@@ -301,10 +314,11 @@ O backend **não** habilita `trust proxy` por padrão. Essa configuração só d
 
 Habilitar `trust proxy` sem justificativa pode permitir que cabeçalhos encaminhados não confiáveis influenciem a identificação do cliente e enfraqueçam o rate limiting.
 
-Se o provedor exigir, adicione em `main.ts`:
+No Render, confirme no painel/documentação do serviço a cadeia de proxies e quantos hops são confiáveis antes de alterar essa configuração. Não presuma que há exatamente um proxy. Se o valor confirmado for um hop, configure em `main.ts`:
 ```typescript
-app.enableTrustProxy();
+app.getHttpAdapter().getInstance().set('trust proxy', 1);
 ```
+Substitua `1` pelo valor validado para a topologia real. Não use `true` sem confirmar que os cabeçalhos encaminhados só podem ser definidos por proxies confiáveis.
 
 ---
 
@@ -312,8 +326,9 @@ app.enableTrustProxy();
 
 Um `Dockerfile` multi-stage foi criado em `backend/Dockerfile`:
 
-- **Stage de build:** instala dependências, gera o Prisma Client, compila o backend.
-- **Stage de produção:** imagem mínima com `node:20-alpine`, execução como usuário não-root (`appuser`), porta configurada via variável `PORT`.
+- **Stage de build:** usa Node.js 22, instala dependências de build, gera o Prisma Client, compila e remove dependências de desenvolvimento e opcionais.
+- **Stage de produção:** imagem baseada em `node:22-alpine`, execução como usuário não-root (`appuser`), porta configurada via variável `PORT`.
+- `backend/.dockerignore` exclui `node_modules`, arquivos `.env`, artefatos de build e `.git` do contexto.
 
 **Não copie arquivos `.env` para a imagem.** As variáveis de ambiente devem ser injetadas pela plataforma de hospedagem ou orquestrador de containers.
 
@@ -342,7 +357,7 @@ A aplicação fecha conexões e recursos adequadamente durante o encerramento (`
 ### Backend (sem Docker)
 ```bash
 cd backend
-npm install
+npm install --include=dev
 npx prisma generate
 npm run build
 npm run start:prod
@@ -394,9 +409,9 @@ npm run start
 | `trust proxy` não habilitado indiscriminadamente | ✅ CONCLUÍDO E DOCUMENTADO |
 | Graceful shutdown (`SIGTERM`/`SIGINT`) implementado | ✅ CONCLUÍDO E VALIDADO (código revisado) |
 | Validação de `JWT_SECRET` placeholder/rejeição de valores fracos | ✅ CONCLUÍDO E VALIDADO |
-| Dockerfile multi-stage de produção criado | ✅ CONCLUÍDO, NÃO VALIDADO (sem Docker disponível para build de teste) |
+| Dockerfile multi-stage de produção criado | ✅ CONCLUÍDO E VALIDADO com Docker local |
 | Build de produção do backend passando | ✅ CONCLUÍDO E VALIDADO |
-| Testes unitários passando (63 testes) | ✅ CONCLUÍDO E VALIDADO |
+| Testes unitários passando (74 testes) | ✅ CONCLUÍDO E VALIDADO |
 | Documentação atualizada em `PRODUCAO.md` | ✅ CONCLUÍDO E VALIDADO |
 | Credenciais de storage de produção configuradas | Pendente de configuração externa |
 | Bucket de produção criado | Pendente de configuração externa |
@@ -430,9 +445,9 @@ npm run test:e2e
 
 ### Pipeline de CI (GitHub Actions)
 
-O workflow está definido em `.github/workflows/ci.yml` e executa nos eventos `push` e `pull_request` para as branches `develop` e `main`.
+O workflow está definido em `.github/workflows/ci.yml`. Executa em `push` para `develop`, `main` e `refactor/cleanup-general`; em `pull_request`, para PRs destinados a `develop` ou `main`.
 
-**Jobs:** backend (lint, testes unitários, e2e, build), frontend (lint, build), docker (validação do Dockerfile).
+**Jobs:** backend (lint, testes unitários, e2e, build), frontend (lint, testes, build) e Docker (build completo da imagem).
 
 **Variáveis de ambiente de CI** não são segredos reais, apenas valores para testes.
 
@@ -452,7 +467,7 @@ DATABASE_URL="..." JWT_SECRET="segredo-teste-min-32-bytes" npm run test:e2e
 
 ### Validação do Dockerfile
 
-O `backend/Dockerfile` usa estágio multi-stage. Não foi possível validar com `docker build` neste ambiente (Docker indisponível). Valide em ambiente com Docker:
+O `backend/Dockerfile` foi validado com `docker build` em Node 22. O build executa geração do Prisma Client, compilação e remoção das dependências de desenvolvimento e opcionais. A imagem temporária foi removida após smoke test confirmando o Prisma Client disponível e o Prisma CLI ausente:
 
 ```bash
 cd backend
@@ -465,7 +480,7 @@ docker build -t biblioteca-backend .
 |---|---|---|
 | Testes de integração com PostgreSQL real | Banco PostgreSQL isolado | Documentado, não executado |
 | Testes de integração com storage real | Bucket S3/R2 com credenciais | Documentado, não executado |
-| Build da imagem Docker | Docker disponível | Documentado, não executado |
+| Build da imagem Docker | Docker disponível | Validado localmente; nenhum container foi conectado a banco ou storage |
 | Testes e2e com storage | Credenciais de bucket de homologação | Pendente |
 
 ### Pendências Antes do Deploy
@@ -476,7 +491,6 @@ docker build -t biblioteca-backend .
 | Bucket de produção criado | Pendente de configuração externa |
 | Banco de produção provisionado | Pendente de configuração externa |
 | Backups configurados | Pendente de configuração externa |
-| Build do Docker validado | Pendente de infraestrutura (Docker indisponível) |
 | Testes de integração com PostgreSQL real | Pendente de infraestrutura |
 
 ---
@@ -485,17 +499,15 @@ docker build -t biblioteca-backend .
 
 | Critério | Status |
 |---|---|
-| Testes unitários existentes continuam passando (63) | ✅ CONCLUÍDO E VALIDADO |
+| Testes unitários existentes continuam passando (74) | ✅ CONCLUÍDO E VALIDADO |
 | Testes e2e dos fluxos críticos implementados e executados (26) | ✅ CONCLUÍDO E VALIDADO |
 | Verificações de segurança HTTP por testes de integração | ✅ CONCLUÍDO E VALIDADO |
 | Migrations validadas em base isolada | Pendente de infraestrutura (banco não disponível) |
 | Pipeline de CI implementada | ✅ CONCLUÍDO (workflow criado) |
 | Builds de produção aprovados (backend + frontend) | ✅ CONCLUÍDO E VALIDADO |
-| Dockerfile validado | Pendente de infraestrutura (Docker indisponível) |
-| Testes do frontend cobrindo fluxos críticos | ✅ CONCLUÍDO E VALIDADO (4 testes) |
+| Dockerfile validado | ✅ CONCLUÍDO E VALIDADO localmente |
+| Testes do frontend cobrindo fluxos críticos | ✅ CONCLUÍDO E VALIDADO (6 testes) |
 | Dependências externas e riscos residuais documentados | ✅ CONCLUÍDO |
 | Não houve deploy nem alteração destrutiva | ✅ CONCLUÍDO |
 
 A Fase 4 poderá ser considerada **CONCLUÍDA E VALIDADA** quando todos os critérios acima estiverem atendidos. As pendências de infraestrutura (banco de teste real, Docker, bucket de storage) estão explicitamente identificadas e não bloqueiam a conclusão da fase, pois os testes que não dependem delas estão passando.
-
-
