@@ -13,6 +13,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { tmpdir } from 'node:os';
+import { randomUUID } from 'node:crypto';
 import { UserId } from '../common/user-id.decorator';
 import { AttachmentsService } from './attachments.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
@@ -40,7 +43,11 @@ export class AttachmentsController {
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: 10 * 1024 * 1024 },
+      limits: { fileSize: 100 * 1024 * 1024 },
+      storage: diskStorage({
+        destination: tmpdir(),
+        filename: (_request, _file, callback) => callback(null, randomUUID()),
+      }),
       fileFilter: (_request, file, callback) => {
         try {
           validateFileHeaderAndExtension(file.mimetype, file.originalname);

@@ -11,8 +11,8 @@ RUN apk add --no-cache openssl
 # Copia arquivos de dependência
 COPY package.json package-lock.json ./
 
-# Instala dependências de produção
-RUN npm install --omit=dev
+# Instala dependências de build, incluindo Nest CLI e Prisma CLI
+RUN npm install --include=dev
 
 # Copia o restante do código fonte
 COPY . .
@@ -22,6 +22,9 @@ RUN npx prisma generate
 
 # Compila o backend
 RUN npm run build
+
+# Mantém apenas dependências de runtime na imagem final
+RUN npm prune --omit=dev --omit=optional
 
 # ============================================
 # STAGE 2: Produção
@@ -52,4 +55,4 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 # Porta configurada via variável de ambiente PORT
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]

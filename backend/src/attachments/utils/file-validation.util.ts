@@ -1,13 +1,25 @@
 import { BadRequestException } from '@nestjs/common';
+import { createReadStream } from 'node:fs';
+import { open, stat } from 'node:fs/promises';
 
 export const ALLOWED_MIME_TYPES: Record<string, string[]> = {
+  // Imagens
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
   'image/gif': ['.gif'],
   'image/webp': ['.webp'],
+  'image/bmp': ['.bmp'],
+  'image/svg+xml': ['.svg'],
+  // Documentos e Textos
   'application/pdf': ['.pdf'],
-  'text/plain': ['.txt'],
+  'text/plain': ['.txt', '.text', '.log'],
+  'text/markdown': ['.md', '.markdown'],
   'text/csv': ['.csv'],
+  'text/html': ['.html', '.htm'],
+  'application/xhtml+xml': ['.html', '.xhtml'],
+  'application/json': ['.json'],
+  'text/xml': ['.xml'],
+  'application/xml': ['.xml'],
   'application/msword': ['.doc'],
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
     '.docx',
@@ -22,15 +34,16 @@ export const ALLOWED_MIME_TYPES: Record<string, string[]> = {
   ],
   'application/zip': ['.zip'],
   'application/x-zip-compressed': ['.zip'],
+  'application/x-tar': ['.tar'],
+  'application/gzip': ['.gz'],
+  'application/x-7z-compressed': ['.7z'],
+  'video/mp4': ['.mp4'],
+  'video/webm': ['.webm'],
+  'audio/mpeg': ['.mp3'],
+  'audio/wav': ['.wav'],
 };
 
 export const DISALLOWED_MIME_TYPES = new Set([
-  'image/svg+xml',
-  'text/html',
-  'application/xhtml+xml',
-  'text/javascript',
-  'application/javascript',
-  'application/x-javascript',
   'application/x-sh',
   'application/x-httpd-php',
   'application/x-executable',
@@ -38,12 +51,6 @@ export const DISALLOWED_MIME_TYPES = new Set([
 ]);
 
 export const DISALLOWED_EXTENSIONS = new Set([
-  '.svg',
-  '.html',
-  '.htm',
-  '.xhtml',
-  '.js',
-  '.mjs',
   '.exe',
   '.bat',
   '.cmd',
@@ -56,6 +63,21 @@ export const DISALLOWED_EXTENSIONS = new Set([
   '.asf',
   '.wmv',
   '.wma',
+]);
+
+export const TEXT_EXTENSIONS = new Set([
+  '.txt',
+  '.text',
+  '.log',
+  '.csv',
+  '.html',
+  '.htm',
+  '.xhtml',
+  '.md',
+  '.markdown',
+  '.json',
+  '.xml',
+  '.svg',
 ]);
 
 // ASF Header Object GUID: 30 26 b2 75 8e 66 cf 11 a6 d9 00 aa 00 62 ce 6c
@@ -78,11 +100,63 @@ export function validateBufferSafety(buffer: Buffer): void {
   }
 }
 
+export async function validateFilePathSafety(filePath: string): Promise<void> {
+  const fileStat = await stat(filePath);
+  if (!fileStat.isFile() || fileStat.size === 0) {
+    throw new BadRequestException('Arquivo vazio ou inválido.');
+  }
+
+  const file = await open(filePath, 'r');
+  try {
+    const header = Buffer.alloc(16);
+    const { bytesRead } = await file.read(header, 0, header.length, 0);
+    if (bytesRead >= 16 && isAsfContainer(header)) {
+      throw new BadRequestException('Formato de arquivo ASF não é suportado.');
+    }
+  } finally {
+    await file.close();
+  }
+}
+
 export function extractFileExtension(filename: string): string {
   if (!filename) return '';
   const lastDot = filename.lastIndexOf('.');
   if (lastDot === -1 || lastDot === 0) return '';
   return filename.slice(lastDot).toLowerCase();
+}
+
+export function isTextMimeAndExt(
+  mimetype: string,
+  originalname: string,
+): boolean {
+  const mime = mimetype.toLowerCase().trim();
+  const ext = extractFileExtension(originalname ?? '');
+  return (
+    TEXT_EXTENSIONS.has(ext) ||
+    mime.startsWith('text/') ||
+    mime === 'application/json' ||
+    mime === 'application/xml' ||
+    mime === 'application/xhtml+xml' ||
+    mime === 'image/svg+xml'
+  );
+}
+
+export function validateTextBufferSafety(buffer: Buffer): void {
+  if (buffer.includes(0x00)) {
+    throw new BadRequestException(
+      'Arquivo de texto contém bytes binários inválidos.',
+    );
+  }
+}
+
+export async function validateTextFileSafety(filePath: string): Promise<void> {
+  for await (const chunk of createReadStream(filePath)) {
+    if (Buffer.isBuffer(chunk) && chunk.includes(0x00)) {
+      throw new BadRequestException(
+        'Arquivo de texto contém bytes binários inválidos.',
+      );
+    }
+  }
 }
 
 export function validateFileHeaderAndExtension(
@@ -96,26 +170,20 @@ export function validateFileHeaderAndExtension(
   const mime = mimetype.toLowerCase().trim();
   const ext = extractFileExtension(originalname ?? '');
 
-  if (
-    DISALLOWED_MIME_TYPES.has(mime) ||
-    mime === 'image/svg+xml' ||
-    mime === 'text/html'
-  ) {
+  if (DISALLOWED_MIME_TYPES.has(mime)) {
     throw new BadRequestException(
-      'Arquivos SVG e HTML não são permitidos devido a riscos de segurança (conteúdo executável).',
+      `Tipo MIME "${mimetype}" não é permitido por razões de segurança.`,
     );
   }
 
   if (DISALLOWED_EXTENSIONS.has(ext)) {
     throw new BadRequestException(
-      `Extensão de arquivo "${ext}" não é permitida por razões de segurança.`,
+      `Extensão de arquivo "${ext}" não é permitida por razões de segurança (executáveis não permitidos).`,
     );
   }
 
   if (!(mime in ALLOWED_MIME_TYPES)) {
-    throw new BadRequestException(
-      `Tipo MIME "${mimetype}" não é permitido. Tipos permitidos: imagens (png, jpg, webp, gif) e documentos (pdf, docx, xlsx, pptx, txt, csv, zip).`,
-    );
+    throw new BadRequestException(`Tipo MIME "${mimetype}" não é permitido.`);
   }
 
   const allowedExtensions = ALLOWED_MIME_TYPES[mime];
@@ -129,13 +197,9 @@ export function validateFileHeaderAndExtension(
 export function validateDetectedMimeType(detectedMime: string): void {
   const mime = detectedMime.toLowerCase().trim();
 
-  if (
-    DISALLOWED_MIME_TYPES.has(mime) ||
-    mime === 'image/svg+xml' ||
-    mime === 'text/html'
-  ) {
+  if (DISALLOWED_MIME_TYPES.has(mime)) {
     throw new BadRequestException(
-      'Arquivos SVG e HTML não são permitidos devido a riscos de segurança (conteúdo executável).',
+      `O tipo MIME detectado (${detectedMime}) não é permitido por razões de segurança.`,
     );
   }
 

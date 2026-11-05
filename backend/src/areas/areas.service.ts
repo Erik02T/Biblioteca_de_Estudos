@@ -75,8 +75,14 @@ export class AreasService {
   async update(userId: string, id: string, dto: UpdateAreaDto) {
     const area = await this.findOne(userId, id);
     const { conteudo, updatedAt, ...data } = dto;
+    const updateData = {
+      ...data,
+      ...(conteudo === undefined
+        ? {}
+        : { conteudo: conteudo as Prisma.InputJsonValue }),
+    };
 
-    if (updatedAt) {
+    if (updatedAt !== undefined) {
       const expectedUpdatedAt = new Date(updatedAt);
       const currentUpdatedAt = new Date(area.updatedAt);
 
@@ -85,16 +91,29 @@ export class AreasService {
           'Este bloco foi atualizado por outro usuário. Recarregue a página e tente novamente.',
         );
       }
+
+      const [updatedArea] = await this.prisma.area.updateManyAndReturn({
+        where: { id, userId, updatedAt: expectedUpdatedAt },
+        data: {
+          ...updateData,
+          updatedAt: new Date(
+            Math.max(Date.now(), expectedUpdatedAt.getTime() + 1),
+          ),
+        },
+      });
+
+      if (!updatedArea) {
+        throw new ConflictException(
+          'Este bloco foi atualizado por outro usuário. Recarregue a página e tente novamente.',
+        );
+      }
+
+      return updatedArea;
     }
 
     return this.prisma.area.update({
       where: { id },
-      data: {
-        ...data,
-        ...(conteudo === undefined
-          ? {}
-          : { conteudo: conteudo as Prisma.InputJsonValue }),
-      },
+      data: updateData,
     });
   }
 

@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { AppService } from './app.service';
 import { Public } from './auth/auth.guard';
 
@@ -20,7 +21,11 @@ export class AppController {
 
   @Get('health/ready')
   @Public()
-  async ready() {
-    return this.appService.getReadiness();
+  async ready(@Res({ passthrough: true }) response?: Response) {
+    const readiness = await this.appService.getReadiness();
+    if (readiness.status !== 'ok' && response) {
+      response.status(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    return readiness;
   }
 }

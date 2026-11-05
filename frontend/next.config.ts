@@ -1,25 +1,45 @@
 import type { NextConfig } from "next";
 
-// Parse the public storage URL to build a remotePattern for next/image.
-// NEXT_PUBLIC_STORAGE_URL should be set to the base URL of your storage bucket
-// (e.g. https://cdn.example.com or http://localhost:9000/bucket-name).
-// Falls back to the MinIO dev default when the variable is absent.
-const storageUrl = new URL(
-  process.env.NEXT_PUBLIC_STORAGE_URL ?? "http://localhost:9000"
-);
+const apiUrlValue = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = apiUrlValue ? new URL(apiUrlValue) : undefined;
+const storageUrlValue = process.env.NEXT_PUBLIC_STORAGE_URL;
+const storageUrl = storageUrlValue ? new URL(storageUrlValue) : undefined;
+
+const isLoopbackHost = (hostname: string) => {
+  const normalizedHostname = hostname.toLowerCase();
+  return (
+    normalizedHostname === "localhost" ||
+    normalizedHostname.endsWith(".localhost") ||
+    normalizedHostname === "::1" ||
+    normalizedHostname === "[::1]" ||
+    normalizedHostname === "0.0.0.0" ||
+    /^127(?:\.\d{1,3}){3}$/.test(normalizedHostname)
+  );
+};
+
+if (process.env.NODE_ENV === "production") {
+  for (const [name, url] of [
+    ["NEXT_PUBLIC_API_URL", apiUrl],
+    ["NEXT_PUBLIC_STORAGE_URL", storageUrl],
+  ] as const) {
+    if (url && isLoopbackHost(url.hostname)) {
+      throw new Error(`${name} must not use a loopback host in production.`);
+    }
+  }
+}
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: storageUrl.protocol.replace(":", "") as "http" | "https",
-        hostname: storageUrl.hostname,
-        // Only set port when the URL explicitly includes one (avoids setting
-        // an empty string, which would block the default 80/443 ports).
-        ...(storageUrl.port ? { port: storageUrl.port } : {}),
-        pathname: "/**",
-      },
-    ],
+    remotePatterns: storageUrl
+      ? [
+          {
+            protocol: storageUrl.protocol.replace(":", "") as "http" | "https",
+            hostname: storageUrl.hostname,
+            ...(storageUrl.port ? { port: storageUrl.port } : {}),
+            pathname: "/**",
+          },
+        ]
+      : [],
   },
 };
 

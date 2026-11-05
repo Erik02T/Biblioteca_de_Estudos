@@ -1,5 +1,5 @@
 import { AreasService } from './areas.service';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { AttachmentType, SectionType, SubSectionType } from '@prisma/client';
 
 const mockStorageService = {
@@ -22,6 +22,7 @@ describe('AreasService', () => {
       count: jest.fn(),
       findFirst: jest.fn(),
       update: jest.fn(),
+      updateManyAndReturn: jest.fn(),
       delete: jest.fn(),
     },
   };
@@ -180,6 +181,56 @@ describe('AreasService', () => {
         conteudo: { type: 'doc', content: [{ type: 'paragraph' }] },
       },
     });
+  });
+
+  it('rejects one of two concurrent updates using the same version', async () => {
+    const updatedAt = new Date('2026-11-05T12:00:00.000Z');
+    const currentArea = {
+      id: 'area-id',
+      userId: 'user-id',
+      updatedAt,
+    };
+    prisma.area.findFirst.mockImplementation(() =>
+      Promise.resolve({ ...currentArea, attachments: [] }),
+    );
+    prisma.area.updateManyAndReturn.mockImplementation(
+      ({
+        where,
+        data,
+      }: {
+        where: { updatedAt: Date };
+        data: { updatedAt: Date; nome?: string };
+      }) => {
+        if (where.updatedAt.getTime() !== currentArea.updatedAt.getTime()) {
+          return Promise.resolve([]);
+        }
+        Object.assign(currentArea, data);
+        return Promise.resolve([{ ...currentArea }]);
+      },
+    );
+
+    const results = await Promise.allSettled([
+      service.update('user-id', 'area-id', {
+        nome: 'Primeira gravação',
+        updatedAt: updatedAt.toISOString(),
+      }),
+      service.update('user-id', 'area-id', {
+        nome: 'Segunda gravação',
+        updatedAt: updatedAt.toISOString(),
+      }),
+    ]);
+
+    expect(
+      results.filter((result) => result.status === 'fulfilled'),
+    ).toHaveLength(1);
+    expect(
+      results.filter((result) => result.status === 'rejected'),
+    ).toHaveLength(1);
+    const rejected = results.find((result) => result.status === 'rejected');
+    expect(rejected?.status).toBe('rejected');
+    if (rejected?.status === 'rejected') {
+      expect(rejected.reason).toBeInstanceOf(ConflictException);
+    }
   });
 
   it('does not read an area owned by another user', async () => {

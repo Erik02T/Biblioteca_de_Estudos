@@ -20,6 +20,7 @@ interface ReadinessResponse {
   status: string;
   timestamp: string;
   checks: { database: string };
+  message?: string;
 }
 
 interface ErrorResponse {
@@ -88,7 +89,6 @@ describe('AppController (e2e)', () => {
         findFirst: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
-        $queryRaw: jest.fn(),
       },
       attachment: {
         create: jest.fn(),
@@ -178,12 +178,12 @@ describe('AppController (e2e)', () => {
       expect(body.timestamp).toBeDefined();
     });
 
-    it('should return degraded status when database query fails', async () => {
+    it('should return 503 with degraded status when database query fails', async () => {
       prisma.$queryRaw.mockRejectedValue(new Error('connection refused'));
 
       const response = await request(app.getHttpServer())
         .get('/health/ready')
-        .expect(200);
+        .expect(503);
 
       const body = response.body as ReadinessResponse;
       expect(body.status).toBe('degraded');
@@ -196,7 +196,7 @@ describe('AppController (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get('/health/ready')
-        .expect(200);
+        .expect(503);
 
       const body = response.body as ReadinessResponse;
       expect(body).not.toHaveProperty('stack');

@@ -207,8 +207,16 @@ export function AttachmentsPanel(props: {
         {props.items.map((it) => (
           <div key={it.id} className={cx(styles.slot, styles.slotFull)} data-testid="attach-slot">
             {it.previewUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={it.previewUrl} alt={it.label} className={styles.thumb} />
+              <a
+                href={it.href ?? it.previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.thumbLink}
+                title={`Abrir ${it.label} em nova aba`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={it.previewUrl} alt={it.label} className={styles.thumb} />
+              </a>
             ) : (
               <>
                 <Icon name={it.kind === "link" ? "link" : it.kind === "image" ? "img" : "file"} />

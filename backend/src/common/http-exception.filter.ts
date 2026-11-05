@@ -28,6 +28,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ? exceptionResponse
           : (((exceptionResponse as Record<string, unknown>)
               ?.message as string) ?? message);
+    } else if (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'status' in exception &&
+      typeof exception.status === 'number'
+    ) {
+      status = (exception as { status: number }).status;
+      message = (exception as { message?: string }).message ?? message;
     } else if (exception instanceof Error) {
       // Não vaza stack traces nem detalhes internos para o cliente
       this.logger.error(

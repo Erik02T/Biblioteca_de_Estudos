@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend - Biblioteca de Estudos
 
-## Getting Started
+Frontend em Next.js 16.4.5 para a Biblioteca de Estudos.
 
-First, run the development server:
+## Tecnologias
+
+- Next.js 16.4.5
+- React 19
+- Tiptap (editor de texto rico)
+- TypeScript
+
+## Instalação
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuração
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Crie um arquivo `.env.local` com as variáveis de ambiente:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_STORAGE_URL=http://localhost:9000/biblioteca-estudos
+```
 
-## Learn More
+## Comandos
 
-To learn more about Next.js, take a look at the following resources:
+### Desenvolvimento
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O frontend usa `http://localhost:3000` por padrão. Se essa porta estiver ocupada, o Next.js usará a próxima porta disponível (comumente `3001`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Build
+```bash
+npm run build
+```
 
-## Deploy on Vercel
+### Produção
+```bash
+npm run start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Testes
+```bash
+npm test
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Lint
+```bash
+npm run lint
+```
+
+## Funcionalidades
+
+- Navegação por seções (Linguagens, Faculdade, Projetos, Outros)
+- Subseções (Estudando, Estudado)
+- Grid de blocos com nome, categoria, nível de entendimento e ícone
+- Editor de texto rico com Tiptap (headings h1-h6, destaques coloridos)
+- Gerenciamento de anexos (links, imagens, arquivos)
+- Autenticação com JWT (access tokens e refresh tokens)
+- Autosave com debounce
+
+## Estrutura
+
+```
+src/app/
+├── AreaEditor.tsx          # Componente de editor Tiptap
+├── EditorLayout.tsx        # Layout principal do editor
+├── EditorLayout.module.css # Estilos do editor
+├── extensions.ts           # Extensões do Tiptap
+├── page.tsx                # Página principal
+├── page.module.css         # Estilos da página principal
+├── layout.tsx              # Layout raiz
+└── globals.css            # Estilos globais
+```

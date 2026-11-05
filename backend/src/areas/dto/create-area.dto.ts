@@ -17,7 +17,7 @@ import {
 export const AREA_NOME_MAX_LENGTH = 255;
 export const AREA_CATEGORIA_MAX_LENGTH = 255;
 export const AREA_ICONE_MAX_LENGTH = 255;
-export const AREA_CONTEUDO_MAX_BYTES = 1024 * 1024; // 1 MB
+export const AREA_CONTEUDO_MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 
 export function IsEditorJsonSizeWithinLimit(
   maxBytes: number = AREA_CONTEUDO_MAX_BYTES,

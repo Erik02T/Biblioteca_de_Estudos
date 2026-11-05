@@ -1,9 +1,11 @@
+import 'dotenv/config';
 import {
   AttachmentType,
   PrismaClient,
   SectionType,
   SubSectionType,
 } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 
 const prisma = new PrismaClient();
 
@@ -11,6 +13,48 @@ type EnumTest = {
   label: string;
   run: () => Promise<unknown>;
 };
+
+function assertLocalTestDatabase() {
+  if (process.env.PHASE1_VALIDATION_ALLOW_LOCAL_DB !== 'true') {
+    throw new Error(
+      'Set PHASE1_VALIDATION_ALLOW_LOCAL_DB=true to explicitly allow this validation script.',
+    );
+  }
+
+  const rawDatabaseUrl = process.env.DATABASE_URL;
+  if (!rawDatabaseUrl) {
+    throw new Error('DATABASE_URL is required for Phase 1 validation.');
+  }
+
+  let databaseUrl: URL;
+  try {
+    databaseUrl = new URL(rawDatabaseUrl);
+  } catch {
+    throw new Error('DATABASE_URL is not a valid PostgreSQL URL.');
+  }
+
+  const hostname = databaseUrl.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  const isLoopback =
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '::1' ||
+    /^127(?:\.\d{1,3}){3}$/.test(hostname);
+  const databaseName = decodeURIComponent(databaseUrl.pathname.slice(1));
+  const isTestDatabase =
+    /(^|[_-])(test|testing|local|dev|development|audit)([_-]|$)/i.test(
+      databaseName,
+    );
+
+  if (
+    !['postgres:', 'postgresql:'].includes(databaseUrl.protocol) ||
+    !isLoopback ||
+    !isTestDatabase
+  ) {
+    throw new Error(
+      'Phase 1 validation only runs against a loopback PostgreSQL database whose name identifies it as test, local, dev, or audit.',
+    );
+  }
+}
 
 async function mustReject({ label, run }: EnumTest) {
   try {
@@ -26,11 +70,20 @@ async function mustReject({ label, run }: EnumTest) {
 }
 
 async function main() {
-  const runId = crypto.randomUUID();
-  const userId = `phase-1-validation-${runId}`;
-  let areaId: string | undefined;
+  assertLocalTestDatabase();
+  const runId = randomUUID();
+  let cleanupUserId: string | undefined;
 
   try {
+    const user = await prisma.user.create({
+      data: {
+        email: `phase-1-validation-${runId}@example.invalid`,
+        passwordHash: 'phase-1-validation-no-login',
+      },
+    });
+    const userId = user.id;
+    cleanupUserId = userId;
+
     // 1. Creates an Area and an Attachment related to it.
     const area = await prisma.area.create({
       data: {
@@ -42,7 +95,6 @@ async function main() {
         conteudo: {},
       },
     });
-    areaId = area.id;
 
     const attachment = await prisma.attachment.create({
       data: {
@@ -110,7 +162,6 @@ async function main() {
 
     // 3. Deleting the Area must remove its Attachment through onDelete: Cascade.
     await prisma.area.delete({ where: { id: area.id } });
-    areaId = undefined;
 
     const attachmentsRemaining = await prisma.attachment.count({
       where: { id: attachment.id },
@@ -124,11 +175,13 @@ async function main() {
     console.log('OK  cascade: Area was deleted and no related Attachment remains.');
     console.log('\nPhase 1 validated successfully.');
   } finally {
-    // Avoids leaving test data if any check fails before the delete.
-    if (areaId) {
-      await prisma.area.delete({ where: { id: areaId } }).catch(() => undefined);
+    try {
+      if (cleanupUserId) {
+        await prisma.user.deleteMany({ where: { id: cleanupUserId } });
+      }
+    } finally {
+      await prisma.$disconnect();
     }
-    await prisma.$disconnect();
   }
 }
 

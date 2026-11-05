@@ -1,11 +1,15 @@
 import {
+  Logger,
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { fromBuffer } from 'file-type';
+import { unlink } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { fromBuffer, fromFile } from 'file-type';
+import type { Readable } from 'node:stream';
 import { AttachmentType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -16,12 +20,18 @@ import {
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 import {
   getContentDisposition,
+  isTextMimeAndExt,
   validateBufferSafety,
   validateDetectedMimeType,
+  validateFilePathSafety,
+  validateTextBufferSafety,
+  validateTextFileSafety,
 } from './utils/file-validation.util';
 
 @Injectable()
 export class AttachmentsService {
+  private readonly logger = new Logger(AttachmentsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
@@ -114,19 +124,57 @@ export class AttachmentsService {
   }
 
   async upload(userId: string, areaId: string, file: Express.Multer.File) {
+    try {
+      return await this.uploadFile(userId, areaId, file);
+    } finally {
+      if (file.path) await this.removeTemporaryFile(file.path);
+    }
+  }
+
+  private async uploadFile(
+    userId: string,
+    areaId: string,
+    file: Express.Multer.File,
+  ) {
     if (!areaId) {
       throw new BadRequestException(
         'O upload precisa ser associado a uma Area',
       );
     }
-    validateBufferSafety(file.buffer);
-    const detectedFileType = await fromBuffer(file.buffer);
-    if (!detectedFileType) {
+
+    let detectedFileType;
+    let getUploadBody: () => Buffer | Readable;
+    if (file.path) {
+      const filePath = file.path;
+      await validateFilePathSafety(filePath);
+      detectedFileType = await fromFile(filePath);
+      getUploadBody = () => createReadStream(filePath);
+    } else if (file.buffer) {
+      const buffer = file.buffer;
+      validateBufferSafety(buffer);
+      detectedFileType = await fromBuffer(buffer);
+      getUploadBody = () => buffer;
+    } else {
+      throw new BadRequestException('Arquivo vazio ou inválido.');
+    }
+
+    let resolvedMime: string;
+    if (detectedFileType?.mime) {
+      resolvedMime = detectedFileType.mime;
+    } else if (isTextMimeAndExt(file.mimetype, file.originalname)) {
+      if (file.path) {
+        await validateTextFileSafety(file.path);
+      } else if (file.buffer) {
+        validateTextBufferSafety(file.buffer);
+      }
+      resolvedMime = file.mimetype.toLowerCase().trim();
+    } else {
       throw new BadRequestException(
         'Não foi possível validar o tipo MIME real do arquivo.',
       );
     }
-    validateDetectedMimeType(detectedFileType.mime);
+
+    validateDetectedMimeType(resolvedMime);
 
     const area = await this.prisma.area.findFirst({
       where: { id: areaId, userId },
@@ -142,29 +190,24 @@ export class AttachmentsService {
     const key = `${userId}/${areaId}/${randomUUID()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
     const url = this.storage.buildPublicUrlFromKey(key);
     const contentDisposition = getContentDisposition(
-      detectedFileType.mime,
+      resolvedMime,
       file.originalname,
     );
 
-    try {
-      await this.storage.upload({
-        bucket: this.storage.getBucket(),
-        key,
-        body: file.buffer,
-        contentType: detectedFileType.mime,
-        contentDisposition,
-      });
-    } catch {
-      throw new InternalServerErrorException(
-        'Não foi possível salvar o arquivo no storage.',
-      );
-    }
+    await this.storage.upload({
+      bucket: this.storage.getBucket(),
+      key,
+      body: getUploadBody(),
+      contentLength: file.size,
+      contentType: resolvedMime,
+      contentDisposition,
+    });
 
     const attachmentData = {
       areaId,
       url,
       nome: file.originalname,
-      tipo: detectedFileType.mime.startsWith('image/')
+      tipo: resolvedMime.startsWith('image/')
         ? AttachmentType.IMAGEM
         : AttachmentType.ARQUIVO,
     };
@@ -181,9 +224,33 @@ export class AttachmentsService {
           key,
         });
       } catch (cleanupError) {
-        void cleanupError;
+        this.logger.error(
+          'Não foi possível remover o arquivo do storage após falha ao salvar o anexo',
+          cleanupError instanceof Error
+            ? cleanupError.stack
+            : String(cleanupError),
+        );
       }
       throw error;
+    }
+  }
+
+  private async removeTemporaryFile(filePath: string) {
+    try {
+      await unlink(filePath);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code === 'ENOENT'
+      ) {
+        return;
+      }
+      this.logger.warn(
+        `Não foi possível remover o arquivo temporário de upload: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
