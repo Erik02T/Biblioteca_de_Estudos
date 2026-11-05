@@ -193,7 +193,7 @@ Não use valores de localhost no build de produção. `NEXT_PUBLIC_API_URL` e `N
 
 ### Deploy manual
 
-O manifesto `backend/render.yaml` define `autoDeploy: false`; o backend deve ser implantado manualmente pelo painel do Render. Confirme que a configuração efetiva do serviço no painel corresponde ao manifesto. Para cumprir uma política de deploy exclusivamente manual, desative também os deploys automáticos e previews do projeto Vercel no painel; essa configuração externa não é verificável nem alterada pelo repositório.
+O manifesto `backend/render.yaml` define `autoDeploy: false`; o backend deve ser implantado manualmente pelo painel do Render. O arquivo `frontend/vercel.json` define `git.deploymentEnabled: false`, desativando deployments disparados por Git para o projeto Vercel. Todos os deployments devem ser iniciados manualmente pelo responsável. No painel Vercel, confirme que o **Root Directory** está definido como `frontend` e que as configurações efetivas do projeto respeitam essa política; o Root Directory e as configurações do painel não podem ser confirmados apenas pelo código.
 
 ### Ordem recomendada
 1. Provisione banco e storage.

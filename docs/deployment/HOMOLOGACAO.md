@@ -226,10 +226,11 @@
 
 1. Conectar repositório GitHub ao Vercel
 2. Importar projeto (diretório `frontend`)
-3. Configurar build command: `npm run build`
-4. Configurar output directory: `.next`
-5. Adicionar variáveis de ambiente
-6. Desativar deploys automáticos/previews se a política exigir que todo deploy seja manual; publicar manualmente pelo painel
+3. Configurar **Root Directory** como `frontend` no painel; essa configuração externa não pode ser confirmada apenas pelo código
+4. Configurar build command: `npm run build`
+5. Configurar output directory: `.next`
+6. Adicionar variáveis de ambiente
+7. O arquivo `frontend/vercel.json` desativa deployments disparados por Git (`git.deploymentEnabled: false`); iniciar todos os deployments manualmente pelo painel ou CLI e confirmar a configuração efetiva do projeto
 
 #### 3.5 Configurar CORS e URLs
 
