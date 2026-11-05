@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { ActionRail, AttachmentsPanel, EditorLayout, EditorSidebar, EditorTopBar, FormatPanel, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
 import { contentHeadings, wordCount } from "./AreaEditor";
 import { editorExtensions } from "./extensions";
+import { SerializedSaveQueue } from "./serialized-save-queue";
 import styles from "./page.module.css";
 
 type Section = "LINGUAGENS" | "FACULDADE" | "PROJETOS" | "OUTROS";
@@ -42,7 +43,23 @@ const subsections: Array<{ value: SubSection; label: string; description: string
 ];
 
 function getAccessToken() {
-  return window.localStorage.getItem("biblioteca-access-token");
+  return window.localStorage.getItem("biblioteca-access-token") ?? undefined;
+}
+
+const authTokenListeners = new Set<() => void>();
+function subscribeToAuthToken(onStoreChange: () => void) {
+  authTokenListeners.add(onStoreChange);
+  window.addEventListener("storage", onStoreChange);
+  return () => {
+    authTokenListeners.delete(onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+  };
+}
+function notifyAuthTokenListeners() {
+  authTokenListeners.forEach((listener) => listener());
+}
+function getServerAuthToken() {
+  return undefined;
 }
 
 function authHeaders(accessToken: string) {
@@ -52,6 +69,7 @@ function authHeaders(accessToken: string) {
 function saveTokens(tokens: AuthTokens) {
   window.localStorage.setItem("biblioteca-access-token", tokens.accessToken);
   window.localStorage.setItem("biblioteca-refresh-token", tokens.refreshToken);
+  notifyAuthTokenListeners();
 }
 
 async function apiFetch(url: string, init: RequestInit, fallbackToken: string) {
@@ -74,7 +92,7 @@ function getEditorContent(content?: AreaContent): JSONContent {
 }
 
 export default function Home() {
-  const [userId, setUserId] = useState<string | undefined>(() => (typeof window === "undefined" ? undefined : getAccessToken() ?? undefined));
+  const userId = useSyncExternalStore(subscribeToAuthToken, getAccessToken, getServerAuthToken);
   const [selectedSection, setSelectedSection] = useState<Section>();
   const [selectedSubSection, setSelectedSubSection] = useState<SubSection>();
   const [areas, setAreas] = useState<Area[]>([]);
@@ -130,12 +148,40 @@ export default function Home() {
   const closeForm = () => { setEditingArea(null); setIsCreating(false); };
   const openCreate = () => { setEditingArea(null); setIsCreating(true); };
   const openEdit = (area: Area) => { setIsCreating(false); setEditingArea({ ...area }); };
-  if (!userId) return <AuthView onAuthenticated={(tokens) => { saveTokens(tokens); setUserId(tokens.accessToken); }} />;
-  const logout = () => { window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); setUserId(undefined); goHome(); };
+  const handleAreaDeleted = (areaId: string) => {
+    setAreas((currentAreas) => currentAreas.filter((area) => area.id !== areaId));
+    setPagination((current) => {
+      const total = Math.max(0, current.total - 1);
+      return { ...current, total, totalPages: Math.ceil(total / current.limit) };
+    });
+    if (areas.length === 1 && areaPage > 1) setAreaPage(areaPage - 1);
+    closeForm();
+  };
+  const handleAreaSaved = (savedArea: Area) => {
+    if (editingArea) {
+      if (savedArea.section !== selectedSection || savedArea.subSection !== selectedSubSection) {
+        handleAreaDeleted(savedArea.id);
+        return;
+      }
+      setAreas((currentAreas) => currentAreas.map((area) => area.id === savedArea.id ? savedArea : area));
+      closeForm();
+      return;
+    }
+
+    setAreas((currentAreas) => areaPage === 1 ? [savedArea, ...currentAreas].slice(0, pagination.limit) : currentAreas);
+    setPagination((current) => {
+      const total = current.total + 1;
+      return { ...current, total, totalPages: Math.ceil(total / current.limit) };
+    });
+    setIsCreating(false);
+    setEditingArea({ ...savedArea });
+  };
+  if (!userId) return <AuthView onAuthenticated={saveTokens} />;
+  const logout = () => { window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); notifyAuthTokenListeners(); goHome(); };
   return <div className={styles.page}>
     <header className={styles.header}><button className={styles.brand} onClick={goHome} aria-label="Voltar para a biblioteca"><span className={styles.brandMark}>B</span><span>Biblioteca<span className={styles.brandAccent}>.</span></span></button><div className={styles.headerTools}>{isSearchOpen ? <label className={styles.searchField}><span className="sr-only">Buscar nos blocos carregados</span><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Buscar blocos..." onKeyDown={(event) => { if (event.key === "Escape") setIsSearchOpen(false); }} /></label> : <button className={styles.searchButton} type="button" aria-label="Buscar na biblioteca" onClick={() => setIsSearchOpen(true)}>Buscar <kbd>/</kbd></button>}<span className={styles.headerNote}>seu espaço de conhecimento</span><button className={styles.logoutButton} type="button" onClick={logout}>Sair</button></div></header>
     <main className={styles.main}>
-      {selectedSubSection && currentSection && currentSubSection ? editingArea || isCreating ? <AreaForm section={currentSection.value} subSection={currentSubSection.value} area={editingArea} userId={userId} onCancel={closeForm} onSaved={(savedArea) => { setAreas((currentAreas) => editingArea ? currentAreas.map((area) => area.id === savedArea.id ? savedArea : area) : areaPage === 1 ? [savedArea, ...currentAreas].slice(0, pagination.limit) : currentAreas); setPagination((current) => ({ ...current, total: current.total + (editingArea ? 0 : 1), totalPages: Math.ceil((current.total + (editingArea ? 0 : 1)) / current.limit) })); if (editingArea) closeForm(); else { setIsCreating(false); setEditingArea({ ...savedArea }); } }} /> : <SubSectionView section={currentSection} subSection={currentSubSection} areas={visibleAreas} pagination={pagination} userId={userId} isLoading={isLoading} error={error} onBack={() => { setSelectedSubSection(undefined); setAreaPage(1); }} onCreate={openCreate} onEdit={openEdit} onPageChange={setAreaPage} onRetry={() => setRetryKey((key) => key + 1)} onDelete={(areaId) => { setAreas((currentAreas) => currentAreas.filter((area) => area.id !== areaId)); const nextTotal = Math.max(0, pagination.total - 1); setPagination((current) => ({ ...current, total: nextTotal, totalPages: Math.ceil(nextTotal / current.limit) })); if (areas.length === 1 && areaPage > 1) setAreaPage(areaPage - 1); }} /> : selectedSection && currentSection ? <SectionView section={currentSection} onBack={goHome} onSelect={(subSection) => { setSelectedSubSection(subSection); setAreaPage(1); }} /> : <LibraryView onSelect={setSelectedSection} />}
+      {selectedSubSection && currentSection && currentSubSection ? editingArea || isCreating ? <AreaForm section={currentSection.value} subSection={currentSubSection.value} area={editingArea} userId={userId} onCancel={closeForm} onSaved={handleAreaSaved} onDeleted={handleAreaDeleted} /> : <SubSectionView section={currentSection} subSection={currentSubSection} areas={visibleAreas} pagination={pagination} userId={userId} isLoading={isLoading} error={error} onBack={() => { setSelectedSubSection(undefined); setAreaPage(1); }} onCreate={openCreate} onEdit={openEdit} onPageChange={setAreaPage} onRetry={() => setRetryKey((key) => key + 1)} onDelete={handleAreaDeleted} /> : selectedSection && currentSection ? <SectionView section={currentSection} onBack={goHome} onSelect={(subSection) => { setSelectedSubSection(subSection); setAreaPage(1); }} /> : <LibraryView onSelect={setSelectedSection} />}
     </main><footer className={styles.footer}>Uma ideia clara encontra um lugar para ficar.</footer>
   </div>;
 }
@@ -207,32 +253,180 @@ function SubSectionView({ section, subSection, areas, pagination, userId, isLoad
 
 function AreaCard({ area, onEdit, onDelete, isDeleting, isAnyDeleting }: { area: Area; onEdit: () => void; onDelete: () => void; isDeleting?: boolean; isAnyDeleting?: boolean }) { const level = Math.min(5, Math.max(0, area.nivelEntendimento)); const percentage = level * 20; return <article className={styles.areaCard}><div className={styles.areaTop}><span className={styles.areaIcon}>{area.icone || "✦"}</span><span className={styles.level}>{level}/5</span></div><h2>{area.nome}</h2><p>{area.categoria}</p><div className={styles.progress}><span style={{ width: `${percentage}%` }} /></div><small>nível de entendimento</small><div className={styles.cardActions}><button onClick={onEdit} disabled={isAnyDeleting}>Editar</button><button onClick={onDelete} disabled={isAnyDeleting} aria-busy={isDeleting}>{isDeleting ? "Removendo..." : "Excluir"}</button></div></article>; }
 
-function AreaForm({ section, subSection, area, userId, onCancel, onSaved }: { section: Section; subSection: SubSection; area: Area | null; userId?: string; onCancel: () => void; onSaved: (area: Area) => void }) {
+function AreaForm({ section, subSection, area, userId, onCancel, onSaved, onDeleted }: { section: Section; subSection: SubSection; area: Area | null; userId?: string; onCancel: () => void; onSaved: (area: Area) => void; onDeleted: (areaId: string) => void }) {
   const [values, setValues] = useState<AreaFormValues>({ nome: area?.nome ?? "", categoria: area?.categoria ?? "", nivelEntendimento: area?.nivelEntendimento ?? 0, icone: area?.icone ?? "✦", conteudo: getEditorContent(area?.conteudo), updatedAt: area?.updatedAt });
   const [isSaving, setIsSaving] = useState(false); const [error, setError] = useState<string>(); const [isContentDirty, setIsContentDirty] = useState(false); const [isAutosaving, setIsAutosaving] = useState(false); const [tab, setTab] = useState<"blocos" | "indice">("blocos"); const [query, setQuery] = useState("");
-  const [attachments, setAttachments] = useState<Attachment[]>([]); const [attachmentError, setAttachmentError] = useState<string>(); const fileInputRef = useRef<HTMLInputElement>(null); const [selectedFileKind, setSelectedFileKind] = useState<"image" | "file">("file");
-  const editor = useEditor({ extensions: editorExtensions, content: values.conteudo, immediatelyRender: false, onUpdate: ({ editor: current }) => { updateValue("conteudo", current.getJSON()); setIsContentDirty(true); } });
+  const [attachments, setAttachments] = useState<Attachment[]>([]); const [attachmentError, setAttachmentError] = useState<string>(); const fileInputRef = useRef<HTMLInputElement>(null); const syncedUpdatedAtRef = useRef<string | undefined>(area?.updatedAt ?? values.updatedAt); const [selectedFileKind, setSelectedFileKind] = useState<"image" | "file">("file");
   const updateValue = (field: keyof AreaFormValues, value: string | number | JSONContent) => setValues((current) => ({ ...current, [field]: value }));
-  const saveContent = useCallback(async (content: JSONContent) => { if (!area || !userId) return; setIsAutosaving(true); try { const response = await apiFetch(`${apiUrl}/areas/${area.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ conteudo: content, updatedAt: values.updatedAt }) }, userId); if (!response.ok) throw new Error("Não foi possível salvar o conteúdo."); const saved = await response.json(); setValues((current) => ({ ...current, updatedAt: saved.updatedAt })); setIsContentDirty(false); } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o conteúdo."); } finally { setIsAutosaving(false); } }, [area, userId, values.updatedAt]);
-  useEffect(() => { if (!isContentDirty) return; const timer = window.setTimeout(() => void saveContent(values.conteudo), 700); return () => window.clearTimeout(timer); }, [isContentDirty, saveContent, values.conteudo]);
-  const handleSubmit = async () => { if (!values.nome.trim() || !values.categoria.trim()) { setError("Nome e categoria são obrigatórios."); return; } if (!userId) return; setIsSaving(true); setError(undefined); try { const response = await apiFetch(`${apiUrl}/areas${area ? `/${area.id}` : ""}`, { method: area ? "PATCH" : "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ section, subSection, nome: values.nome.trim(), categoria: values.categoria.trim(), nivelEntendimento: values.nivelEntendimento, icone: values.icone.trim(), conteudo: values.conteudo, ...(area && values.updatedAt ? { updatedAt: values.updatedAt } : {}) }) }, userId); if (!response.ok) throw new Error(area ? "Não foi possível salvar as alterações." : "Não foi possível criar este bloco."); onSaved(await response.json()); } catch (saveError) { setError(saveError instanceof Error ? saveError.message : "Ocorreu um erro inesperado."); } finally { setIsSaving(false); } };
+  const areaRef = useRef(area);
+  const userIdRef = useRef(userId);
+  useEffect(() => { areaRef.current = area; userIdRef.current = userId; }, [area, userId]);
+  const latestContentRef = useRef(values.conteudo);
+  const saveContentRequest = useCallback(async (content: JSONContent) => {
+    const currentArea = areaRef.current;
+    const currentUserId = userIdRef.current;
+    if (!currentArea || !currentUserId) return;
+    const expectedUpdatedAt = syncedUpdatedAtRef.current;
+    const response = await apiFetch(`${apiUrl}/areas/${currentArea.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders(currentUserId) }, body: JSON.stringify({ conteudo: content, ...(expectedUpdatedAt ? { updatedAt: expectedUpdatedAt } : {}) }) }, currentUserId);
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => null);
+      throw new Error(getApiErrorMessage(errorPayload, "Não foi possível salvar o conteúdo."));
+    }
+    const saved = await response.json();
+    syncedUpdatedAtRef.current = saved.updatedAt;
+    setValues((current) => ({ ...current, updatedAt: saved.updatedAt }));
+  }, []);
+  const autosaveQueueRef = useRef<SerializedSaveQueue<JSONContent> | null>(null);
+  const getAutosaveQueue = useCallback(() => {
+    if (autosaveQueueRef.current === null) {
+      autosaveQueueRef.current = new SerializedSaveQueue(latestContentRef.current, saveContentRequest);
+    }
+    return autosaveQueueRef.current;
+  }, [saveContentRequest]);
+  const editor = useEditor({ extensions: editorExtensions, content: values.conteudo, immediatelyRender: false, onUpdate: ({ editor: current }) => { const content = current.getJSON(); latestContentRef.current = content; getAutosaveQueue().update(content); updateValue("conteudo", content); setIsContentDirty(true); } });
+  useEffect(() => { syncedUpdatedAtRef.current = values.updatedAt ?? area?.updatedAt; }, [area?.updatedAt, values.updatedAt]);
+  const saveContent = useCallback(async () => {
+    if (!area || !userId) return;
+    setIsAutosaving(true);
+    try {
+      await autosaveQueueRef.current?.flush();
+      setIsContentDirty(false);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Não foi possível salvar o conteúdo.");
+    } finally {
+      setIsAutosaving(false);
+    }
+  }, [area, userId]);
+  useEffect(() => { if (!isContentDirty) return; const timer = window.setTimeout(() => void saveContent(), 700); return () => window.clearTimeout(timer); }, [isContentDirty, saveContent, values.conteudo]);
+  const handleSubmit = async (targetSubSection = subSection) => {
+    if (!values.nome.trim() || !values.categoria.trim()) { setError("Nome e categoria são obrigatórios."); return; }
+    if (!userId) return;
+    setIsSaving(true);
+    setError(undefined);
+    try {
+      await autosaveQueueRef.current?.flush();
+      const expectedUpdatedAt = syncedUpdatedAtRef.current ?? values.updatedAt;
+      const content = latestContentRef.current;
+      const response = await apiFetch(`${apiUrl}/areas${area ? `/${area.id}` : ""}`, { method: area ? "PATCH" : "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ section, subSection: targetSubSection, nome: values.nome.trim(), categoria: values.categoria.trim(), nivelEntendimento: values.nivelEntendimento, icone: values.icone.trim(), conteudo: content, ...(area && expectedUpdatedAt ? { updatedAt: expectedUpdatedAt } : {}) }) }, userId);
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        throw new Error(getApiErrorMessage(errorPayload, area ? "Não foi possível salvar as alterações." : "Não foi possível criar este bloco."));
+      }
+      const saved = await response.json();
+      syncedUpdatedAtRef.current = saved.updatedAt;
+      setValues((current) => ({ ...current, updatedAt: saved.updatedAt }));
+      onSaved(saved);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Ocorreu um erro inesperado.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
   useEffect(() => { const shortcut = (event: KeyboardEvent) => { if (event.key === "Escape") onCancel(); if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); void handleSubmit(); } }; window.addEventListener("keydown", shortcut); return () => window.removeEventListener("keydown", shortcut); });
   useEffect(() => {
     if (!area?.id || !userId) return;
     apiFetch(`${apiUrl}/attachments?areaId=${encodeURIComponent(area.id)}`, { headers: authHeaders(userId) }, userId).then(async (response) => { if (!response.ok) throw new Error("Não foi possível carregar os anexos."); setAttachments(await response.json()); }).catch((loadError) => setAttachmentError(loadError instanceof Error ? loadError.message : "Não foi possível carregar os anexos."));
   }, [area?.id, userId]);
-  const uploadAttachment = async (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; event.target.value = ""; if (!file || !area?.id || !userId) return; try { const formData = new FormData(); formData.append("file", file); formData.append("areaId", area.id); const response = await apiFetch(`${apiUrl}/attachments/upload`, { method: "POST", headers: authHeaders(userId), body: formData }, userId); if (!response.ok) throw new Error("Não foi possível enviar o arquivo."); const attachment = await response.json(); setAttachments((current) => [attachment, ...current]); } catch (uploadError) { setAttachmentError(uploadError instanceof Error ? uploadError.message : "Não foi possível enviar o arquivo."); } };
-  const addAttachment = async (kind: AttachmentItem["kind"]) => { if (kind === "link") { const url = window.prompt("URL do link", "https://"); if (!url?.trim() || !area?.id || !userId) return; try { const response = await apiFetch(`${apiUrl}/attachments`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ areaId: area.id, tipo: "LINK", url: url.trim(), nome: url.trim().slice(0, 255) }) }, userId); if (!response.ok) throw new Error("Não foi possível adicionar o link."); const attachment = await response.json(); setAttachments((current) => [attachment, ...current]); } catch (linkError) { setAttachmentError(linkError instanceof Error ? linkError.message : "Não foi possível adicionar o link."); } return; } setSelectedFileKind(kind); fileInputRef.current?.click(); };
+  const uploadAttachment = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!area?.id) {
+      setAttachmentError("Salve o bloco antes de adicionar anexos.");
+      return;
+    }
+    if (!userId) return;
+    try {
+      setAttachmentError(undefined);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("areaId", area.id);
+      const response = await apiFetch(`${apiUrl}/attachments/upload`, { method: "POST", headers: authHeaders(userId), body: formData }, userId);
+      if (!response.ok) {
+        const errPayload = await response.json().catch(() => null);
+        const errMsg = (errPayload && typeof errPayload === "object" && "message" in errPayload)
+          ? String(errPayload.message)
+          : "Não foi possível enviar o arquivo.";
+        throw new Error(errMsg);
+      }
+      const attachment = await response.json();
+      setAttachments((current) => [attachment, ...current]);
+    } catch (uploadError) {
+      setAttachmentError(uploadError instanceof Error ? uploadError.message : "Não foi possível enviar o arquivo.");
+    }
+  };
+  const addAttachment = async (kind: AttachmentItem["kind"]) => {
+    if (!area?.id) {
+      setAttachmentError("Salve o bloco antes de adicionar anexos.");
+      return;
+    }
+    if (kind === "link") {
+      const url = window.prompt("URL do link", "https://");
+      if (!url?.trim() || !area?.id || !userId) return;
+      try {
+        setAttachmentError(undefined);
+        const response = await apiFetch(`${apiUrl}/attachments`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders(userId) }, body: JSON.stringify({ areaId: area.id, tipo: "LINK", url: url.trim(), nome: url.trim().slice(0, 255) }) }, userId);
+        if (!response.ok) {
+          const errPayload = await response.json().catch(() => null);
+          const errMsg = (errPayload && typeof errPayload === "object" && "message" in errPayload)
+            ? String(errPayload.message)
+            : "Não foi possível adicionar o link.";
+          throw new Error(errMsg);
+        }
+        const attachment = await response.json();
+        setAttachments((current) => [attachment, ...current]);
+      } catch (linkError) {
+        setAttachmentError(linkError instanceof Error ? linkError.message : "Não foi possível adicionar o link.");
+      }
+      return;
+    }
+    setAttachmentError(undefined);
+    setSelectedFileKind(kind);
+    fileInputRef.current?.click();
+  };
   const removeAttachment = async (id: string) => { if (!userId) return; try { const response = await apiFetch(`${apiUrl}/attachments/${id}`, { method: "DELETE", headers: authHeaders(userId) }, userId); if (!response.ok) throw new Error("Não foi possível remover o anexo."); setAttachments((current) => current.filter((item) => item.id !== id)); } catch (removeError) { setAttachmentError(removeError instanceof Error ? removeError.message : "Não foi possível remover o anexo."); } };
+  const deleteArea = async () => {
+    if (!area || !userId || !window.confirm(`Excluir o bloco “${area.nome}”?`)) return;
+    setError(undefined);
+    setIsSaving(true);
+    try {
+      const response = await apiFetch(`${apiUrl}/areas/${area.id}`, { method: "DELETE", headers: authHeaders(userId) }, userId);
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        throw new Error(getApiErrorMessage(errorPayload, "Não foi possível excluir este bloco."));
+      }
+      onDeleted(area.id);
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Não foi possível excluir este bloco.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  const selectSidebarItem = (id: string) => {
+    if (tab !== "indice" || !editor) return;
+    const headingMatch = /^heading-(\d+)$/.exec(id);
+    if (!headingMatch) return;
+    const targetIndex = Number(headingMatch[1]);
+    let headingIndex = 0;
+    let position: number | undefined;
+    editor.state.doc.descendants((node, nodePosition) => {
+      if (node.type.name !== "heading") return;
+      if (headingIndex === targetIndex) {
+        position = nodePosition + 1;
+        return false;
+      }
+      headingIndex += 1;
+    });
+    if (position !== undefined) {
+      editor.chain().focus().setTextSelection(position).scrollIntoView().run();
+    }
+  };
   const attachmentItems: AttachmentItem[] = attachments.map((attachment) => ({ id: attachment.id, kind: attachment.tipo === "LINK" ? "link" : attachment.tipo === "IMAGEM" ? "image" : "file", label: attachment.nome ?? attachment.url, href: attachment.url, previewUrl: attachment.tipo === "IMAGEM" ? attachment.url : undefined }));
   const items = useMemo(() => { const source = tab === "indice" ? contentHeadings(values.conteudo).map((name, index) => ({ id: `heading-${index}`, icon: "#", name, level: 1 })) : [{ id: area?.id ?? "new", icon: values.icone, name: values.nome || "Novo bloco", level: values.nivelEntendimento }]; return source.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())); }, [area?.id, query, tab, values]);
   const activeBlock: BlockKind | null = editor?.isActive("heading", { level: 1 }) ? "h1" : editor?.isActive("heading", { level: 2 }) ? "h2" : editor?.isActive("heading", { level: 3 }) ? "h3" : editor?.isActive("heading", { level: 4 }) ? "h4" : editor?.isActive("heading", { level: 5 }) ? "h5" : editor?.isActive("heading", { level: 6 }) ? "h6" : editor?.isActive("paragraph") ? "p" : null;
   const marks: Partial<Record<MarkKind, boolean>> = { bold: editor?.isActive("bold"), italic: editor?.isActive("italic"), strike: editor?.isActive("strike"), bulletList: editor?.isActive("bulletList"), orderedList: editor?.isActive("orderedList"), blockquote: editor?.isActive("blockquote"), codeBlock: editor?.isActive("codeBlock") };
   const iconSlot = <button type="button" className="icon-picker" aria-label="Escolher ícone" onClick={() => updateValue("icone", window.prompt("Ícone do bloco", values.icone) ?? values.icone)}>{values.icone}</button>;
   const fileAccept = selectedFileKind === "image" ? "image/*" : undefined;
-  return <EditorLayout sidebar={<EditorSidebar title={section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label ?? "Blocos"} query={query} onQuery={setQuery} tab={tab} onTab={setTab} items={items} onSelect={() => undefined} onNew={onCancel} />} topbar={<EditorTopBar iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} categorySlot={<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} aria-label="Categoria" list="cats" />} level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} dirty={isAutosaving || isContentDirty} />} editor={editor ? <EditorContent editor={editor} /> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<><input ref={fileInputRef} type="file" accept={fileAccept} onChange={uploadAttachment} hidden /><AttachmentsPanel items={attachmentItems} onAdd={addAttachment} onRemove={removeAttachment} />{attachmentError && <p className={styles.formError}>{attachmentError}</p>}</>} format={<FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} onBlock={(block) => { if (!editor) return; if (block === "p") { editor.chain().focus().setParagraph().run(); } else { editor.chain().focus().toggleHeading({ level: Number(block.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6 }).run(); } }} onMark={(mark) => { if (!editor) return; const chain = editor.chain().focus(); if (mark === "bold" || mark === "italic" || mark === "strike") chain.toggleMark(mark).run(); else if (mark === "bulletList") chain.toggleBulletList().run(); else if (mark === "orderedList") chain.toggleOrderedList().run(); else if (mark === "blockquote") chain.toggleBlockquote().run(); else if (mark === "codeBlock") chain.toggleCodeBlock().run(); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); if (color) { chain.toggleHighlight({ color }).run(); } else { chain.unsetHighlight().run(); } } }} onClear={() => editor?.chain().focus().unsetAllMarks().clearNodes().run()} />} error={error} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} onCancel={onCancel} saving={isSaving} menuItems={[{ label: "Mover para Estudado/Estudando", onClick: () => undefined }, { label: "Excluir bloco", danger: true, onClick: () => { if (area && window.confirm(`Excluir o bloco “${area.nome}”?`)) void apiFetch(`${apiUrl}/areas/${area.id}`, { method: "DELETE", headers: authHeaders(userId ?? "") }, userId ?? "").then(() => onCancel()); } }, { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva e Esc cancela.") }]} />} />;
+  const targetSubSection: SubSection = subSection === "ESTUDADO" ? "ESTUDANDO" : "ESTUDADO";
+  return <EditorLayout sidebar={<EditorSidebar title={section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label ?? "Blocos"} query={query} onQuery={setQuery} tab={tab} onTab={setTab} items={items} onSelect={selectSidebarItem} onNew={onCancel} />} topbar={<EditorTopBar iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} categorySlot={<input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} aria-label="Categoria" list="cats" />} level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} dirty={isAutosaving || isContentDirty} />} editor={editor ? <EditorContent editor={editor} /> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<><input ref={fileInputRef} type="file" accept={fileAccept} onChange={uploadAttachment} hidden /><AttachmentsPanel items={attachmentItems} onAdd={addAttachment} onRemove={removeAttachment} />{attachmentError && <p className={styles.formError}>{attachmentError}</p>}</>} format={<FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} onBlock={(block) => { if (!editor) return; if (block === "p") { editor.chain().focus().setParagraph().run(); } else { editor.chain().focus().toggleHeading({ level: Number(block.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6 }).run(); } }} onMark={(mark) => { if (!editor) return; const chain = editor.chain().focus(); if (mark === "bold" || mark === "italic" || mark === "strike") chain.toggleMark(mark).run(); else if (mark === "bulletList") chain.toggleBulletList().run(); else if (mark === "orderedList") chain.toggleOrderedList().run(); else if (mark === "blockquote") chain.toggleBlockquote().run(); else if (mark === "codeBlock") chain.toggleCodeBlock().run(); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); if (color) { chain.toggleHighlight({ color }).run(); } else { chain.unsetHighlight().run(); } } }} onClear={() => editor?.chain().focus().unsetAllMarks().clearNodes().run()} />} error={error} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} onCancel={onCancel} saving={isSaving} menuItems={[...(area ? [{ label: `Mover para ${targetSubSection === "ESTUDADO" ? "Estudado" : "Estudando"}`, onClick: () => void handleSubmit(targetSubSection) }] : []), ...(area ? [{ label: "Excluir bloco", danger: true, onClick: () => void deleteArea() }] : []), { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva e Esc cancela.") }]} />} />;
 }
-
-
-
-
