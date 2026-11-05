@@ -1,14 +1,13 @@
 name: CI/CD Pipeline
 # DECISÃO DE DEPLOY (FASE 6):
 # - O deploy usa o RUNTIME NATIVO NODE.JS do Render (implantação direta da fonte, sem container).
-# - O job "Docker Build (verificação adicional opcional)" abaixo NÃO é requisito do deploy nativo;
-#   é mantido apenas como verificação opcional da imagem e está DESABILITADO (if: false).
+# - O job Docker abaixo está ativo e valida a imagem; ele não publica nem executa deploy.
 # - Node.js: NODE_VERSION '22' (consistente com backend e com a implantação).
 # - Nenhum Dockerfile é necessário para o deploy em runtime nativo.
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, main, refactor/cleanup-general]
   pull_request:
     branches: [develop, main]
 
@@ -105,18 +104,21 @@ jobs:
         working-directory: ${{ env.FRONTEND_DIR }}
         run: npm run lint
 
+      - name: Executar testes do frontend
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm test -- --runInBand
+
       - name: Build de produção do frontend
         working-directory: ${{ env.FRONTEND_DIR }}
         env:
-          NEXT_PUBLIC_API_URL: http://localhost:3000
-          NEXT_PUBLIC_STORAGE_URL: http://localhost:9000/biblioteca-estudos
+          NEXT_PUBLIC_API_URL: https://biblioteca-api.invalid
+          NEXT_PUBLIC_STORAGE_URL: ''
         run: npm run build
 
   docker:
-    name: Docker Build (verificação adicional opcional)
+    name: Docker Build
     runs-on: ubuntu-latest
     needs: [backend, frontend]
-    if: false  # Desabilitado: deploy usa runtime nativo Node.js do Render; este job é apenas verificação opcional da imagem Docker
 
     steps:
       - name: Checkout código
@@ -127,4 +129,4 @@ jobs:
 
       - name: Validar Dockerfile do backend
         working-directory: ${{ env.BACKEND_DIR }}
-        run: docker build --target builder -t biblioteca-backend-build .
+        run: docker build -t biblioteca-backend .

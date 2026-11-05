@@ -3,11 +3,14 @@ services:
     name: biblioteca-backend
     runtime: node
     rootDir: backend
-    buildCommand: npx prisma generate && npm run build
-    startCommand: node dist/main
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build && npm prune --omit=dev --omit=optional
+    startCommand: npm run start:prod
+    healthCheckPath: /health/ready
     envVars:
+      - key: NODE_VERSION
+        value: "22"
       - key: NODE_ENV
         value: production
       - key: PORT
         value: "3000"
-    autoDeploy: true
+    autoDeploy: false
