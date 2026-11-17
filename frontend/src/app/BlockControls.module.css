@@ -1,0 +1,15 @@
+.root { min-width: 0; max-width: 760px; margin-inline: auto; }
+.blockTools { position: fixed; display: flex; gap: 4px; z-index: 20; }
+.blockTools button { width: 32px; height: 32px; padding: 0; font-size: 20px; color: var(--ui-muted); background: var(--ui-surface); border: 1px solid var(--ui-control-border); border-radius: 4px; cursor: pointer; }
+@media (pointer: coarse) { .blockTools button { width: 44px; height: 44px; } }
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); margin-bottom: var(--ui-space-2); }
+.toolbar button { padding-inline: 10px; }
+.hint { color: var(--ui-muted); font-size: 13px; line-height: 1.5; margin: 0 0 var(--ui-space-4); overflow-wrap: anywhere; }
+.menu { position: fixed; inset: auto; margin: 0; padding: var(--ui-space-2); width: 300px; max-width: calc(100vw - 24px); max-height: min(420px, calc(100dvh - 24px)); overflow-y: auto; background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-control-border); border-radius: var(--ui-radius); box-shadow: 0 8px 24px #0006; }
+.menuTitle { font-size: 14px; font-weight: 600; padding: var(--ui-space-2); }
+.menu .hint { padding-inline: var(--ui-space-2); margin-bottom: var(--ui-space-2); }
+.menu button { display: block; width: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-radius: 6px; text-align: left; background: transparent; color: var(--ui-text); font-size: 14px; cursor: pointer; }
+.menu button:hover:not(:disabled), .menu button[data-active="true"] { background: var(--ui-selected); color: var(--ui-accent); }
+.menu button:disabled { color: var(--ui-muted); opacity: .65; cursor: not-allowed; }
+.menu .danger { color: var(--ui-danger); }
+.menu button:focus-visible { outline-offset: -3px; }

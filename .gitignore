@@ -8,6 +8,9 @@ frontend/.env*
 **/node_modules/
 backend/dist/
 frontend/.next/
+frontend/.next-f10/
+frontend/.next-f11/
+frontend/.next-f12/
 frontend/out/
 coverage/
 .turbo/
