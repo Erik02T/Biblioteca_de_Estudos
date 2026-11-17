@@ -16,6 +16,8 @@ jest.mock('../storage/storage.service');
 
 describe('AreasService', () => {
   const prisma = {
+    $queryRaw: jest.fn().mockResolvedValue([]),
+    pageRevision: { count: jest.fn().mockResolvedValue(0) },
     area: {
       create: jest.fn(),
       findMany: jest.fn(),
@@ -26,6 +28,10 @@ describe('AreasService', () => {
       delete: jest.fn(),
     },
   };
+  const transaction = jest.fn((operation: (tx: unknown) => Promise<unknown>) =>
+    operation(prisma),
+  );
+  Object.assign(prisma, { $transaction: transaction });
 
   const service = new AreasService(
     prisma as never,
@@ -81,17 +87,19 @@ describe('AreasService', () => {
         SubSectionType.ESTUDANDO,
       ),
     ).resolves.toEqual({
-      items: [{ id: 'area-id' }],
+      items: [{ id: 'area-id', lastOpenedAt: null }],
       pagination: { page: 1, limit: 20, total: 21, totalPages: 2 },
     });
 
     expect(prisma.area.findMany).toHaveBeenCalledWith({
+      include: { opening: { select: { lastOpenedAt: true } } },
       where: {
         userId: 'user-id',
         section: SectionType.LINGUAGENS,
         subSection: SubSectionType.ESTUDANDO,
+        deletedAt: null,
       },
-      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       skip: 0,
       take: 20,
     });
@@ -100,6 +108,7 @@ describe('AreasService', () => {
         userId: 'user-id',
         section: SectionType.LINGUAGENS,
         subSection: SubSectionType.ESTUDANDO,
+        deletedAt: null,
       },
     });
   });
@@ -116,12 +125,14 @@ describe('AreasService', () => {
     });
 
     expect(prisma.area.findMany).toHaveBeenCalledWith({
+      include: { opening: { select: { lastOpenedAt: true } } },
       where: {
         userId: 'current-user-id',
         section: SectionType.LINGUAGENS,
         subSection: undefined,
+        deletedAt: null,
       },
-      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       skip: 0,
       take: 20,
     });
@@ -130,6 +141,7 @@ describe('AreasService', () => {
         userId: 'current-user-id',
         section: SectionType.LINGUAGENS,
         subSection: undefined,
+        deletedAt: null,
       },
     });
   });
@@ -141,13 +153,19 @@ describe('AreasService', () => {
     await expect(
       service.findAll('user-id', undefined, undefined, 2, 20),
     ).resolves.toEqual({
-      items: [{ id: 'area-21' }],
+      items: [{ id: 'area-21', lastOpenedAt: null }],
       pagination: { page: 2, limit: 20, total: 25, totalPages: 2 },
     });
 
     expect(prisma.area.findMany).toHaveBeenCalledWith({
-      where: { userId: 'user-id', section: undefined, subSection: undefined },
-      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+      include: { opening: { select: { lastOpenedAt: true } } },
+      where: {
+        userId: 'user-id',
+        section: undefined,
+        subSection: undefined,
+        deletedAt: null,
+      },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       skip: 20,
       take: 20,
     });
@@ -157,29 +175,44 @@ describe('AreasService', () => {
     prisma.area.findFirst.mockResolvedValue({
       id: 'area-id',
       userId: 'user-id',
+      updatedAt: new Date('2026-11-05T12:00:00.000Z'),
+      conteudo: {},
     });
-    prisma.area.update.mockResolvedValue({
-      id: 'area-id',
-      conteudo: { type: 'doc' },
-    });
+    prisma.area.updateManyAndReturn.mockResolvedValue([
+      {
+        id: 'area-id',
+        conteudo: { type: 'doc' },
+      },
+    ]);
 
     await expect(
       service.update('user-id', 'area-id', {
         conteudo: { type: 'doc', content: [{ type: 'paragraph' }] },
         nome: 'Novo nome',
+        updatedAt: '2026-11-05T12:00:00.000Z',
       }),
-    ).resolves.toEqual({ id: 'area-id', conteudo: { type: 'doc' } });
+    ).resolves.toEqual({
+      id: 'area-id',
+      conteudo: { type: 'doc' },
+      lastOpenedAt: null,
+    });
 
     expect(prisma.area.findFirst).toHaveBeenCalledWith({
-      where: { id: 'area-id', userId: 'user-id' },
-      include: { attachments: true },
+      where: { id: 'area-id', userId: 'user-id', deletedAt: null },
+      include: expect.objectContaining({ attachments: true }) as never,
     });
-    expect(prisma.area.update).toHaveBeenCalledWith({
-      where: { id: 'area-id' },
-      data: {
+    expect(prisma.area.updateManyAndReturn).toHaveBeenCalledWith({
+      where: {
+        id: 'area-id',
+        userId: 'user-id',
+        deletedAt: null,
+        updatedAt: new Date('2026-11-05T12:00:00.000Z'),
+      },
+      data: expect.objectContaining({
         nome: 'Novo nome',
         conteudo: { type: 'doc', content: [{ type: 'paragraph' }] },
-      },
+        updatedAt: expect.any(Date) as never,
+      }) as never,
     });
   });
 
@@ -241,8 +274,12 @@ describe('AreasService', () => {
     ).rejects.toBeInstanceOf(NotFoundException);
 
     expect(prisma.area.findFirst).toHaveBeenCalledWith({
-      where: { id: 'another-users-area-id', userId: 'current-user-id' },
-      include: { attachments: true },
+      where: {
+        id: 'another-users-area-id',
+        userId: 'current-user-id',
+        deletedAt: null,
+      },
+      include: expect.objectContaining({ attachments: true }) as never,
     });
   });
 
@@ -251,6 +288,7 @@ describe('AreasService', () => {
 
     await expect(
       service.update('current-user-id', 'another-users-area-id', {
+        updatedAt: '2026-11-05T12:00:00.000Z',
         nome: 'Alteração indevida',
       }),
     ).rejects.toBeInstanceOf(NotFoundException);

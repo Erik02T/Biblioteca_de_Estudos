@@ -260,6 +260,11 @@ export class AttachmentsService {
     });
     if (!attachment) throw new NotFoundException('Anexo não encontrado');
 
+    await this.prisma.area.updateMany({
+      where: { coverAttachmentId: id, userId },
+      data: { coverAttachmentId: null },
+    });
+
     await this.storage.deleteByUrl(attachment.url);
     return this.prisma.attachment.delete({ where: { id } });
   }

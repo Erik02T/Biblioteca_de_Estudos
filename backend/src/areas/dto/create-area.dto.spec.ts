@@ -30,6 +30,56 @@ describe('CreateAreaDto', () => {
     await expect(validate(dto)).resolves.toHaveLength(0);
   });
 
+  it('accepts optional parentId, targetPageId and F5 personalization metadata', async () => {
+    const dto = new CreateAreaDto();
+    dto.section = SectionType.PROJETOS;
+    dto.subSection = SubSectionType.ESTUDANDO;
+    dto.nome = 'Subpágina';
+    dto.categoria = 'Estratégia';
+    dto.parentId = 'parent-area-id';
+    dto.targetPageId = 'target-area-id';
+    dto.coverAttachmentId = 'cover-att-id';
+    dto.coverPosition = 75;
+    dto.fullWidth = true;
+
+    await expect(validate(dto)).resolves.toHaveLength(0);
+  });
+
+  it('validates coverPosition range (0-100)', async () => {
+    const validDto = new CreateAreaDto();
+    validDto.section = SectionType.LINGUAGENS;
+    validDto.subSection = SubSectionType.ESTUDANDO;
+    validDto.nome = 'Valid';
+    validDto.categoria = 'Valid';
+    validDto.coverPosition = 0;
+    await expect(validate(validDto)).resolves.toHaveLength(0);
+
+    validDto.coverPosition = 100;
+    await expect(validate(validDto)).resolves.toHaveLength(0);
+
+    const negativeDto = new CreateAreaDto();
+    negativeDto.section = SectionType.LINGUAGENS;
+    negativeDto.subSection = SubSectionType.ESTUDANDO;
+    negativeDto.nome = 'Valid';
+    negativeDto.categoria = 'Valid';
+    negativeDto.coverPosition = -1;
+    const errorsNegative = await validate(negativeDto);
+    expect(errorsNegative.some((err) => err.property === 'coverPosition')).toBe(
+      true,
+    );
+
+    const excessDto = new CreateAreaDto();
+    excessDto.section = SectionType.LINGUAGENS;
+    excessDto.subSection = SubSectionType.ESTUDANDO;
+    excessDto.nome = 'Valid';
+    excessDto.categoria = 'Valid';
+    excessDto.coverPosition = 101;
+    const errorsExcess = await validate(excessDto);
+    expect(errorsExcess.some((err) => err.property === 'coverPosition')).toBe(
+      true,
+    );
+  });
+
   it('rejects fields exceeding maximum allowed length', async () => {
     const dto = new CreateAreaDto();
     dto.section = SectionType.LINGUAGENS;

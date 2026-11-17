@@ -39,6 +39,7 @@ describe('AttachmentsService', () => {
     },
     area: {
       findFirst: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
   };
   const service = new AttachmentsService(
