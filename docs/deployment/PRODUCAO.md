@@ -1,5 +1,9 @@
 # Documentação de Produção — Biblioteca de Estudos
 
+> **Publicação F12:** use o [runbook atual](PUBLICACAO_F12.md), que registra os gates de CI, migrações, compatibilidade, backup e rollback. As seções históricas abaixo não comprovam prontidão da infraestrutura atual.
+
+> **Referência histórica de preparação para publicação.** Revise configurações e condições dos provedores antes de uma futura publicação; esta organização não validou infraestrutura hospedada. A orientação atual da biblioteca local está em [Operação local](OPERACAO_LOCAL.md). Procedimentos de fixtures ficam em [F12-testes](../notion/execucao/F12-testes.md).
+
 Este documento explica como configurar o banco de dados, o armazenamento de arquivos, as segredos, as migrations e o plano de recuperação para ambiente de produção.
 
 > **Nunca** insira valores reais de senha, chave secreta ou token neste arquivo nem em qualquer arquivo versionado. Use apenas placeholders.
