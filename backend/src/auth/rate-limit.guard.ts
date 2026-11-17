@@ -21,7 +21,11 @@ export class AuthRateLimitGuard implements CanActivate {
 
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<Request>();
-    const isAuth = request.path.startsWith('/auth/');
+    // Protected identity reads use the normal API budget. They must not consume
+    // the stricter credential-attempt budget on each reload/account check.
+    const isSessionRead =
+      request.method === 'GET' && /^\/auth\/me\/?$/.test(request.path);
+    const isAuth = request.path.startsWith('/auth/') && !isSessionRead;
     const key = `${isAuth ? 'auth' : 'api'}:${request.ip ?? 'unknown'}`;
     const limit = isAuth ? this.authLimit : this.apiLimit;
     const now = Date.now();

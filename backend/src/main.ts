@@ -1,13 +1,14 @@
+import './environment';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { json, urlencoded } from 'express';
 import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
-import 'dotenv/config';
 import helmet from 'helmet';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from './prisma/prisma.service';
 import { isAreaWriteAuthorized } from './common/area-write-preauth';
+import { createCorsOptions } from './common/cors-options';
 
 const logger = new Logger('Bootstrap');
 
@@ -34,6 +35,10 @@ async function bootstrap() {
     logger: ['error', 'warn', 'log'],
     bodyParser: false,
   });
+
+  // Authentication failures before body parsing must remain readable by the
+  // browser, so the shared client can distinguish 401 from network failure.
+  app.enableCors(createCorsOptions(process.env.FRONTEND_URL));
 
   const jwt = app.get(JwtService);
   const prisma = app.get(PrismaService);
@@ -90,31 +95,6 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: '1mb' }));
 
   app.use(helmet());
-
-  const configuredOrigins = (process.env.FRONTEND_URL ?? '')
-    .split(',')
-    .map((origin) => origin.trim().replace(/\/$/, ''))
-    .filter(Boolean);
-  const localOrigins = ['http://localhost:3000', 'http://localhost:3001'];
-
-  const corsOptions = {
-    origin: (
-      origin: string | undefined,
-      callback: (error: Error | null, allowed?: boolean) => void,
-    ) => {
-      if (
-        !origin ||
-        localOrigins.includes(origin) ||
-        configuredOrigins.includes(origin) ||
-        /^https:\/\/[^/]+\.vercel\.app$/.test(origin)
-      ) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error('Origem não autorizada pelo CORS'));
-    },
-  };
-  app.enableCors(corsOptions);
 
   app.useGlobalPipes(
     new ValidationPipe({
