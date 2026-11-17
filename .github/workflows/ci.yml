@@ -20,17 +20,31 @@ jobs:
   backend:
     name: Backend
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://biblioteca_test:biblioteca_test_password@localhost:5432/biblioteca_test_ci
+      JWT_SECRET: ci-test-secret-do-not-use-in-production-min-32-bytes
+      FRONTEND_URL: http://localhost:3001
+      PORT: '3000'
+      STORAGE_BUCKET: biblioteca-test-f7-ci
+      STORAGE_ENDPOINT: http://localhost:9000
+      STORAGE_PUBLIC_URL: http://localhost:9000/biblioteca-test-f7-ci
+      STORAGE_REGION: us-east-1
+      STORAGE_ACCESS_KEY_ID: biblioteca_ci_storage
+      STORAGE_SECRET_ACCESS_KEY: biblioteca_ci_storage_test_password
+      STORAGE_FORCE_PATH_STYLE: 'true'
+      STORAGE_SIGNED_URLS: 'true'
     services:
       postgres:
         image: postgres:16-alpine
         env:
           POSTGRES_USER: biblioteca_test
           POSTGRES_PASSWORD: biblioteca_test_password
-          POSTGRES_DB: biblioteca_estudos_test
+          POSTGRES_DB: biblioteca_test_ci
         ports:
           - "5432:5432"
         options: >-
-          --health-cmd "pg_isready -U biblioteca_test -d biblioteca_estudos_test"
+          --health-cmd "pg_isready -U biblioteca_test -d biblioteca_test_ci"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -46,42 +60,62 @@ jobs:
 
       - name: Instalar dependências do backend
         working-directory: ${{ env.BACKEND_DIR }}
-        run: npm install
+        run: npm ci --include=dev
 
       - name: Gerar Prisma Client
         working-directory: ${{ env.BACKEND_DIR }}
-        run: npx prisma generate
+        run: npx --no-install prisma generate
 
       - name: Executar lint do backend
         working-directory: ${{ env.BACKEND_DIR }}
         run: npm run lint
 
-      - name: Executar testes unitários do backend
+      - name: Verificar tipos do backend e dos testes
         working-directory: ${{ env.BACKEND_DIR }}
-        env:
-          DATABASE_URL: postgresql://biblioteca_test:biblioteca_test_password@localhost:5432/biblioteca_estudos_test
-          JWT_SECRET: ci-test-secret-do-not-use-in-production-min-32-bytes
-          FRONTEND_URL: http://localhost:3001
-          PORT: 3000
-        run: npm test
+        run: npx --no-install tsc --noEmit --incremental false
 
-      - name: Executar testes e2e do backend
+      - name: Aplicar migrações no banco exclusivo de testes
         working-directory: ${{ env.BACKEND_DIR }}
-        env:
-          DATABASE_URL: postgresql://biblioteca_test:biblioteca_test_password@localhost:5432/biblioteca_estudos_test
-          JWT_SECRET: ci-test-secret-do-not-use-in-production-min-32-bytes
-          FRONTEND_URL: http://localhost:3001
-          PORT: 3000
-        run: npm run test:e2e
+        run: npx --no-install prisma migrate deploy
 
       - name: Build de produção do backend
         working-directory: ${{ env.BACKEND_DIR }}
-        env:
-          DATABASE_URL: postgresql://biblioteca_test:biblioteca_test_password@localhost:5432/biblioteca_estudos_test
-          JWT_SECRET: ci-test-secret-do-not-use-in-production-min-32-bytes
+        run: npm run build
+
+      - name: Iniciar MinIO exclusivo de testes
         run: |
-          npx prisma generate
-          npm run build
+          docker run --detach --name biblioteca-ci-minio \
+            --publish 127.0.0.1:9000:9000 \
+            --env MINIO_ROOT_USER="$STORAGE_ACCESS_KEY_ID" \
+            --env MINIO_ROOT_PASSWORD="$STORAGE_SECRET_ACCESS_KEY" \
+            quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e \
+            server /data
+          for _ in {1..30}; do
+            if curl --fail --silent http://localhost:9000/minio/health/ready; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://localhost:9000/minio/health/ready
+
+      - name: Preparar bucket exclusivo de testes
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: node -e "require('./dist/src/common/test-environment').prepareTestStorage().catch(error => { console.error(error.name); process.exitCode = 1; })"
+
+      - name: Executar testes do backend
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm test -- --runInBand
+
+      - name: Executar testes e2e do backend
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm run test:e2e -- --runInBand
+
+      - name: Encerrar MinIO de testes
+        if: always()
+        run: |
+          if docker container inspect biblioteca-ci-minio >/dev/null 2>&1; then
+            docker rm --force biblioteca-ci-minio
+          fi
 
   frontend:
     name: Frontend
@@ -98,7 +132,7 @@ jobs:
 
       - name: Instalar dependências do frontend
         working-directory: ${{ env.FRONTEND_DIR }}
-        run: npm install
+        run: npm ci --include=dev
 
       - name: Executar lint do frontend
         working-directory: ${{ env.FRONTEND_DIR }}
