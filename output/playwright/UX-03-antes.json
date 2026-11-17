@@ -1,0 +1,32 @@
+[
+  {
+    "width": 320,
+    "scrollWidth": 320,
+    "editorWidth": 262,
+    "editorTop": 1102.296875
+  },
+  {
+    "width": 375,
+    "scrollWidth": 375,
+    "editorWidth": 317,
+    "editorTop": 1047.296875
+  },
+  {
+    "width": 768,
+    "scrollWidth": 768,
+    "editorWidth": 678,
+    "editorTop": 876.796875
+  },
+  {
+    "width": 1024,
+    "scrollWidth": 1024,
+    "editorWidth": 934,
+    "editorTop": 876.796875
+  },
+  {
+    "width": 1440,
+    "scrollWidth": 1440,
+    "editorWidth": 658,
+    "editorTop": 426.796875
+  }
+]

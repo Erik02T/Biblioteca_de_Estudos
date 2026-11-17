@@ -1,0 +1,11 @@
+{
+  "verifiedAt": "2026-11-17T13:41:03.960Z",
+  "engine": "firefox",
+  "script": "recovery-before",
+  "seconds": 1.907,
+  "passed": true,
+  "stage": "before-forced-process-exit",
+  "durableIndexedDB": true,
+  "pageId": "6926983a-2af7-4056-af0c-3e8a6edf3156",
+  "networkFailure": "PATCH aborted; reads remain online"
+}

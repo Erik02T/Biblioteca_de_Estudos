@@ -1,0 +1,148 @@
+{
+  "verifiedAt": "2026-11-17T12:59:03.878Z",
+  "engine": "chromium",
+  "script": "performance",
+  "seconds": 8.841,
+  "passed": true,
+  "browserVersion": "157.0.8103.79",
+  "pages": 1000,
+  "measuredDocumentBlocks": 1000,
+  "viewport": "1280x720",
+  "metrics": {
+    "coldCollectionMs": 329,
+    "warmCollectionLayout": {
+      "samplesMs": [
+        29,
+        38,
+        35,
+        30,
+        33,
+        32,
+        28,
+        26,
+        29,
+        32
+      ],
+      "medianMs": 31,
+      "maximumMs": 38
+    },
+    "firstLargeDocumentMs": 217,
+    "warmThousandBlockDocument": {
+      "samplesMs": [
+        181,
+        158,
+        192,
+        185,
+        187,
+        208,
+        212,
+        179,
+        178,
+        170
+      ],
+      "medianMs": 183,
+      "maximumMs": 212
+    },
+    "inputToSecondAnimationFrame": {
+      "samplesMs": [
+        23.2,
+        20.9,
+        23,
+        25.2,
+        25.2,
+        25,
+        25,
+        25.3,
+        25,
+        25
+      ],
+      "medianMs": 25,
+      "maximumMs": 25.3
+    },
+    "lastKeystrokeToConfirmedSaveMs": 1327,
+    "bodySearchBeyondFirstPage": {
+      "samplesMs": [
+        239,
+        194,
+        212,
+        186,
+        186,
+        248,
+        257,
+        182,
+        184,
+        180
+      ],
+      "medianMs": 190,
+      "maximumMs": 257
+    }
+  },
+  "navigationResponses": [
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33234,
+      "items": 100,
+      "containsBodies": false
+    }
+  ],
+  "errors": [],
+  "observations": [
+    "First load uses a fresh browser context/cache. Warm collection measures layout changes with existing data; document samples use in-app navigation. Input measures beforeinput to the second animation frame, including layout, not an INP score."
+  ],
+  "userPerformanceAcceptance": "pending-human",
+  "sla": null
+}

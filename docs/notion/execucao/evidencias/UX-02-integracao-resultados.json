@@ -1,0 +1,14 @@
+{
+  "state": "VERIFICADO",
+  "database": "biblioteca_test_ux02_20261115",
+  "checks": [
+    "Coleção real inclui dois status e subpágina com mesmos IDs",
+    "Status e URL antiga preservados após recarga real",
+    "Reordenação por teclado/botão confirmada em nova leitura HTTP",
+    "Navegação lateral grava conteúdo/metadados: confirmados no PostgreSQL por novo GET",
+    "Link direto por ID reabre conteúdo e título persistidos",
+    "Favorito persistido e recuperado na coleção global",
+    "Duplicação mantém conteúdo e abre novo ID real",
+    "Excluir/restaurar preserva o ID e recupera registro real"
+  ]
+}

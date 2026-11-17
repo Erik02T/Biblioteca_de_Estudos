@@ -1,0 +1,9 @@
+{
+  "preparedAt": "2026-11-17T12:53:09.130Z",
+  "engine": "chromium",
+  "passed": true,
+  "title": "F12 human 00",
+  "url": "http://localhost:3068/?page=1933127b-7040-4ecf-acc3-511f59cfd27a",
+  "browserVersion": "157.0.8103.79",
+  "acceptance": "pending-human"
+}

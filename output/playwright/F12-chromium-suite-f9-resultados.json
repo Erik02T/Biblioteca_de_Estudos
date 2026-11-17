@@ -1,0 +1,28 @@
+{
+  "verifiedAt": "2026-11-17T13:50:23.697Z",
+  "engine": "chromium",
+  "group": "f9",
+  "passed": true,
+  "resumed": false,
+  "note": "Consolidated from the individual scenario records; timestamps identify the actual executions.",
+  "steps": [
+    {
+      "name": "chromium/replay-f9-navigation",
+      "evidence": "F12-chromium-replay-f9-navigation-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:51.083Z"
+    },
+    {
+      "name": "chromium/replay-f9-presentation",
+      "evidence": "F12-chromium-replay-f9-presentation-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:58.276Z"
+    },
+    {
+      "name": "chromium/replay-f9-icon",
+      "evidence": "F12-chromium-replay-f9-icon-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:45:31.025Z"
+    }
+  ]
+}

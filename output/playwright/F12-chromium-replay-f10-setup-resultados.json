@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-11-17T13:09:23.718Z",
+  "engine": "chromium",
+  "script": "replay-f10-setup",
+  "seconds": 1.316,
+  "main": "4dc6686d-0e50-4c4c-883b-63cbb115b3ff",
+  "theory": "6da6c143-e92e-45a0-82ad-88aa24722e37",
+  "examples": "389b4684-d322-4954-b8d8-7e612879b1ec",
+  "passed": true
+}

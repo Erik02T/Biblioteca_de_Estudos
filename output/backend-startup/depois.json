@@ -1,0 +1,56 @@
+[
+  {
+    "script": "start:dev",
+    "inheritedPort": "5432",
+    "configuredPort": "5433",
+    "ready": true,
+    "health": {
+      "status": "ok",
+      "timestamp": "2026-11-16T13:01:47.198Z",
+      "checks": {
+        "database": "connected"
+      }
+    },
+    "localFileSelected": true,
+    "staleValueReplaced": true,
+    "prismaP1001": false,
+    "portInUse": false,
+    "cleanupExitCode": 0
+  },
+  {
+    "script": "start:dev",
+    "inheritedPort": "5432",
+    "configuredPort": "5433",
+    "ready": true,
+    "health": {
+      "status": "ok",
+      "timestamp": "2026-11-16T13:01:55.702Z",
+      "checks": {
+        "database": "connected"
+      }
+    },
+    "localFileSelected": true,
+    "staleValueReplaced": true,
+    "prismaP1001": false,
+    "portInUse": false,
+    "cleanupExitCode": 0
+  },
+  {
+    "script": "start",
+    "inheritedPort": "5432",
+    "configuredPort": "5433",
+    "ready": true,
+    "health": {
+      "status": "ok",
+      "timestamp": "2026-11-16T13:02:02.933Z",
+      "checks": {
+        "database": "connected"
+      }
+    },
+    "localFileSelected": true,
+    "staleValueReplaced": true,
+    "prismaP1001": false,
+    "portInUse": false,
+    "cleanupExitCode": 0
+  }
+]

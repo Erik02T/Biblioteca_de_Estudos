@@ -1,0 +1,38 @@
+{
+  "verifiedAt": "2026-11-17T13:31:07.699Z",
+  "engine": "chromium",
+  "script": "clipboard",
+  "seconds": 2.045,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Clipboard nativo preserva japonês e indentação",
+      "passed": true
+    },
+    {
+      "name": "Clipboard negado informa falha e seleciona exatamente o código",
+      "passed": true,
+      "detail": {
+        "selection": "def estudo():\n    return \"日本語\"\n",
+        "expected": "def estudo():\n    return \"日本語\"\n"
+      }
+    },
+    {
+      "name": "Alternativa de cópia manual funciona após recusa",
+      "passed": true
+    },
+    {
+      "name": "Pipeline de colagem HTML preserva texto permitido sem executar conteúdo ativo",
+      "passed": true,
+      "detail": {
+        "textPresent": true,
+        "executed": false,
+        "activeNodes": 0
+      }
+    }
+  ],
+  "nativeClipboard": true,
+  "deniedClipboard": "injected NotAllowedError",
+  "htmlPaste": "synthetic ClipboardEvent through real editor",
+  "physicalIME": "pending-human"
+}

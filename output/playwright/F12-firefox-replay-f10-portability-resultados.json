@@ -1,0 +1,15 @@
+{
+  "verifiedAt": "2026-11-17T13:26:45.954Z",
+  "engine": "firefox",
+  "script": "replay-f10-portability",
+  "seconds": 4.262,
+  "checks": [
+    "Versão: mídia do documento é preservada",
+    "Restauração: documento misto idêntico com anexos remapeados",
+    "Restauração: referências continuam resolvidas pelo destino",
+    "Exportação: ZIP real com documento e materiais",
+    "Duplicação de página: novo ID e mídia independente",
+    "Independência: remover material original não quebra a cópia"
+  ],
+  "passed": true
+}

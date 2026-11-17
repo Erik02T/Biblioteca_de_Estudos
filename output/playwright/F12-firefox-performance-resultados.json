@@ -1,0 +1,190 @@
+{
+  "verifiedAt": "2026-11-17T13:04:25.805Z",
+  "engine": "firefox",
+  "script": "performance",
+  "seconds": 11.486,
+  "passed": true,
+  "browserVersion": "159.0",
+  "pages": 1000,
+  "measuredDocumentBlocks": 1000,
+  "viewport": "1280x720",
+  "metrics": {
+    "coldCollectionMs": 389,
+    "warmCollectionLayout": {
+      "samplesMs": [
+        42,
+        37,
+        38,
+        37,
+        34,
+        33,
+        32,
+        35,
+        35,
+        33
+      ],
+      "medianMs": 35,
+      "maximumMs": 42
+    },
+    "firstLargeDocumentMs": 230,
+    "warmThousandBlockDocument": {
+      "samplesMs": [
+        305,
+        278,
+        243,
+        295,
+        273,
+        287,
+        279,
+        289,
+        288,
+        286
+      ],
+      "medianMs": 286.5,
+      "maximumMs": 305
+    },
+    "inputToSecondAnimationFrame": {
+      "samplesMs": [
+        17,
+        11,
+        16,
+        25,
+        23,
+        25,
+        24,
+        24,
+        47,
+        23
+      ],
+      "medianMs": 23.5,
+      "maximumMs": 47
+    },
+    "lastKeystrokeToConfirmedSaveMs": 861,
+    "bodySearchBeyondFirstPage": {
+      "samplesMs": [
+        295,
+        222,
+        244,
+        214,
+        214,
+        222,
+        233,
+        256,
+        256,
+        213
+      ],
+      "medianMs": 227.5,
+      "maximumMs": 295
+    }
+  },
+  "navigationResponses": [
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33234,
+      "items": 100,
+      "containsBodies": false
+    }
+  ],
+  "searchResponses": [
+    {
+      "q": "Sentinela F12 998",
+      "status": 200
+    },
+    {
+      "q": "Sentinela F12 999",
+      "status": 200
+    },
+    {
+      "q": "Sentinela F12 998",
+      "status": 304
+    },
+    {
+      "q": "Sentinela F12 999",
+      "status": 304
+    },
+    {
+      "q": "Sentinela F12 998",
+      "status": 304
+    },
+    {
+      "q": "Sentinela F12 999",
+      "status": 304
+    },
+    {
+      "q": "Sentinela F12 998",
+      "status": 304
+    },
+    {
+      "q": "Sentinela F12 999",
+      "status": 304
+    },
+    {
+      "q": "Sentinela F12 998",
+      "status": 304
+    },
+    {
+      "q": "Sentinela F12 999",
+      "status": 304
+    }
+  ],
+  "errors": [],
+  "observations": [
+    "First load uses a fresh browser context/cache. Warm collection measures layout changes with existing data; document samples use in-app navigation. Input measures beforeinput to the second animation frame, including layout, not an INP score."
+  ],
+  "userPerformanceAcceptance": "pending-human",
+  "sla": null
+}

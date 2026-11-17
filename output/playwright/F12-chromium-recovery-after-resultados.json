@@ -1,0 +1,15 @@
+{
+  "verifiedAt": "2026-11-17T13:42:40.570Z",
+  "engine": "chromium",
+  "script": "recovery-after",
+  "seconds": 1.993,
+  "passed": true,
+  "stage": "after-forced-process-exit",
+  "checks": [
+    "Rascunho confirmado persiste após encerramento forçado do processo de teste",
+    "Recuperação explícita compara revisão e confirma o texto por nova leitura do servidor"
+  ],
+  "identityReconfirmed": true,
+  "marker": "F12 recuperação após processo encerrado chromium 1794922609967",
+  "operatingSystemCrashTested": false
+}

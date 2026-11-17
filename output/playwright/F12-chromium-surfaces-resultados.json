@@ -1,0 +1,197 @@
+{
+  "verifiedAt": "2026-11-17T13:30:58.564Z",
+  "engine": "chromium",
+  "script": "surfaces",
+  "seconds": 1.942,
+  "passed": true,
+  "checks": [
+    {
+      "name": "LIST em 320px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "document": 320
+      }
+    },
+    {
+      "name": "TABLE em 320px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "document": 320
+      }
+    },
+    {
+      "name": "BOARD em 320px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "document": 320
+      }
+    },
+    {
+      "name": "LIST em 375px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "document": 375
+      }
+    },
+    {
+      "name": "TABLE em 375px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "document": 375
+      }
+    },
+    {
+      "name": "BOARD em 375px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "document": 375
+      }
+    },
+    {
+      "name": "LIST em 768px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 768,
+        "document": 768
+      }
+    },
+    {
+      "name": "TABLE em 768px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 768,
+        "document": 768
+      }
+    },
+    {
+      "name": "BOARD em 768px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 768,
+        "document": 768
+      }
+    },
+    {
+      "name": "LIST em 1280px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 1280,
+        "document": 1280
+      }
+    },
+    {
+      "name": "TABLE em 1280px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 1280,
+        "document": 1280
+      }
+    },
+    {
+      "name": "BOARD em 1280px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 1280,
+        "document": 1280
+      }
+    },
+    {
+      "name": "LIST em 1440px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "name": "TABLE em 1440px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "name": "BOARD em 1440px mantém rolagem na superfície permitida",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "name": "Documento em 320px sem overflow global",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "document": 320
+      }
+    },
+    {
+      "name": "Documento em 375px sem overflow global",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "document": 375
+      }
+    },
+    {
+      "name": "Documento em 768px sem overflow global",
+      "passed": true,
+      "detail": {
+        "viewport": 768,
+        "document": 768
+      }
+    },
+    {
+      "name": "Documento em 1280px sem overflow global",
+      "passed": true,
+      "detail": {
+        "viewport": 1280,
+        "document": 1280
+      }
+    },
+    {
+      "name": "Documento em 1440px sem overflow global",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "name": "Enter no título leva o foco ao editor",
+      "passed": true
+    },
+    {
+      "name": "Escape devolve o foco ao acionador do menu",
+      "passed": true
+    },
+    {
+      "name": "Galeria cabe em 320 CSS px",
+      "passed": true
+    },
+    {
+      "name": "Tab permanece dentro do diálogo modal",
+      "passed": true
+    },
+    {
+      "name": "Escape fecha modal e devolve foco",
+      "passed": true
+    },
+    {
+      "name": "Superfícies sem erro de execução",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "nativeZoom": "pending-human",
+  "physicalTouch": "pending-human"
+}

@@ -1,0 +1,191 @@
+{
+  "checks": [
+    "Sem overflow e leitura utilizável 320 Propriedades",
+    "Modal preserva largura 320 Propriedades",
+    "Escape retorna foco 320 Propriedades",
+    "Sem overflow e leitura utilizável 320 Materiais (2)",
+    "Modal preserva largura 320 Materiais (2)",
+    "Escape retorna foco 320 Materiais (2)",
+    "Sem overflow e leitura utilizável 320 Formatar",
+    "Modal preserva largura 320 Formatar",
+    "Escape retorna foco 320 Formatar",
+    "Instância mantida 320",
+    "Sem overflow e leitura utilizável 375 Propriedades",
+    "Modal preserva largura 375 Propriedades",
+    "Escape retorna foco 375 Propriedades",
+    "Sem overflow e leitura utilizável 375 Materiais (2)",
+    "Modal preserva largura 375 Materiais (2)",
+    "Escape retorna foco 375 Materiais (2)",
+    "Sem overflow e leitura utilizável 375 Formatar",
+    "Modal preserva largura 375 Formatar",
+    "Escape retorna foco 375 Formatar",
+    "Instância mantida 375",
+    "Sem overflow e leitura utilizável 768 Propriedades",
+    "Modal preserva largura 768 Propriedades",
+    "Escape retorna foco 768 Propriedades",
+    "Sem overflow e leitura utilizável 768 Materiais (2)",
+    "Modal preserva largura 768 Materiais (2)",
+    "Escape retorna foco 768 Materiais (2)",
+    "Sem overflow e leitura utilizável 768 Formatar",
+    "Modal preserva largura 768 Formatar",
+    "Escape retorna foco 768 Formatar",
+    "Instância mantida 768",
+    "Sem overflow e leitura utilizável 1024 Propriedades",
+    "Modal preserva largura 1024 Propriedades",
+    "Escape retorna foco 1024 Propriedades",
+    "Sem overflow e leitura utilizável 1024 Materiais (2)",
+    "Modal preserva largura 1024 Materiais (2)",
+    "Escape retorna foco 1024 Materiais (2)",
+    "Sem overflow e leitura utilizável 1024 Formatar",
+    "Modal preserva largura 1024 Formatar",
+    "Escape retorna foco 1024 Formatar",
+    "Instância mantida 1024",
+    "Sem overflow e leitura utilizável 1440 Propriedades",
+    "Escape retorna foco 1440 Propriedades",
+    "Sem overflow e leitura utilizável 1440 Materiais (2)",
+    "Escape retorna foco 1440 Materiais (2)",
+    "Sem overflow e leitura utilizável 1440 Formatar",
+    "Escape retorna foco 1440 Formatar",
+    "Instância mantida 1440",
+    "Seleção preparada",
+    "Mouse aplica formatação à seleção preservada",
+    "Undo preservado após abrir ferramenta",
+    "Redo preservado",
+    "Modo foco ativo",
+    "Escape do foco não sai da página",
+    "Escape encerra foco",
+    "Cancelar recorte não persiste prévia",
+    "Recorte concluído sinaliza propriedade pendente",
+    "Aplicar propriedades usa checkpoint real do frontend",
+    "Comando no modal retorna ao editor",
+    "Autosave permanece funcional depois do modal",
+    "Erro persiste fora do painel",
+    "Recarga lê conteúdo da API interceptada",
+    "Recarga mantém recorte aplicado",
+    "Movimento reduzido",
+    "Sem erros JavaScript"
+  ],
+  "viewports": [
+    {
+      "tool": "Propriedades",
+      "width": 320,
+      "scrollWidth": 320,
+      "editorWidth": 280,
+      "dialogWidth": 296,
+      "modal": true
+    },
+    {
+      "tool": "Materiais (2)",
+      "width": 320,
+      "scrollWidth": 320,
+      "editorWidth": 280,
+      "dialogWidth": 296,
+      "modal": true
+    },
+    {
+      "tool": "Formatar",
+      "width": 320,
+      "scrollWidth": 320,
+      "editorWidth": 280,
+      "dialogWidth": 296,
+      "modal": true
+    },
+    {
+      "tool": "Propriedades",
+      "width": 375,
+      "scrollWidth": 375,
+      "editorWidth": 335,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Materiais (2)",
+      "width": 375,
+      "scrollWidth": 375,
+      "editorWidth": 335,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Formatar",
+      "width": 375,
+      "scrollWidth": 375,
+      "editorWidth": 335,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Propriedades",
+      "width": 768,
+      "scrollWidth": 768,
+      "editorWidth": 680,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Materiais (2)",
+      "width": 768,
+      "scrollWidth": 768,
+      "editorWidth": 680,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Formatar",
+      "width": 768,
+      "scrollWidth": 768,
+      "editorWidth": 680,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Propriedades",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "editorWidth": 760,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Materiais (2)",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "editorWidth": 760,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Formatar",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "editorWidth": 760,
+      "dialogWidth": 320,
+      "modal": true
+    },
+    {
+      "tool": "Propriedades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "editorWidth": 760,
+      "dialogWidth": 320,
+      "modal": false
+    },
+    {
+      "tool": "Materiais (2)",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "editorWidth": 760,
+      "dialogWidth": 320,
+      "modal": false
+    },
+    {
+      "tool": "Formatar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "editorWidth": 760,
+      "dialogWidth": 320,
+      "modal": false
+    }
+  ],
+  "errors": []
+}

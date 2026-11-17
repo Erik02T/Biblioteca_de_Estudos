@@ -1,0 +1,7 @@
+{
+  "scenario": "Backend compilado com DATABASE_URL herdada na porta 5432 e backend/.env na porta 5433",
+  "exitCode": 1,
+  "errorCode": "P1001",
+  "unreachable5432": true,
+  "timeout": false
+}

@@ -1,0 +1,62 @@
+async (page) => {
+  if (new URL(page.url()).origin !== 'http://localhost:3058') throw Error('Use isolated F11 frontend');
+  const fixture = await page.evaluate(() => JSON.parse(localStorage.getItem('f11-fixture')));
+  const results = [];
+  const check = (name, condition) => { if (!condition) throw Error(name); results.push({ name, passed: true }); };
+  const read = id => page.evaluate(async id => {
+    const response = await fetch('http://localhost:3057/areas/' + id, { headers: { Authorization: 'Bearer ' + localStorage.getItem('biblioteca-access-token') } });
+    if (!response.ok) throw Error('Read: ' + response.status); return response.json();
+  }, id);
+  await page.goto('http://localhost:3058/?page=' + fixture.source);
+  await page.getByRole('textbox', { name: 'Conteúdo da página', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Mais opções da página', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Salvar como modelo', exact: true }).click();
+  const save = page.getByRole('dialog', { name: 'Salvar página como modelo', exact: true });
+  await save.getByRole('textbox', { name: 'Nome do modelo', exact: true }).fill('Modelo independente F11');
+  await save.getByRole('textbox', { name: 'Descrição', exact: true }).fill('Aula com capa, imagem e texto japonês.');
+  await save.getByRole('combobox', { name: 'Tipo de modelo', exact: true }).selectOption('LECTURE');
+  await save.getByRole('button', { name: 'Salvar modelo', exact: true }).click();
+  await save.getByText('Modelo salvo com cópias independentes dos materiais.', { exact: true }).waitFor();
+  check('Modelo é capturado pela interface após checkpoint', true);
+  await save.getByRole('button', { name: 'Concluir', exact: true }).click();
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click();
+  await page.getByRole('button', { name: 'Modelos', exact: true }).click();
+  const gallery = page.getByRole('dialog', { name: 'Modelos de páginas', exact: true });
+  await gallery.getByRole('button', { name: /Modelo independente F11/ }).click();
+  await gallery.getByRole('heading', { name: 'Conteúdo para modelo F11', exact: true }).waitFor();
+  await page.waitForFunction(() => [...document.querySelectorAll('.template-preview img')].length >= 1 && [...document.querySelectorAll('.template-preview img')].every(image => image.naturalWidth > 0));
+  check('Prévia mostra conteúdo, capa e imagem reais', await gallery.getByRole('region', { name: 'Materiais do modelo', exact: true }).count() === 1);
+  await gallery.getByRole('combobox', { name: 'Área de destino', exact: true }).selectOption('PROJETOS');
+  await gallery.getByRole('combobox', { name: 'Status inicial', exact: true }).selectOption('ESTUDADO');
+  await page.route('**/templates/*/apply', async route => { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ message: 'Falha induzida F11' }) }); }, { times: 1 });
+  await gallery.getByRole('button', { name: 'Criar página com este modelo', exact: true }).click();
+  await gallery.getByText('Falha induzida F11', { exact: true }).waitFor();
+  check('Falha de aplicação mantém galeria e seleção', await gallery.isVisible() && await gallery.getByRole('button', { name: /Modelo independente F11/ }).getAttribute('aria-pressed') === 'true');
+  const createdResponse = page.waitForResponse(response => response.url().includes('/templates/') && response.url().endsWith('/apply') && response.status() === 201);
+  await gallery.getByRole('button', { name: 'Criar página com este modelo', exact: true }).click();
+  const first = await (await createdResponse).json();
+  await page.getByRole('textbox', { name: 'Conteúdo da página', exact: true }).waitFor();
+  check('Aplicação cria página nova no destino escolhido', first.id !== fixture.source && first.section === 'PROJETOS' && first.subSection === 'ESTUDADO' && new URL(page.url()).searchParams.get('page') === first.id);
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click();
+  await page.getByRole('button', { name: 'Modelos', exact: true }).click();
+  await gallery.getByRole('button', { name: /Modelo independente F11/ }).click();
+  await gallery.getByRole('heading', { name: 'Conteúdo para modelo F11', exact: true }).waitFor();
+  const secondResponse = page.waitForResponse(response => response.url().includes('/templates/') && response.url().endsWith('/apply') && response.status() === 201);
+  await gallery.getByRole('button', { name: 'Criar página com este modelo', exact: true }).click();
+  const second = await (await secondResponse).json();
+  await page.getByRole('textbox', { name: 'Conteúdo da página', exact: true }).waitFor();
+  const a = await read(first.id), b = await read(second.id);
+  check('Duas aplicações têm IDs, blocos, anexos e objetos distintos', a.id !== b.id && a.attachments[0].id !== b.attachments[0].id && a.attachments[0].url.split('?')[0] !== b.attachments[0].url.split('?')[0] && a.conteudo.content[0].attrs.id !== b.conteudo.content[0].attrs.id);
+  // Remove only the fixture source material, never a habitual page or bucket.
+  await page.evaluate(async fixture => {
+    const response = await fetch('http://localhost:3057/attachments/' + fixture.attachment, { method: 'DELETE', headers: { Authorization: 'Bearer ' + localStorage.getItem('biblioteca-access-token') } });
+    if (!response.ok) throw Error('Fixture deletion: ' + response.status);
+  }, fixture);
+  await page.reload();
+  await page.getByRole('textbox', { name: 'Conteúdo da página', exact: true }).waitFor();
+  await page.waitForFunction(() => document.querySelector('.document-material img')?.naturalWidth > 0);
+  check('Remover o arquivo original preserva a imagem da cópia após recarga', true);
+  await page.evaluate(ids => localStorage.setItem('f11-copies', JSON.stringify(ids)), [first.id, second.id]);
+  await page.screenshot({ path: 'output/playwright/F11-modelo-copia.png', fullPage: true });
+  return results;
+}

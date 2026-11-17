@@ -1,0 +1,203 @@
+{
+  "checks": [
+    "Layout inicio 320",
+    "Layout inicio 375",
+    "Layout inicio 768",
+    "Layout inicio 1024",
+    "Layout inicio 1440",
+    "Layout colecao 320",
+    "Layout colecao 375",
+    "Layout colecao 768",
+    "Layout colecao 1024",
+    "Layout colecao 1440",
+    "Layout status 320",
+    "Layout status 375",
+    "Layout status 768",
+    "Layout status 1024",
+    "Layout status 1440",
+    "Layout editor 320",
+    "Layout editor 375",
+    "Layout editor 768",
+    "Layout editor 1024",
+    "Layout editor 1440",
+    "Área abre coleção diretamente",
+    "API paginada agregada antes da paginação visual",
+    "Segunda página mostra cinco itens restantes",
+    "Filtro reinicia paginação",
+    "Status sobrevive à recarga",
+    "Voltar/Avançar restauram status",
+    "Busca filtra coleção inteira",
+    "Ações abrem pelo teclado",
+    "Escape retorna foco",
+    "Ordem por nome impede arrastar",
+    "Busca preserva instância do editor",
+    "Conflito bloqueia saída pela lateral",
+    "Retorno recupera URL completa da coleção",
+    "Metadados confirmados na API interceptada",
+    "Desfavoritar atualiza coleção de favoritos",
+    "Lixeira vazia explícita",
+    "Erro de coleção recuperável",
+    "Sem overflow TABLE 320",
+    "Sem overflow BOARD 320"
+  ],
+  "viewports": [
+    {
+      "name": "inicio",
+      "width": 320,
+      "scrollWidth": 320,
+      "overlap": false
+    },
+    {
+      "name": "inicio",
+      "width": 375,
+      "scrollWidth": 375,
+      "overlap": false
+    },
+    {
+      "name": "inicio",
+      "width": 768,
+      "scrollWidth": 768,
+      "overlap": false
+    },
+    {
+      "name": "inicio",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overlap": false
+    },
+    {
+      "name": "inicio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false
+    },
+    {
+      "name": "colecao",
+      "width": 320,
+      "scrollWidth": 320,
+      "overlap": false
+    },
+    {
+      "name": "colecao",
+      "width": 375,
+      "scrollWidth": 375,
+      "overlap": false
+    },
+    {
+      "name": "colecao",
+      "width": 768,
+      "scrollWidth": 768,
+      "overlap": false
+    },
+    {
+      "name": "colecao",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overlap": false
+    },
+    {
+      "name": "colecao",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false
+    },
+    {
+      "name": "status",
+      "width": 320,
+      "scrollWidth": 320,
+      "overlap": false
+    },
+    {
+      "name": "status",
+      "width": 375,
+      "scrollWidth": 375,
+      "overlap": false
+    },
+    {
+      "name": "status",
+      "width": 768,
+      "scrollWidth": 768,
+      "overlap": false
+    },
+    {
+      "name": "status",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overlap": false
+    },
+    {
+      "name": "status",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false
+    },
+    {
+      "name": "editor",
+      "width": 320,
+      "scrollWidth": 320,
+      "overlap": false
+    },
+    {
+      "name": "editor",
+      "width": 375,
+      "scrollWidth": 375,
+      "overlap": false
+    },
+    {
+      "name": "editor",
+      "width": 768,
+      "scrollWidth": 768,
+      "overlap": false
+    },
+    {
+      "name": "editor",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overlap": false
+    },
+    {
+      "name": "editor",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false
+    }
+  ],
+  "requests": [
+    "/areas?page=1&limit=100",
+    "/areas?page=2&limit=100",
+    "/areas?page=1&limit=100",
+    "/areas?page=1&limit=100&section=LINGUAGENS",
+    "/areas?page=2&limit=100&section=LINGUAGENS",
+    "/areas?page=1&limit=100",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDANDO",
+    "/areas/00000001-1111-4111-8111-111111111111",
+    "/areas?page=1&limit=100",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDANDO",
+    "/areas?page=1&limit=100",
+    "/areas?page=2&limit=100",
+    "/areas?page=1&limit=100&section=LINGUAGENS",
+    "/areas?page=2&limit=100&section=LINGUAGENS",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDANDO",
+    "/areas?page=1&limit=100",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDANDO",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDADO",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDANDO",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDADO",
+    "/areas?page=1&limit=100&section=LINGUAGENS",
+    "/areas?page=2&limit=100&section=LINGUAGENS",
+    "/areas/00000001-1111-4111-8111-111111111111",
+    "/areas?page=1&limit=100&section=LINGUAGENS&subSection=ESTUDANDO",
+    "/areas/00000001-1111-4111-8111-111111111111",
+    "/areas/00000001-1111-4111-8111-111111111111",
+    "/areas/00000001-1111-4111-8111-111111111111",
+    "/areas?page=1&limit=100&section=LINGUAGENS",
+    "/areas?page=2&limit=100&section=LINGUAGENS",
+    "/areas?page=1&limit=100",
+    "/areas?page=2&limit=100",
+    "/areas/00000001-1111-4111-8111-111111111111/favorite",
+    "/areas/trash?page=1&limit=100",
+    "/areas?page=1&limit=100&section=LINGUAGENS",
+    "/areas?page=1&limit=100&section=LINGUAGENS",
+    "/areas?page=2&limit=100&section=LINGUAGENS"
+  ]
+}

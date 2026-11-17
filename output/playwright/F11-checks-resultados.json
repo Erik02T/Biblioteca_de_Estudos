@@ -1,0 +1,70 @@
+{
+  "verifiedAt": "2026-11-17T11:48:40.586Z",
+  "results": [
+    {
+      "name": "backend-tests",
+      "passed": true,
+      "fromCompletedLog": true,
+      "summary": [
+        "Test Suites: 28 passed, 28 total",
+        "Tests:       163 passed, 163 total",
+        "Snapshots:   0 total",
+        "Time:        22.65 s"
+      ]
+    },
+    {
+      "name": "backend-http-mocked",
+      "passed": true,
+      "fromCompletedLog": true,
+      "summary": [
+        "Test Suites: 1 passed, 1 total",
+        "Tests:       26 passed, 26 total",
+        "Snapshots:   0 total",
+        "Time:        6.451 s"
+      ]
+    },
+    {
+      "name": "backend-lint",
+      "passed": true,
+      "seconds": 10.4,
+      "summary": []
+    },
+    {
+      "name": "frontend-build",
+      "passed": true,
+      "seconds": 7.3,
+      "summary": []
+    },
+    {
+      "name": "frontend-tests",
+      "passed": true,
+      "seconds": 18,
+      "summary": [
+        "Test Suites: 18 passed, 18 total",
+        "Tests:       129 passed, 129 total",
+        "Snapshots:   0 total",
+        "Time:        16.262 s"
+      ]
+    },
+    {
+      "name": "frontend-lint",
+      "passed": true,
+      "seconds": 13,
+      "summary": []
+    }
+  ],
+  "finalSupplementalChecks": {
+    "verifiedAt": "2026-11-17T11:59:23.008Z",
+    "frontendBuildAfterSearchPathChange": "PASS",
+    "frontendLintAfterSearchPathChange": "PASS",
+    "navigationAndHierarchy": {
+      "suites": 2,
+      "tests": 28,
+      "passed": true
+    },
+    "browserFinalOrdering": {
+      "checks": 6,
+      "passed": true
+    }
+  }
+}

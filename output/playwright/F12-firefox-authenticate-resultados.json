@@ -1,0 +1,8 @@
+{
+  "verifiedAt": "2026-11-17T13:40:05.314Z",
+  "engine": "firefox",
+  "script": "authenticate",
+  "seconds": 1.097,
+  "passed": true,
+  "restoredFixtureAccount": true
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Ordem manual inicia em direção ascendente",
+    "passed": true
+  },
+  {
+    "name": "API ordena todos os resultados da página em ordem ascendente",
+    "passed": true
+  },
+  {
+    "name": "Direção descendente é aplicada e persistida na URL",
+    "passed": true
+  },
+  {
+    "name": "Quadro preserva a segunda página e a ordenação descendente",
+    "passed": true
+  },
+  {
+    "name": "Alterar ordenação volta à primeira página da mesma coleção",
+    "passed": true
+  },
+  {
+    "name": "Filtro inválido preserva consulta e campos para correção",
+    "passed": true
+  }
+]

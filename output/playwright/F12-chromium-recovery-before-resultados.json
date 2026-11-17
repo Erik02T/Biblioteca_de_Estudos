@@ -1,0 +1,11 @@
+{
+  "verifiedAt": "2026-11-17T13:36:51.475Z",
+  "engine": "chromium",
+  "script": "recovery-before",
+  "seconds": 1.851,
+  "passed": true,
+  "stage": "before-forced-process-exit",
+  "durableIndexedDB": true,
+  "pageId": "ce574017-ffef-4065-abd2-fd521ff6a6f9",
+  "networkFailure": "PATCH aborted; reads remain online"
+}

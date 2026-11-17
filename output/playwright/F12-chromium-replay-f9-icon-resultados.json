@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-11-17T13:45:31.025Z",
+  "engine": "chromium",
+  "script": "replay-f9-icon",
+  "seconds": 1.006,
+  "chosen": true,
+  "removed": false,
+  "reopen": true,
+  "passed": true
+}

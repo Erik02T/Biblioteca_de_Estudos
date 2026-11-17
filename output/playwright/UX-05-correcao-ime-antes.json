@@ -1,0 +1,277 @@
+{
+  "phase": "antes",
+  "checks": [
+    "Escape normal sai do foco",
+    "Escape de foco mantém URL da página",
+    "Escape normal fecha ferramenta e retorna foco",
+    "End normal navega no menu",
+    "Home/seta normais navegam no menu",
+    "Escape normal fecha menu da página e retorna foco",
+    "UX04-001 usa título atualizado",
+    "UX04-002 renomeações têm undo separado",
+    "UX04-003 undo de toggle preserva título",
+    "Slash continua inserindo código",
+    "UX04-005 Escape fecha menu antes do foco",
+    "Mesma instância DOM nas ferramentas e comandos",
+    "Recarga lê fixture HTTP atualizada mantendo código e H6",
+    "UX04-004 proteção de JSON incompatível continua ativa",
+    "Payload de metadados preserva JSON integral e IDs",
+    "Sem pageerror"
+  ],
+  "composition": [
+    {
+      "name": "Modo foco preservado: 229 sem isComposing",
+      "passed": false,
+      "consumed": true,
+      "isComposing": false,
+      "keyCode": 229
+    },
+    {
+      "name": "Ferramenta e campo preservados: 229 sem isComposing",
+      "passed": false,
+      "consumed": true,
+      "isComposing": false,
+      "keyCode": 229
+    },
+    {
+      "name": "Seta não move foco do menu: 229 sem isComposing",
+      "passed": false,
+      "consumed": true,
+      "isComposing": false,
+      "keyCode": 229
+    },
+    {
+      "name": "Menu da página preservado: 229 sem isComposing",
+      "passed": false,
+      "consumed": true,
+      "isComposing": false,
+      "keyCode": 229
+    },
+    {
+      "name": "Modo foco preservado: isComposing",
+      "passed": true,
+      "consumed": false,
+      "isComposing": true,
+      "keyCode": 0
+    },
+    {
+      "name": "Ferramenta e campo preservados: isComposing",
+      "passed": true,
+      "consumed": false,
+      "isComposing": true,
+      "keyCode": 0
+    },
+    {
+      "name": "Seta não move foco do menu: isComposing",
+      "passed": false,
+      "consumed": true,
+      "isComposing": true,
+      "keyCode": 0
+    },
+    {
+      "name": "Menu da página preservado: isComposing",
+      "passed": false,
+      "consumed": true,
+      "isComposing": true,
+      "keyCode": 0
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "PATCH",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    },
+    {
+      "method": "GET",
+      "path": "/attachments"
+    },
+    {
+      "method": "PATCH",
+      "path": "/areas/11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "method": "GET",
+      "path": "/areas"
+    }
+  ],
+  "errors": [],
+  "integration": "HTTP interceptado; não comprova persistência real",
+  "ime": "NÃO EXECUTADO: IME real",
+  "media": "FALHOU: sem tipos image/attachment/pageReference e sem inserção no corpo. Proteção não equivale a suporte."
+}

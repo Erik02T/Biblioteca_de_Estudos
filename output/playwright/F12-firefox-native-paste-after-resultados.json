@@ -1,0 +1,12 @@
+{
+  "verifiedAt": "2026-11-17T13:40:48.426Z",
+  "engine": "firefox",
+  "script": "native-paste-after",
+  "seconds": 2.21,
+  "passed": true,
+  "nativeBrowserHTMLClipboard": true,
+  "checks": [
+    "Ctrl+V nativo recebe HTML japonês e preserva formatação permitida sem executar script/evento/URL ativa",
+    "Nova leitura do servidor confirma o texto permitido"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "verifiedAt": "2026-11-17T11:53:33.795Z",
+  "result": "PASS",
+  "readOnly": true,
+  "run": "20261116190356",
+  "backupRestoredAndMigrationVerifiedInClone": true,
+  "localMigrationVerified": true,
+  "existingPagesPreservedAtUpgrade": 5,
+  "existingAttachmentsPreservedAtUpgrade": 3,
+  "storageObjectsPreservedAtUpgrade": 22,
+  "metadataListing": "PASS",
+  "additiveTables": "PASS"
+}
