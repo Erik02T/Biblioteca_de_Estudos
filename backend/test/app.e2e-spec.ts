@@ -49,6 +49,7 @@ describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: {
     $queryRaw: jest.Mock;
+    $transaction: jest.Mock;
     area: {
       create: jest.Mock;
       count: jest.Mock;
@@ -82,6 +83,10 @@ describe('AppController (e2e)', () => {
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
     prisma = {
       $queryRaw: jest.fn(),
+      $transaction: jest.fn(
+        (operation: (tx: typeof prisma) => Promise<unknown>) =>
+          operation(prisma),
+      ),
       area: {
         create: jest.fn(),
         count: jest.fn().mockResolvedValue(1),

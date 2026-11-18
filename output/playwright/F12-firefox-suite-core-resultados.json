@@ -1,0 +1,90 @@
+{
+  "verifiedAt": "2026-11-17T13:50:23.697Z",
+  "engine": "firefox",
+  "group": "core",
+  "passed": true,
+  "resumed": false,
+  "note": "Consolidated from the individual scenario records; timestamps identify the actual executions.",
+  "steps": [
+    {
+      "name": "firefox/journey",
+      "evidence": "F12-firefox-journey-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:15.485Z",
+      "checks": 14
+    },
+    {
+      "name": "firefox/compatibility",
+      "evidence": "F12-firefox-compatibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:25.971Z",
+      "checks": 19
+    },
+    {
+      "name": "firefox/surfaces",
+      "evidence": "F12-firefox-surfaces-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:32.404Z",
+      "checks": 26
+    },
+    {
+      "name": "firefox/accessibility",
+      "evidence": "F12-firefox-accessibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:37.942Z"
+    },
+    {
+      "name": "firefox/clipboard",
+      "evidence": "F12-firefox-clipboard-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:42.512Z",
+      "checks": 3
+    },
+    {
+      "name": "firefox/native-paste-before",
+      "evidence": "F12-firefox-native-paste-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:46.158Z"
+    },
+    {
+      "name": "firefox/native-paste-after",
+      "evidence": "F12-firefox-native-paste-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:48.426Z",
+      "checks": 2
+    },
+    {
+      "name": "firefox/integrity",
+      "evidence": "F12-firefox-integrity-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:55.529Z",
+      "checks": 5
+    },
+    {
+      "name": "firefox/trash",
+      "evidence": "F12-firefox-trash-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:59.648Z",
+      "checks": 5
+    },
+    {
+      "name": "firefox/recovery-before",
+      "evidence": "F12-firefox-recovery-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:41:03.960Z"
+    },
+    {
+      "name": "firefox/recovery-after",
+      "evidence": "F12-firefox-recovery-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:42.815Z",
+      "checks": 2
+    },
+    {
+      "name": "firefox/forced-exit",
+      "evidence": "F12-firefox-forced-exit-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:41:04.281Z"
+    }
+  ]
+}

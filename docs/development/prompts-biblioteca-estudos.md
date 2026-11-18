@@ -1,5 +1,7 @@
 # Prompts — Biblioteca do Conhecimento
 
+> **Histórico — prompts das fases iniciais.** Preserve como referência de planejamento. Para trabalhar na cópia atual, consulte [Desenvolvimento](DESENVOLVIMENTO.md) e o [índice documental](../README.md); o aceite posterior está na [F12](../notion/execucao/F12.md).
+
 Um par de prompts por fase: **Planejar e Implementar** (use antes de começar a fase)
 e **Testar e Validar** (use depois de terminar, antes de avançar pra próxima).
 

@@ -1,0 +1,12 @@
+{
+  "name": "backend-tests",
+  "passed": true,
+  "seconds": 27.184,
+  "verifiedAt": "2026-11-17T13:20:47.455Z",
+  "summary": [
+    "Test Suites: 29 passed, 29 total",
+    "Tests:       168 passed, 168 total",
+    "Snapshots:   0 total",
+    "Time:        21.009 s, estimated 22 s"
+  ]
+}

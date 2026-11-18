@@ -1,0 +1,12 @@
+{
+  "name": "backend-http-mocked",
+  "passed": true,
+  "seconds": 7.032,
+  "verifiedAt": "2026-11-17T12:31:54.902Z",
+  "summary": [
+    "Test Suites: 1 passed, 1 total",
+    "Tests:       26 passed, 26 total",
+    "Snapshots:   0 total",
+    "Time:        6.586 s"
+  ]
+}

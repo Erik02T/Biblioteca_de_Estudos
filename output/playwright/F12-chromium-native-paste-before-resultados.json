@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-11-17T13:31:11.199Z",
+  "engine": "chromium",
+  "script": "native-paste-before",
+  "seconds": 1.092,
+  "passed": true,
+  "stage": "ready-for-native-HTML",
+  "clipboardItemWithUserGesture": true,
+  "focused": true
+}

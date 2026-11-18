@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-17",
+  "timezone": "America/Fortaleza",
+  "executor": "proprietário do produto, rodada guiada nesta conversa",
+  "tests": {
+    "imeChromium": {
+      "status": "verified",
+      "browser": "Chrome 157.0.8103.79, Windows",
+      "procedure": "Compor nihongo com IME japonês real, selecionar 日本語, confirmar, aguardar Salvo e recarregar",
+      "ownerReport": "Funcionou e o texto permaneceu após recarregar"
+    },
+    "imeFirefox": { "status": "verified", "browser": "Firefox 159.0, Windows", "ownerReport": "Funcionou e permaneceu após recarregar", "procedure": "Compor nihongo com IME japonês real, selecionar 日本語, confirmar, aguardar Salvo e recarregar" },
+    "nativeZoomChromium": { "status": "verified", "browser": "Chrome 157.0.8103.79, Windows", "ownerReport": "200% e 400% utilizáveis, sem controles inacessíveis", "procedure": "Zoom nativo 200% e 400%, acesso ao título, editor, menus e mensagens; retorno a 100%" },
+    "screenReaderNarrator": { "status": "verified", "browser": "Chrome 157.0.8103.79, Windows Narrador", "ownerReport": "Consegui navegar e ouvir os nomes e estados", "procedure": "Tab/Shift+Tab, título/editor, abrir Mais opções, Escape e retorno de foco; recorte guiado, sem alegação de conformidade integral" },
+    "androidTouch": { "status": "verified", "browser": "Chrome 157.0.8103.50, Android 15, moto g54 5G", "viewportCss": "432x833", "ownerReport": "Funcionou por toque e o texto permaneceu após recarregar", "procedure": "Toque, teclado virtual, seleção/cópia/colagem, menus, propriedades, fechamento de painéis, salvamento e recarga; aparelho físico por USB" },
+    "performanceUsability": { "status": "verified", "browser": "Chrome 157.0.8103.79, Windows", "ownerReport": "Sim, considero a usabilidade adequada neste volume", "procedure": "Conta com 1.000 páginas; abrir documento de 1.000 blocos, digitar Teste de desempenho F12, aguardar Salvo, buscar Sentinela F12 999 e abrir resultado", "scope": "Usabilidade aceita no computador e massa medidos; sem SLA de produção" }
+  },
+  "acceptedLimitations": [
+    "Exportação por pacote limitada a 500 páginas e 100 MiB; histórico de versões e importação automática não integram o ZIP.",
+    "Modelos têm limite de 100 MiB de mídia.",
+    "Ramos com versões retidas não podem ser excluídos definitivamente.",
+    "Uma limpeza definitiva interrompida pode já ter removido arquivos; repetir a limpeza antes de restaurar o ramo.",
+    "Homologação restrita à matriz e ao ambiente local com 1.000 páginas; sem SLA de produção, certificação WCAG integral ou extrapolação a plataformas e falhas físicas não ensaiadas."
+  ],
+  "limitationsAcceptance": {
+    "status": "accepted",
+    "date": "2026-11-17",
+    "ownerReport": "Aceito esses limites para concluir a F12"
+  },
+  "completeAcceptance": true
+}

@@ -11,8 +11,12 @@
   },
   "dependencies": {
     "@tiptap/extension-color": "^3.31.3",
+    "@tiptap/extension-drag-handle": "3.31.3",
     "@tiptap/extension-highlight": "^3.31.3",
+    "@tiptap/extension-task-item": "^3.31.3",
+    "@tiptap/extension-task-list": "^3.31.3",
     "@tiptap/extension-text-style": "^3.31.3",
+    "@tiptap/extension-unique-id": "3.31.3",
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
     "next": "16.4.5",
@@ -28,6 +32,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
+    "fake-indexeddb": "^6.2.8",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
     "ts-jest": "^29.4.15",
@@ -46,6 +51,7 @@
       "^@/(.*)$": "<rootDir>/src/$1"
     },
     "transform": {
+      "^.+\\.js$": ["ts-jest", { "tsconfig": { "allowJs": true, "module": "CommonJS", "target": "ES2020" }, "isolatedModules": true }],
       "^.+\\.tsx?$": [
         "ts-jest",
         {
@@ -53,6 +59,7 @@
           "isolatedModules": true
         }
       ]
-    }
+    },
+    "transformIgnorePatterns": ["/node_modules/(?!uuid/)"]
   }
 }

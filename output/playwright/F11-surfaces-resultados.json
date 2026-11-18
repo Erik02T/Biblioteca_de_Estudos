@@ -1,0 +1,194 @@
+{
+  "results": [
+    {
+      "name": "LIST em 320px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "document": 320
+      }
+    },
+    {
+      "name": "TABLE em 320px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "document": 320,
+        "tableViewport": 288,
+        "tableContent": 1003
+      }
+    },
+    {
+      "name": "BOARD em 320px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 320,
+        "document": 320
+      }
+    },
+    {
+      "name": "LIST em 375px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "document": 375
+      }
+    },
+    {
+      "name": "TABLE em 375px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "document": 375,
+        "tableViewport": 343,
+        "tableContent": 1003
+      }
+    },
+    {
+      "name": "BOARD em 375px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 375,
+        "document": 375
+      }
+    },
+    {
+      "name": "LIST em 720px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 720,
+        "document": 720
+      }
+    },
+    {
+      "name": "TABLE em 720px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 720,
+        "document": 720,
+        "tableViewport": 688,
+        "tableContent": 1003
+      }
+    },
+    {
+      "name": "BOARD em 720px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 720,
+        "document": 720
+      }
+    },
+    {
+      "name": "LIST em 768px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 768,
+        "document": 768
+      }
+    },
+    {
+      "name": "TABLE em 768px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 768,
+        "document": 768,
+        "tableViewport": 736,
+        "tableContent": 1003
+      }
+    },
+    {
+      "name": "BOARD em 768px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 768,
+        "document": 768
+      }
+    },
+    {
+      "name": "LIST em 1024px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 1024,
+        "document": 1024
+      }
+    },
+    {
+      "name": "TABLE em 1024px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 1024,
+        "document": 1024,
+        "tableViewport": 728,
+        "tableContent": 1003
+      }
+    },
+    {
+      "name": "BOARD em 1024px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 1024,
+        "document": 1024
+      }
+    },
+    {
+      "name": "LIST em 1440px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "name": "TABLE em 1440px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "document": 1440,
+        "tableViewport": 1144,
+        "tableContent": 1144
+      }
+    },
+    {
+      "name": "BOARD em 1440px sem overflow da página",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "name": "Favoritar preserva o título ainda digitado",
+      "passed": true
+    },
+    {
+      "name": "Edição usa revisão confirmada do favorito sem conflito próprio",
+      "passed": true
+    },
+    {
+      "name": "Conflito real mantém o rascunho da tabela",
+      "passed": true
+    },
+    {
+      "name": "Recarregar explicitamente recupera propriedades remotas",
+      "passed": true
+    },
+    {
+      "name": "Tabela permite navegação por teclado entre campos",
+      "passed": true
+    },
+    {
+      "name": "Galeria de modelos cabe em 320px",
+      "passed": true
+    },
+    {
+      "name": "Escape fecha a galeria e devolve foco ao acionador",
+      "passed": true
+    },
+    {
+      "name": "Nenhum erro de execução nos fluxos finais",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

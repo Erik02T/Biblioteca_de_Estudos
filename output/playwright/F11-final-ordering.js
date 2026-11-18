@@ -1,0 +1,42 @@
+async (page) => {
+  if (new URL(page.url()).origin !== 'http://localhost:3058') throw Error('Use isolated F11 frontend');
+  const results = [];
+  const check = (name, condition) => { if (!condition) throw Error(name); results.push({ name, passed: true }); };
+  await page.goto('http://localhost:3058/?section=FACULDADE&layout=TABLE&order=nome&direction=asc');
+  await page.locator('tbody tr').first().waitFor();
+  const orderingResponse = direction => page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return url.pathname === '/areas' && url.searchParams.get('orderBy') === 'sortOrder' && url.searchParams.get('orderDirection') === direction && response.status() === 200;
+  });
+  const ascResponse = orderingResponse('asc');
+  await page.getByRole('combobox', { name: 'Ordenar por:', exact: true }).selectOption('sortOrder');
+  const asc = await (await ascResponse).json();
+  await page.waitForFunction(() => document.querySelector('tbody tr') !== null);
+  check('Ordem manual inicia em direção ascendente', await page.getByRole('combobox', { name: 'Direção:', exact: true }).inputValue() === 'asc' && new URL(page.url()).searchParams.get('direction') === 'asc');
+  check('API ordena todos os resultados da página em ordem ascendente', asc.items.every((item, i) => i === 0 || asc.items[i - 1].sortOrder <= item.sortOrder));
+  const descResponse = orderingResponse('desc');
+  await page.getByRole('combobox', { name: 'Direção:', exact: true }).selectOption('desc');
+  const desc = await (await descResponse).json();
+  check('Direção descendente é aplicada e persistida na URL', desc.items.every((item, i) => i === 0 || desc.items[i - 1].sortOrder >= item.sortOrder) && desc.items[0].sortOrder > asc.items[0].sortOrder && new URL(page.url()).searchParams.get('direction') === 'desc');
+  const nextResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/areas' && new URL(response.url()).searchParams.get('page') === '2' && response.status() === 200);
+  await page.getByRole('button', { name: 'Próxima', exact: true }).click();
+  const second = await (await nextResponse).json();
+  await page.getByRole('combobox', { name: 'Visualização:', exact: true }).selectOption('BOARD');
+  await page.waitForFunction(count => document.querySelectorAll('.board-card[data-page-id]').length === count, second.items.length);
+  check('Quadro preserva a segunda página e a ordenação descendente', new URL(page.url()).searchParams.get('listPage') === '2' && new URL(page.url()).searchParams.get('direction') === 'desc' && await page.locator('.board-card[data-page-id]').count() === second.items.length);
+  await page.getByRole('combobox', { name: 'Ordenar por:', exact: true }).selectOption('updatedAt');
+  await page.getByText('Página 1 de 2', { exact: true }).waitFor();
+  check('Alterar ordenação volta à primeira página da mesma coleção', !new URL(page.url()).searchParams.has('listPage') && new URL(page.url()).searchParams.get('section') === 'FACULDADE');
+  const url = page.url();
+  await page.getByRole('combobox', { name: 'Nível mínimo', exact: true }).selectOption('5');
+  await page.getByRole('combobox', { name: 'Nível máximo', exact: true }).selectOption('0');
+  await page.getByRole('button', { name: 'Aplicar filtros', exact: true }).click();
+  await page.getByText('Nível mínimo deve ser menor ou igual ao máximo.', { exact: true }).waitFor();
+  check('Filtro inválido preserva consulta e campos para correção', page.url() === url && await page.getByRole('combobox', { name: 'Nível mínimo', exact: true }).inputValue() === '5');
+  await page.getByRole('combobox', { name: 'Nível mínimo', exact: true }).selectOption('');
+  await page.getByRole('combobox', { name: 'Nível máximo', exact: true }).selectOption('');
+  await page.getByRole('button', { name: 'Aplicar filtros', exact: true }).click();
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await page.screenshot({ path: 'output/playwright/F11-final-1440.png', fullPage: false });
+  return results;
+}

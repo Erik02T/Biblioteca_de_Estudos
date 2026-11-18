@@ -1,0 +1,19 @@
+{
+  "preparedAt": "2026-11-17T13:09:16.824Z",
+  "passed": true,
+  "browserVersion": "157.0.8103.50",
+  "url": "http://localhost:3068/?page=1933127b-7040-4ecf-acc3-511f59cfd27a",
+  "viewport": {
+    "width": 432,
+    "height": 833,
+    "touchPoints": 5
+  },
+  "androidVersion": "15",
+  "device": {
+    "status": "device",
+    "model": "moto_g54_5G",
+    "id": "95ec7d8c"
+  },
+  "physicalAcceptance": "pending-human",
+  "usbOnly": true
+}

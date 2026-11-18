@@ -1,0 +1,29 @@
+{
+  "verifiedAt": "2026-11-17T13:40:42.512Z",
+  "engine": "firefox",
+  "script": "clipboard",
+  "seconds": 2.166,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Clipboard nativo preserva japonês e indentação",
+      "passed": true
+    },
+    {
+      "name": "Clipboard negado informa falha e seleciona exatamente o código",
+      "passed": true,
+      "detail": {
+        "selection": "def estudo():\r\n    return \"日本語\"\r\n",
+        "expected": "def estudo():\n    return \"日本語\"\n"
+      }
+    },
+    {
+      "name": "Alternativa de cópia manual funciona após recusa",
+      "passed": true
+    }
+  ],
+  "nativeClipboard": true,
+  "deniedClipboard": "injected NotAllowedError",
+  "htmlPaste": "Firefox synthetic event did not deliver text; verify separately with native CF_HTML",
+  "physicalIME": "pending-human"
+}

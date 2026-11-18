@@ -1,0 +1,30 @@
+{
+  "verifiedAt": "2026-11-17T13:50:23.697Z",
+  "engine": "chromium",
+  "group": "f11",
+  "passed": true,
+  "resumed": false,
+  "note": "Consolidated from the individual scenario records; timestamps identify the actual executions.",
+  "steps": [
+    {
+      "name": "chromium/replay-f11-setup",
+      "evidence": "F12-chromium-replay-f11-setup-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:27:19.239Z"
+    },
+    {
+      "name": "chromium/replay-f11-collections",
+      "evidence": "F12-chromium-replay-f11-collections-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:27:23.536Z",
+      "checks": 10
+    },
+    {
+      "name": "chromium/replay-f11-models",
+      "evidence": "F12-chromium-replay-f11-models-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:27:28.035Z",
+      "checks": 6
+    }
+  ]
+}

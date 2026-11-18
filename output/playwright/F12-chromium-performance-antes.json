@@ -1,0 +1,519 @@
+{
+  "verifiedAt": "2026-11-17T12:46:23.867Z",
+  "engine": "chromium",
+  "script": "performance",
+  "seconds": 18.441,
+  "passed": false,
+  "metrics": {
+    "coldCollectionMs": 333,
+    "warmCollectionLayout": {
+      "samplesMs": [
+        30,
+        28,
+        26,
+        28,
+        26,
+        27,
+        27,
+        27,
+        27,
+        30
+      ],
+      "medianMs": 27,
+      "maximumMs": 30
+    },
+    "firstLargeDocumentMs": 213
+  },
+  "navigationResponses": [
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33234,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33234,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33234,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33101,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33233,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33211,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 200,
+      "bytes": 33234,
+      "items": 100,
+      "containsBodies": false
+    },
+    {
+      "status": 429,
+      "bytes": 212
+    }
+  ],
+  "errors": [
+    "API rate limit reached; this measurement must be repeated in a separate batch",
+    "API rate limit reached; this measurement must be repeated in a separate batch",
+    "API rate limit reached; this measurement must be repeated in a separate batch"
+  ],
+  "failure": "locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a[href=\"/?page=02ecd814-6d4c-461e-a7bf-19e8f4488b47\"]').first()\u001b[22m\n"
+}

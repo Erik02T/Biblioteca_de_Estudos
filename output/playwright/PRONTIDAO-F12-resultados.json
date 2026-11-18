@@ -1,0 +1,154 @@
+{
+  "verifiedAt": "2026-11-17T20:51:42.966Z",
+  "scope": "preparacao-local-commits-f12",
+  "base": "ccecca35a828da4c19015ba51874da3cf09e10a1",
+  "checks": {
+    "backend": {
+      "suites": 30,
+      "tests": 184,
+      "passed": true,
+      "newSafetyTests": 16
+    },
+    "httpMocked": {
+      "tests": 26,
+      "passed": true
+    },
+    "frontend": {
+      "suites": 19,
+      "tests": 141,
+      "passed": true
+    },
+    "types": {
+      "backend": true,
+      "frontend": true
+    },
+    "lint": {
+      "backend": true,
+      "frontend": true,
+      "backendWarnings": 7
+    },
+    "migrations": {
+      "count": 13,
+      "freshDatabase": true
+    },
+    "cleanInstall": {
+      "windowsNode": "24.13.0",
+      "windowsNpm": "11.6.2",
+      "linuxNode": "22.23.5",
+      "linuxNpm": "10.9.9"
+    },
+    "workflow": {
+      "actionlint": "1.7.11",
+      "passed": true,
+      "localLinuxCommands": 13
+    },
+    "f11FreshBucket": {
+      "initialBucketAbsent": true,
+      "exit": 0,
+      "summary": [
+        "Test Suites: 1 passed, 1 total",
+        "Tests:       8 passed, 8 total"
+      ],
+      "bucketCreatedBySuite": true
+    },
+    "browsers": {
+      "chromium": {
+        "authenticate": {
+          "passed": true
+        },
+        "compatibility": {
+          "passed": true,
+          "checks": 19
+        },
+        "surfaces": {
+          "passed": true,
+          "checks": 26
+        }
+      },
+      "firefox": {
+        "authenticate": {
+          "passed": true
+        },
+        "compatibility": {
+          "passed": true,
+          "checks": 19
+        },
+        "surfaces": {
+          "passed": true,
+          "checks": 26
+        }
+      }
+    },
+    "offlineExports": {
+      "passed": true,
+      "archives": 2,
+      "verifiedEntriesPerArchive": 7
+    },
+    "productionImage": {
+      "passed": true,
+      "image": "biblioteca-implementation:20261117-0nsfvt",
+      "node": "v22.23.5",
+      "uid": 100,
+      "healthReady": true,
+      "register": true,
+      "authenticatedCreateRead": true,
+      "authenticatedUploadAndRead": true,
+      "trash": true,
+      "prismaClient": true,
+      "prismaCli": false,
+      "runtimePackages": {
+        "@prisma/config": null,
+        "deepmerge-ts": null,
+        "effect": null,
+        "prisma": null,
+        "file-type": "16.5.4"
+      }
+    },
+    "dependencyAudit": {
+      "backend": {
+        "info": 0,
+        "low": 0,
+        "moderate": 1,
+        "high": 4,
+        "critical": 0,
+        "total": 5
+      },
+      "frontend": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    }
+  },
+  "corrections": [
+    "Independent guarded storage setup in integration suites",
+    "Only missing optional peer entries added to both lockfiles; existing versions unchanged",
+    "Initial render synchronization centralized in navigation tests; assertions preserved",
+    "Five named fixture ZIPs allowed; private artifacts excluded",
+    "18 whitespace findings in seven new documents corrected"
+  ],
+  "failureHistory": {
+    "linuxInstallFailedBeforeLockRepair": true,
+    "frontendInitialLoadRacesObservedInTwoScenarios": true,
+    "correspondingChecksPassedAfterCorrections": true
+  },
+  "githubCi": {
+    "status": "PENDENTE",
+    "sentSha": null,
+    "reason": "No push performed"
+  },
+  "publicationPerformed": false,
+  "scopeLimits": [
+    "No provider dashboard configuration verified",
+    "No target database migration status or current backup verified",
+    "No renewed Android/IME/screen-reader human acceptance",
+    "Legacy application rollback remains unsafe for F12 data"
+  ],
+  "testedApplicationCommits": {
+    "api": "87adff779e6163dd0dd8d6794c5730b3fa414100",
+    "frontend": "79ad596dbfa6fb7d9d680def09445a214f17a752"
+  }
+}

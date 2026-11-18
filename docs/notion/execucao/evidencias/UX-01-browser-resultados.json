@@ -1,0 +1,301 @@
+{
+  "viewports": [
+    {
+      "name": "inicio",
+      "width": 320,
+      "scrollWidth": 305,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "inicio",
+      "width": 375,
+      "scrollWidth": 360,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "inicio",
+      "width": 768,
+      "scrollWidth": 768,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "inicio",
+      "width": 1024,
+      "scrollWidth": 1009,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "inicio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "status",
+      "width": 320,
+      "scrollWidth": 320,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "status",
+      "width": 375,
+      "scrollWidth": 360,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "status",
+      "width": 768,
+      "scrollWidth": 768,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "status",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "status",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "colecao",
+      "width": 320,
+      "scrollWidth": 305,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "colecao",
+      "width": 375,
+      "scrollWidth": 360,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "colecao",
+      "width": 768,
+      "scrollWidth": 753,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "colecao",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "colecao",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": []
+    },
+    {
+      "name": "editor",
+      "width": 320,
+      "scrollWidth": 320,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": [
+        {
+          "x": 25,
+          "y": 462.5,
+          "width": 255,
+          "height": 44
+        },
+        {
+          "x": 25,
+          "y": 546,
+          "width": 255,
+          "height": 44
+        },
+        {
+          "x": 25,
+          "y": 629.5,
+          "width": 255,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "width": 375,
+      "scrollWidth": 375,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": [
+        {
+          "x": 25,
+          "y": 462.5,
+          "width": 310,
+          "height": 44
+        },
+        {
+          "x": 25,
+          "y": 546,
+          "width": 310,
+          "height": 44
+        },
+        {
+          "x": 25,
+          "y": 629.5,
+          "width": 310,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "width": 768,
+      "scrollWidth": 768,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": [
+        {
+          "x": 31,
+          "y": 464.5,
+          "width": 222.328125,
+          "height": 44
+        },
+        {
+          "x": 265.328125,
+          "y": 464.5,
+          "width": 222.328125,
+          "height": 44
+        },
+        {
+          "x": 499.65625,
+          "y": 464.5,
+          "width": 222.328125,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": [
+        {
+          "x": 31,
+          "y": 464.5,
+          "width": 307.65625,
+          "height": 44
+        },
+        {
+          "x": 350.65625,
+          "y": 464.5,
+          "width": 307.671875,
+          "height": 44
+        },
+        {
+          "x": 670.328125,
+          "y": 464.5,
+          "width": 307.65625,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overlap": false,
+      "sidebarOverlap": false,
+      "fields": [
+        {
+          "x": 263,
+          "y": 112.5,
+          "width": 220.65625,
+          "height": 44
+        },
+        {
+          "x": 495.65625,
+          "y": 112.5,
+          "width": 220.671875,
+          "height": 44
+        },
+        {
+          "x": 728.328125,
+          "y": 112.5,
+          "width": 220.671875,
+          "height": 44
+        }
+      ]
+    }
+  ],
+  "behavior": [
+    "Metadados pendentes indicados",
+    "Conflito preserva a página e a URL",
+    "Conflito preserva o rascunho",
+    "Nova leitura da API de teste recupera o título",
+    "Autosave envia conteúdo à API de teste",
+    "Setas navegam no menu",
+    "Escape retorna foco ao acionador",
+    "Escape do menu não navega para fora do editor",
+    "Falha de rede impede saída e mantém pendências",
+    "Voltar novamente salva propriedades após recuperação",
+    "Coleção vazia apresenta ação de criação",
+    "Falha na coleção apresenta tentativa novamente",
+    "Movimento reduzido desativa transições"
+  ],
+  "contrast": [
+    {
+      "fg": "--ui-text",
+      "bg": "--ui-bg",
+      "ratio": 15.31
+    },
+    {
+      "fg": "--ui-muted",
+      "bg": "--ui-interactive",
+      "ratio": 7.32
+    },
+    {
+      "fg": "--ui-accent-text",
+      "bg": "--ui-accent",
+      "ratio": 8.4
+    },
+    {
+      "fg": "--ui-control-border",
+      "bg": "--ui-interactive",
+      "ratio": 3.83
+    },
+    {
+      "fg": "--ui-danger",
+      "bg": "--ui-surface",
+      "ratio": 9.8
+    }
+  ]
+}

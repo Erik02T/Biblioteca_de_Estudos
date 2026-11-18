@@ -1,0 +1,39 @@
+{
+  "verifiedAt": "2026-11-17T13:42:51.083Z",
+  "engine": "chromium",
+  "script": "replay-f9-navigation",
+  "seconds": 3.264,
+  "threeLevelsAndHistory": true,
+  "branchMoveAndReload": true,
+  "quickChild": true,
+  "focusAndTools": true,
+  "reflow": [
+    {
+      "width": 320,
+      "viewport": 320,
+      "content": 320
+    },
+    {
+      "width": 375,
+      "viewport": 375,
+      "content": 375
+    },
+    {
+      "width": 768,
+      "viewport": 768,
+      "content": 768
+    },
+    {
+      "width": 1024,
+      "viewport": 1024,
+      "content": 1024
+    },
+    {
+      "width": 1440,
+      "viewport": 1440,
+      "content": 1440
+    }
+  ],
+  "failedSaveGuard": true,
+  "passed": true
+}

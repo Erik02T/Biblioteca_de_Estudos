@@ -1,0 +1,34 @@
+# UX-05 — Defeitos tratados
+
+## Rodada CORRIGIR — 16/11/2026
+
+UX05-011 e UX05-012: falhas de Escape/setas durante composição reproduzidas antes de editar e corrigidas em `EditorLayout.tsx`. Oito observações sintéticas passam em 1440 e 375; quatro regressões novas e 83 testes totais aprovados. Regressões reais de blocos e jornada integrada passaram, sem perda de JSON/IDs ou redução de cobertura. Os defeitos UX04-001 a UX04-005 não foram reabertos.
+
+Por solicitação expressa, os detalhes de reprodução, causa, alteração, evidências e pendências estão em **[UX-01-correcoes.md — entrega da etapa UX-05](UX-01-correcoes.md)**. [Relatório de testes atualizado](UX-05-testes.md). IME real e mídia/referências no corpo continuam pendentes; não se declara aceite integral. Histórico preservado abaixo.
+
+## Histórico — 15/11/2026
+
+15/11/2026. Árvore local não commitada sobre `f87fdbcda593e7005ea43eaa229bb8b09cbc9990`. Achados reproduzidos antes de corrigir; encerrados com revalidação dos cenários afetados. [Testes e evidências finais](UX-05-testes.md).
+
+| ID / prioridade / classe | Reprodução e observado | Esperado / causa confirmada | Correção e estado |
+|---|---|---|---|
+| UX05-001 · P2 · visual | Abrir Formatar em 320/375/768/1024/1440: botões de 34px; seleção de ferramenta sem fundo padronizado | Controles confortáveis e estado ativo consistente. Regras locais sobrescreviam altura compartilhada; `--ui-accent-bg` não existia | Tokens de altura/tamanho de fonte, ícones em grade adaptativa e `--ui-selected`. VERIFICADO na matriz final: altura >=44px, sem interseção entre controles |
+| UX05-002 · P1 · estado | Atrasar/falhar GET de materiais: lista inicial vazia aparentava ausência de anexos | Loading e falha distinguíveis de vazio. Estado tinha somente array inicial `[]` e erro geral, sem estado de leitura | Estado próprio de carregamento/erro, nova tentativa, proteção contra resposta após desmontagem e vazio apenas após sucesso. VERIFICADO por componente e nova leitura real no roteiro integrado |
+| UX05-003 · P1 · estado | Atrasar/rejeitar GET de versões: “Nenhuma versão listada” aparecia durante loading/erro; teste novo falhou antes da correção | Não sugerir ausência de histórico sem resposta bem-sucedida. Array vazio era usado sem condição de carregamento/erro | Estado de leitura separado e retry. VERIFICADO por regressão e jornada real de criar/restaurar versão |
+| UX05-004 · P1 · linguagem | Abrir Propriedades numa página nova: mensagem prometia gravação ao sair | Rascunho só persiste ao criar. Texto de propriedades era incondicional, embora o guard impeça sair de rascunho alterado | Mensagem condicionada ao fluxo real de criação/aplicação. VERIFICADO ao criar página real pela interface |
+| UX05-005 · P1 · funcional/dados | Editar título e Duplicar página sem aplicar: nova cópia recebia título antigo; reproduzido em Jest e PostgreSQL, viewport 1440 | Cópia deve refletir conteúdo e propriedades atuais; falha de checkpoint deve impedir copiar. Duplicação apenas drenava fila de conteúdo antes do POST, deixando metadados para o guard de saída posterior | Reutiliza `checkpoint()` antes do POST de duplicação. VERIFICADO: fonte e cópia com título atual; teste impede POST quando a gravação falha; documento preservado em novo GET |
+| UX05-006 · P1 · estado de salvamento | Falhar rede, clicar Voltar, recuperar conexão e Aplicar alterações: servidor gravava, mas status continuava “Atenção — revise o aviso de erro”. Reproduzido no teste novo e navegador 1440 | Estado deve refletir confirmação real. Erro do guard ficava no componente pai e não era limpo pelo checkpoint do editor | Callback limpa erro de navegação só depois do PATCH confirmado de conteúdo e propriedades. VERIFICADO no teste e integração: Salvo, aviso removido e conteúdo confirmado no servidor |
+| UX05-007 · P1 · terminologia | Produzir conflito 409 real: mensagem da API chamava o documento de “bloco” | Documento deve ser Página, unidades internas Bloco. Mensagem legada retornada diretamente pela apresentação | Tradução de apresentação para essa mensagem exata, com “Conflito — esta página” e orientação para copiar pendências antes de recarregar. Sem substituição genérica em dados/texto do usuário e sem mudar protocolo. VERIFICADO por teste e 409 real |
+| UX05-008 · P1 · estado | Falhar GET de modelos: galeria dizia “Nenhum modelo criado ainda”; regressão falhou antes da correção | Erro deve permanecer visível e permitir tentar de novo. `catch` apagava a lista sem informar a falha | Loading/erro/retry distintos; Escape fecha galeria e devolve foco. VERIFICADO por teste e navegador com recuperação consultando API local |
+| UX05-009 · P2 · semântica/foco | Editor era `main` dentro do `main` da aplicação. No Chrome, Tab após último controle de modal nativo podia passar ao chrome do navegador, deixando `activeElement=BODY` antes de voltar ao primeiro | Uma região principal; contrato solicitado de ciclo de foco contínuo no diálogo. Não se observou foco em outro controle do conteúdo de fundo | Editor passa a região nomeada; helper compartilhado contém Tab/Shift+Tab somente em `:modal`, sem prender ferramenta desktop não modal. VERIFICADO: um `main`, 12 Tabs nas propriedades e ida/volta entre extremos do diálogo de versões |
+| UX05-010 · P2 · visual/toque | Material com nome longo ficava numa célula de metade do painel; remoção tinha largura de 24px | Nome completo com melhor uso da largura e alvo confortável. Grade de previews também se aplicava a arquivos/links sem imagem; largura explícita do botão era 24px | Arquivos/links ocupam grade inteira; imagens conservam previews; remoção 44×44px. VERIFICADO em cinco larguras, nome contido e ações/IDs/href preservados |
+
+## Evidências
+
+- UX05-001/010: [matriz inicial](../../../output/playwright/UX-05-visual-antes.json), [matriz final](../../../output/playwright/UX-05-visual-depois.json), [material final 320](../../../output/playwright/UX-05-material-final-320.png).
+- UX05-002/003/004/005/006/007/008/009: regressões em `attachments-panel.test.tsx`, `PortabilityDialog.test.tsx` e `navigation.test.tsx`; [79 testes finais](../../../output/playwright/UX-05-jest.txt), [46 verificações integradas](../../../output/playwright/UX-05-integracao-resultados.json), [conflito final](../../../output/playwright/UX-05-conflito-real.png).
+- UX05-009: `tabFocus` na matriz final e checks de Tab/Shift+Tab no roteiro integrado. Desktop não modal continua fora do bloqueio de foco do helper.
+
+Não foi reproduzida sobreposição dos campos de propriedades no código recebido; isso permaneceu verificado antes/depois. Não foram reabertos bugs anteriores sem reprodução nem alteradas referências de teste para aceitar perda de dados.
+
+Nenhum defeito reproduzido desta tabela ficou aberto. O **aceite integral permanece pendente** dos ensaios manuais e entregas originais da UX-04 descritos em [UX-05-testes.md](UX-05-testes.md); essas pendências não são declaradas corrigidas.

@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-11-17T13:40:46.158Z",
+  "engine": "firefox",
+  "script": "native-paste-before",
+  "seconds": 1.237,
+  "passed": true,
+  "stage": "ready-for-native-HTML",
+  "clipboardItemWithUserGesture": true,
+  "focused": true
+}

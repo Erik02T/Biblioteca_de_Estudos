@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-11-17T13:44:10.509Z",
+  "engine": "firefox",
+  "script": "replay-f9-presentation",
+  "seconds": 4.959,
+  "wrappingTitle": true,
+  "coverCropAndReopen": true,
+  "coverRemoval": true,
+  "zoomLayoutEquivalent": {
+    "width": 720,
+    "content": 720
+  },
+  "passed": true
+}

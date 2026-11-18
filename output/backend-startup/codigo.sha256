@@ -1,0 +1,4 @@
+﻿72b7ef3eb1c83bb40a958fc6d61836706277c3c294ec5d8bd2142e0d39316541  backend/scripts/start-local.cjs
+b7125337f64fdb771960cc7014b5059eb6251182fde8bc2756fb451c4a038a81  backend/src/local-startup.spec.ts
+79f956e4908d0ef5ca21b1aedc3f18341f10e0e272a4385331b9a660512e758a  backend/package.json
+87ce6c40a1b652d185837e79b22e016fa0ec538e04c1b374acdf93160c557ec6  backend/src/environment.ts

@@ -1,8 +1,10 @@
 import { SectionType, SubSectionType } from '@prisma/client';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -75,6 +77,28 @@ export class CreateAreaDto {
   @IsOptional()
   @MaxLength(AREA_ICONE_MAX_LENGTH)
   icone?: string;
+
+  @IsString()
+  @IsOptional()
+  parentId?: string | null;
+
+  @IsString()
+  @IsOptional()
+  targetPageId?: string | null;
+
+  @IsString()
+  @IsOptional()
+  coverAttachmentId?: string | null;
+
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  @IsOptional()
+  coverPosition?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  fullWidth?: boolean;
 
   @IsObject()
   @IsOptional()

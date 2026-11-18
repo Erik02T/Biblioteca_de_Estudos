@@ -1,0 +1,25 @@
+{
+  "state": "VERIFICADO",
+  "method": "chrome.tabs.setZoom(tabId, 2), browser-level zoom",
+  "before": {
+    "width": 1440,
+    "dpr": 1
+  },
+  "after": {
+    "width": 720,
+    "dpr": 2,
+    "scrollWidth": 720
+  },
+  "editor": {
+    "width": 720,
+    "dpr": 2,
+    "scrollWidth": 720,
+    "overlap": false
+  },
+  "contrast": {
+    "foreground": "rgb(187, 172, 255)",
+    "background": "rgb(46, 40, 66)",
+    "ratio": 6.979634938113313
+  },
+  "navigation": "Escape fecha navegação recolhível e retorna foco"
+}

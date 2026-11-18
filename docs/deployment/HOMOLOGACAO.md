@@ -1,5 +1,7 @@
 # Fase 5 — Provisionamento de Infraestrutura, Deploy em Homologação e Validação Real
 
+> **Histórico — plano de homologação hospedada da etapa indicada abaixo.** Os estados, preços e resultados registrados não descrevem nem comprovam o ambiente atual. Consulte [Operação local](OPERACAO_LOCAL.md) para uso habitual e [F12-testes](../notion/execucao/F12-testes.md) para a homologação local posterior. O registro original foi mantido.
+
 > **Importante:** Este documento descreve o plano e os procedimentos para homologação. **Nenhum recurso externo foi provisionado nem deploy realizado neste ambiente**, pois não há acesso a contas de provedores de nuvem, Docker, PostgreSQL ou storage S3. Todas as etapas que dependem de infraestrutura externa estão marcadas como **PENDENTE DE INFRAESTRUTURA**.
 
 ---

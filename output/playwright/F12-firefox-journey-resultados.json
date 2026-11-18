@@ -1,0 +1,68 @@
+{
+  "verifiedAt": "2026-11-17T13:40:15.485Z",
+  "engine": "firefox",
+  "script": "journey",
+  "seconds": 7.769,
+  "passed": true,
+  "browserVersion": "159.0",
+  "checks": [
+    {
+      "name": "Documento misto abre com heading legado, tarefa, código, alternante e referências",
+      "passed": true
+    },
+    {
+      "name": "Título direto persiste pelo mesmo ID",
+      "passed": true
+    },
+    {
+      "name": "Checklist persiste sem alterar status ou entendimento",
+      "passed": true
+    },
+    {
+      "name": "Duplicação preserva bloco e cria identidade distinta",
+      "passed": true
+    },
+    {
+      "name": "Desfazer recupera a estrutura anterior",
+      "passed": true
+    },
+    {
+      "name": "Comando slash insere destaque com texto japonês",
+      "passed": true
+    },
+    {
+      "name": "Recarga preserva conteúdo misto e japonês",
+      "passed": true
+    },
+    {
+      "name": "Três níveis com status mistos mantêm ancestrais no caminho",
+      "passed": true
+    },
+    {
+      "name": "Voltar recupera página e documento por ID",
+      "passed": true
+    },
+    {
+      "name": "Tabela grava categoria/status no mesmo ID",
+      "passed": true
+    },
+    {
+      "name": "Quadro representa a alteração da tabela",
+      "passed": true
+    },
+    {
+      "name": "Filtros são aplicados antes da paginação",
+      "passed": true
+    },
+    {
+      "name": "Visualização e consulta sobrevivem à recarga",
+      "passed": true
+    },
+    {
+      "name": "Jornada sem erro de execução ou HTTP 5xx inesperado",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "unexpectedResponses": []
+}

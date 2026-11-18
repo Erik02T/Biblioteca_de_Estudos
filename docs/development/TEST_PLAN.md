@@ -1,5 +1,7 @@
 # Plano mínimo de testes
 
+> **Histórico — plano anterior à F12.** As recomendações abaixo registram o estado daquela etapa. Comandos atuais em [Desenvolvimento](DESENVOLVIMENTO.md); resultados consolidados em [F12-testes](../notion/execucao/F12-testes.md). O conteúdo original foi preservado.
+
 ## Objetivo
 Cobrir os fluxos críticos que hoje não têm uma suíte mínima confiável: userId/ownership, DTO validation, CRUD de área/anexo, remoção em cascata, upload de arquivos e editor/autosave.
 

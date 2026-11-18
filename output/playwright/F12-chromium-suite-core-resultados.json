@@ -1,0 +1,90 @@
+{
+  "verifiedAt": "2026-11-17T13:50:23.697Z",
+  "engine": "chromium",
+  "group": "core",
+  "passed": true,
+  "resumed": false,
+  "note": "Consolidated from the individual scenario records; timestamps identify the actual executions.",
+  "steps": [
+    {
+      "name": "chromium/journey",
+      "evidence": "F12-chromium-journey-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:30:43.860Z",
+      "checks": 14
+    },
+    {
+      "name": "chromium/compatibility",
+      "evidence": "F12-chromium-compatibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:30:53.898Z",
+      "checks": 19
+    },
+    {
+      "name": "chromium/surfaces",
+      "evidence": "F12-chromium-surfaces-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:30:58.564Z",
+      "checks": 26
+    },
+    {
+      "name": "chromium/accessibility",
+      "evidence": "F12-chromium-accessibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:03.200Z"
+    },
+    {
+      "name": "chromium/clipboard",
+      "evidence": "F12-chromium-clipboard-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:07.699Z",
+      "checks": 4
+    },
+    {
+      "name": "chromium/native-paste-before",
+      "evidence": "F12-chromium-native-paste-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:11.199Z"
+    },
+    {
+      "name": "chromium/native-paste-after",
+      "evidence": "F12-chromium-native-paste-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:13.455Z",
+      "checks": 2
+    },
+    {
+      "name": "chromium/integrity",
+      "evidence": "F12-chromium-integrity-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:19.732Z",
+      "checks": 5
+    },
+    {
+      "name": "chromium/trash",
+      "evidence": "F12-chromium-trash-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:36:47.228Z",
+      "checks": 5
+    },
+    {
+      "name": "chromium/recovery-before",
+      "evidence": "F12-chromium-recovery-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:36:51.475Z"
+    },
+    {
+      "name": "chromium/recovery-after",
+      "evidence": "F12-chromium-recovery-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:40.570Z",
+      "checks": 2
+    },
+    {
+      "name": "chromium/forced-exit",
+      "evidence": "F12-chromium-forced-exit-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:36:51.799Z"
+    }
+  ]
+}

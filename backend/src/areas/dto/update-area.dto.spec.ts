@@ -19,4 +19,12 @@ describe('UpdateAreaDto', () => {
 
     expect(errors.some((error) => error.property === 'updatedAt')).toBe(true);
   });
+
+  it('rejects a missing updatedAt value', async () => {
+    const dto = Object.assign(new UpdateAreaDto(), {});
+
+    const errors = await validate(dto);
+
+    expect(errors.some((error) => error.property === 'updatedAt')).toBe(true);
+  });
 });

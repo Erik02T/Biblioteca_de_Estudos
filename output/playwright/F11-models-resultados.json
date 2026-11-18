@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Modelo é capturado pela interface após checkpoint",
+    "passed": true
+  },
+  {
+    "name": "Prévia mostra conteúdo, capa e imagem reais",
+    "passed": true
+  },
+  {
+    "name": "Falha de aplicação mantém galeria e seleção",
+    "passed": true
+  },
+  {
+    "name": "Aplicação cria página nova no destino escolhido",
+    "passed": true
+  },
+  {
+    "name": "Duas aplicações têm IDs, blocos, anexos e objetos distintos",
+    "passed": true
+  },
+  {
+    "name": "Remover o arquivo original preserva a imagem da cópia após recarga",
+    "passed": true
+  }
+]

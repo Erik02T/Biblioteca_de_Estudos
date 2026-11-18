@@ -1,0 +1,64 @@
+{
+  "verifiedAt": "2026-11-17T13:46:50.012Z",
+  "passed": true,
+  "database": "biblioteca_test_f8_f12_20261117",
+  "bucket": "biblioteca-test-f7-f8-f12-20261117",
+  "targetDatabase": "biblioteca_test_f12_restore_20261117134645683",
+  "targetBucket": "biblioteca-test-f12-restore-20261117134645683",
+  "tables": {
+    "User": {
+      "count": 52,
+      "hash": "2d04cc52af6d2dd009182eb52c70a851"
+    },
+    "Session": {
+      "count": 65,
+      "hash": "cb65fa6b12db8f52ea3e19f326517018"
+    },
+    "Area": {
+      "count": 1619,
+      "hash": "c99108cd3a36fce9bd2418541c766450"
+    },
+    "Attachment": {
+      "count": 161,
+      "hash": "105c27d99654ec1596c90257739599cb"
+    },
+    "ViewConfiguration": {
+      "count": 6,
+      "hash": "0ebf260f470a1a7202b503ddf5a337fc"
+    },
+    "Template": {
+      "count": 3,
+      "hash": "7b11e14bc33b84da42cf7ecf34f25a4b"
+    },
+    "AreaOpening": {
+      "count": 71,
+      "hash": "7e994e9ddc375f0464e9787aec05bce1"
+    },
+    "TemplateFile": {
+      "count": 3,
+      "hash": "23707ccb618feebb12b37270ec2c2890"
+    },
+    "AreaCreationRequest": {
+      "count": 131,
+      "hash": "d1ae3ff3424c6d5844f0deb6661effea"
+    },
+    "PageRevision": {
+      "count": 31,
+      "hash": "eb032c55332ca5c418f1c297ad7f1c79"
+    },
+    "RevisionFile": {
+      "count": 20,
+      "hash": "679cd5491cf4fa6d73ca5a398f5543e7"
+    },
+    "_prisma_migrations": {
+      "count": 13,
+      "hash": "c31515c660ed8213bb40a079398785b3"
+    }
+  },
+  "objects": 167,
+  "dumpSha256": "03f6b8cffd4d2e069a1b85c718e7d9e92a6dbbf4cc4dfeb2e78eec9668db9d3c",
+  "databaseHashesEqual": true,
+  "objectHashesEqual": true,
+  "restoredSignedMediaRead": true,
+  "note": "Canonical URL prefix retained; STORAGE_BUCKET selects restored objects. No habitual data accessed."
+}

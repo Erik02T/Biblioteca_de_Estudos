@@ -17,7 +17,9 @@ const isLoopbackHost = (hostname: string) => {
   );
 };
 
-if (process.env.NODE_ENV === "production") {
+const allowLoopbackInBuild = process.env.ALLOW_LOOPBACK_IN_BUILD === "true";
+
+if (process.env.NODE_ENV === "production" && !allowLoopbackInBuild) {
   for (const [name, url] of [
     ["NEXT_PUBLIC_API_URL", apiUrl],
     ["NEXT_PUBLIC_STORAGE_URL", storageUrl],
@@ -29,6 +31,8 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+  allowedDevOrigins: ["127.0.0.1", "[::1]"],
   images: {
     remotePatterns: storageUrl
       ? [

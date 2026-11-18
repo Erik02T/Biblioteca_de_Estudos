@@ -1,0 +1,31 @@
+{
+  "verifiedAt": "2026-11-17T13:40:55.529Z",
+  "engine": "firefox",
+  "script": "integrity",
+  "seconds": 4.705,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Quota induzida mantém o texto em memória e impede escrita sem journal",
+      "passed": true
+    },
+    {
+      "name": "Armazenamento restabelecido permite salvar explicitamente a edição seguinte",
+      "passed": true
+    },
+    {
+      "name": "Duas abas produzem conflito real e preservam o rascunho",
+      "passed": true
+    },
+    {
+      "name": "Outra conta não recebe o rascunho da aba anterior",
+      "passed": true
+    },
+    {
+      "name": "Conta original retoma seu próprio journal sem sobrescrever a revisão A",
+      "passed": true
+    }
+  ],
+  "quota": "injected QuotaExceededError in IDB put; no disk exhaustion",
+  "owner": "766729cc-656f-4d94-a7b4-e60948c4538b"
+}

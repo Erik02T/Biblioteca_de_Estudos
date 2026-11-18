@@ -1,0 +1,444 @@
+{
+  "verifiedAt": "2026-11-17T13:31:03.200Z",
+  "engine": "chromium",
+  "script": "accessibility",
+  "seconds": 2.19,
+  "passed": true,
+  "audits": [
+    {
+      "name": "Tabela desktop",
+      "version": "4.14.1",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "button[aria-label=\"Expandir F12 chromium jornada\"]"
+            ],
+            [
+              "tr:nth-child(1) > td:nth-child(5) > button[type=\"button\"]"
+            ],
+            [
+              "tr:nth-child(2) > td:nth-child(5) > button[type=\"button\"]"
+            ],
+            [
+              "tr:nth-child(3) > td:nth-child(5) > button[type=\"button\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 30\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 26\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 25\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 04\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium jornada\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 31\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 24\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 23\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 22\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 21\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 20\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 19\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 18\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 17\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 16\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 15\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 14\"]"
+            ]
+          ]
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "targets": [
+            [
+              "button[aria-label=\"Expandir F12 chromium jornada\"]"
+            ],
+            [
+              "tr:nth-child(1) > td:nth-child(5) > button[type=\"button\"]"
+            ],
+            [
+              "tr:nth-child(2) > td:nth-child(5) > button[type=\"button\"]"
+            ],
+            [
+              "tr:nth-child(3) > td:nth-child(5) > button[type=\"button\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 30\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 26\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 25\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 04\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium jornada\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 31\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 24\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 23\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 22\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 21\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 20\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 19\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 18\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 17\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 16\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 15\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 14\"]"
+            ]
+          ]
+        }
+      ],
+      "passedRules": 28
+    },
+    {
+      "name": "Quadro desktop",
+      "version": "4.14.1",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "button[aria-label=\"Expandir F12 chromium jornada\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(1) > .board-icon"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(1) > div > button:nth-child(2)"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(2) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 30\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(3) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 26\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(4) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium jornada\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(5) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 24\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(6) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 22\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(7) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 20\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(8) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 18\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(9) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 16\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(10) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 14\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(1) > .board-icon"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(1) > div > button:nth-child(2)"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(2) > .board-icon"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(2) > div > button:nth-child(2)"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(3) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 25\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(4) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 04\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(5) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 31\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(6) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 23\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(7) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 21\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(8) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 19\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(9) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 17\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(10) > .board-icon"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 15\"]"
+            ]
+          ]
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "targets": [
+            [
+              "button[aria-label=\"Expandir F12 chromium jornada\"]"
+            ],
+            [
+              ".board-column:nth-child(1) > .board-cards > article:nth-child(1) > div > button:nth-child(2)"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 30\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 26\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium jornada\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 24\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 22\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 20\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 18\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 16\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 14\"]"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(1) > div > button:nth-child(2)"
+            ],
+            [
+              ".board-column:nth-child(2) > .board-cards > article:nth-child(2) > div > button:nth-child(2)"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 25\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 04\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 31\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 23\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 21\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 19\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 17\"]"
+            ],
+            [
+              "button[aria-label=\"Favoritar F12 chromium 15\"]"
+            ]
+          ]
+        }
+      ],
+      "passedRules": 27
+    },
+    {
+      "name": "Documento misto desktop",
+      "version": "4.14.1",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".icon-picker"
+            ]
+          ]
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "targets": [
+            [
+              ".icon-picker"
+            ],
+            [
+              ".document-drag-handle"
+            ]
+          ]
+        }
+      ],
+      "passedRules": 31
+    },
+    {
+      "name": "Documento em 320 CSS px",
+      "version": "4.14.1",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".icon-picker"
+            ],
+            [
+              "button[aria-label=\"Menu do bloco atual\"]"
+            ]
+          ]
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "targets": [
+            [
+              ".icon-picker"
+            ],
+            [
+              "button[aria-label=\"Inserir junto ao bloco\"]"
+            ],
+            [
+              "button[aria-label=\"Menu do bloco atual\"]"
+            ],
+            [
+              ".document-drag-handle"
+            ]
+          ]
+        }
+      ],
+      "passedRules": 31
+    },
+    {
+      "name": "Propriedades em 320 CSS px",
+      "version": "4.14.1",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              "label[aria-labelledby=\"_r_0_\"]"
+            ],
+            [
+              "label[aria-labelledby=\"_r_1_\"]"
+            ],
+            [
+              "label[aria-labelledby=\"_r_2_\"]"
+            ]
+          ]
+        }
+      ],
+      "passedRules": 20
+    }
+  ],
+  "screenReader": "pending-human",
+  "conformityClaim": false
+}

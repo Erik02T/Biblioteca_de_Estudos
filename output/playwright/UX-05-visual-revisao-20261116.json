@@ -1,0 +1,2974 @@
+{
+  "phase": "revisao-20261116",
+  "layouts": [
+    {
+      "tool": null,
+      "width": 320,
+      "scrollWidth": 320,
+      "editorWidth": 280,
+      "document": {
+        "x": 20,
+        "y": 654,
+        "width": 280,
+        "height": 240,
+        "top": 654,
+        "right": 300,
+        "bottom": 894,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "controls": [],
+      "overlaps": []
+    },
+    {
+      "tool": "Propriedades",
+      "width": 320,
+      "scrollWidth": 320,
+      "editorWidth": 280,
+      "document": {
+        "x": 20,
+        "y": 654,
+        "width": 280,
+        "height": 240,
+        "top": 654,
+        "right": 300,
+        "bottom": 894,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 12,
+        "y": 156.25,
+        "width": 296,
+        "height": 587.5,
+        "top": 156.25,
+        "right": 308,
+        "bottom": 743.75,
+        "left": 12
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 247,
+          "y": 173.25,
+          "width": 44,
+          "height": 44,
+          "top": 173.25,
+          "right": 291,
+          "bottom": 217.25,
+          "left": 247
+        },
+        {
+          "label": "INPUT",
+          "x": 29,
+          "y": 268.75,
+          "width": 262,
+          "height": 44,
+          "top": 268.75,
+          "right": 291,
+          "bottom": 312.75,
+          "left": 29
+        },
+        {
+          "label": "Página principal",
+          "x": 29,
+          "y": 352.25,
+          "width": 262,
+          "height": 44,
+          "top": 352.25,
+          "right": 291,
+          "bottom": 396.25,
+          "left": 29
+        },
+        {
+          "label": "Sem referência",
+          "x": 29,
+          "y": 435.75,
+          "width": 262,
+          "height": 44,
+          "top": 435.75,
+          "right": 291,
+          "bottom": 479.75,
+          "left": 29
+        },
+        {
+          "label": "Iniciante (1 de 5)",
+          "x": 66.40625,
+          "y": 503.75,
+          "width": 44,
+          "height": 44,
+          "top": 503.75,
+          "right": 110.40625,
+          "bottom": 547.75,
+          "left": 66.40625
+        },
+        {
+          "label": "Básico (2 de 5)",
+          "x": 114.40625,
+          "y": 503.75,
+          "width": 44,
+          "height": 44,
+          "top": 503.75,
+          "right": 158.40625,
+          "bottom": 547.75,
+          "left": 114.40625
+        },
+        {
+          "label": "Intermediário (3 de 5)",
+          "x": 162.40625,
+          "y": 503.75,
+          "width": 44,
+          "height": 44,
+          "top": 503.75,
+          "right": 206.40625,
+          "bottom": 547.75,
+          "left": 162.40625
+        },
+        {
+          "label": "Bom (4 de 5)",
+          "x": 210.40625,
+          "y": 503.75,
+          "width": 44,
+          "height": 44,
+          "top": 503.75,
+          "right": 254.40625,
+          "bottom": 547.75,
+          "left": 210.40625
+        },
+        {
+          "label": "Domino (5 de 5)",
+          "x": 29,
+          "y": 551.75,
+          "width": 44,
+          "height": 44,
+          "top": 551.75,
+          "right": 73,
+          "bottom": 595.75,
+          "left": 29
+        },
+        {
+          "label": "Aplicar alterações",
+          "x": 29,
+          "y": 682.75,
+          "width": 262,
+          "height": 44,
+          "top": 682.75,
+          "right": 291,
+          "bottom": 726.75,
+          "left": 29
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Materiais (0)",
+      "width": 320,
+      "scrollWidth": 320,
+      "editorWidth": 280,
+      "document": {
+        "x": 20,
+        "y": 654,
+        "width": 280,
+        "height": 240,
+        "top": 654,
+        "right": 300,
+        "bottom": 894,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 12,
+        "y": 285,
+        "width": 296,
+        "height": 330,
+        "top": 285,
+        "right": 308,
+        "bottom": 615,
+        "left": 12
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 247,
+          "y": 302,
+          "width": 44,
+          "height": 44,
+          "top": 302,
+          "right": 291,
+          "bottom": 346,
+          "left": 247
+        },
+        {
+          "label": "Imagem",
+          "x": 29,
+          "y": 398,
+          "width": 262,
+          "height": 44,
+          "top": 398,
+          "right": 291,
+          "bottom": 442,
+          "left": 29
+        },
+        {
+          "label": "Link",
+          "x": 29,
+          "y": 448,
+          "width": 262,
+          "height": 44,
+          "top": 448,
+          "right": 291,
+          "bottom": 492,
+          "left": 29
+        },
+        {
+          "label": "Arquivo",
+          "x": 29,
+          "y": 498,
+          "width": 262,
+          "height": 44,
+          "top": 498,
+          "right": 291,
+          "bottom": 542,
+          "left": 29
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Formatar",
+      "width": 320,
+      "scrollWidth": 320,
+      "editorWidth": 280,
+      "document": {
+        "x": 20,
+        "y": 654,
+        "width": 280,
+        "height": 240,
+        "top": 654,
+        "right": 300,
+        "bottom": 894,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 12,
+        "y": 110.5,
+        "width": 296,
+        "height": 679,
+        "top": 110.5,
+        "right": 308,
+        "bottom": 789.5,
+        "left": 12
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 247,
+          "y": 127.5,
+          "width": 44,
+          "height": 44,
+          "top": 127.5,
+          "right": 291,
+          "bottom": 171.5,
+          "left": 247
+        },
+        {
+          "label": "Negrito",
+          "x": 29,
+          "y": 223.5,
+          "width": 49.1875,
+          "height": 44,
+          "top": 223.5,
+          "right": 78.1875,
+          "bottom": 267.5,
+          "left": 29
+        },
+        {
+          "label": "Itálico",
+          "x": 82.1875,
+          "y": 223.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 223.5,
+          "right": 131.390625,
+          "bottom": 267.5,
+          "left": 82.1875
+        },
+        {
+          "label": "Sublinhado",
+          "x": 135.390625,
+          "y": 223.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 223.5,
+          "right": 184.59375,
+          "bottom": 267.5,
+          "left": 135.390625
+        },
+        {
+          "label": "Tachado",
+          "x": 188.59375,
+          "y": 223.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 223.5,
+          "right": 237.796875,
+          "bottom": 267.5,
+          "left": 188.59375
+        },
+        {
+          "label": "Lista",
+          "x": 241.796875,
+          "y": 223.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 223.5,
+          "right": 291,
+          "bottom": 267.5,
+          "left": 241.796875
+        },
+        {
+          "label": "Lista numerada",
+          "x": 29,
+          "y": 271.5,
+          "width": 49.1875,
+          "height": 44,
+          "top": 271.5,
+          "right": 78.1875,
+          "bottom": 315.5,
+          "left": 29
+        },
+        {
+          "label": "Checklist",
+          "x": 82.1875,
+          "y": 271.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 271.5,
+          "right": 131.390625,
+          "bottom": 315.5,
+          "left": 82.1875
+        },
+        {
+          "label": "Citação",
+          "x": 135.390625,
+          "y": 271.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 271.5,
+          "right": 184.59375,
+          "bottom": 315.5,
+          "left": 135.390625
+        },
+        {
+          "label": "Bloco de código",
+          "x": 188.59375,
+          "y": 271.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 271.5,
+          "right": 237.796875,
+          "bottom": 315.5,
+          "left": 188.59375
+        },
+        {
+          "label": "Alternante",
+          "x": 241.796875,
+          "y": 271.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 271.5,
+          "right": 291,
+          "bottom": 315.5,
+          "left": 241.796875
+        },
+        {
+          "label": "Destaque",
+          "x": 29,
+          "y": 319.5,
+          "width": 49.1875,
+          "height": 44,
+          "top": 319.5,
+          "right": 78.1875,
+          "bottom": 363.5,
+          "left": 29
+        },
+        {
+          "label": "Link",
+          "x": 82.1875,
+          "y": 319.5,
+          "width": 49.203125,
+          "height": 44,
+          "top": 319.5,
+          "right": 131.390625,
+          "bottom": 363.5,
+          "left": 82.1875
+        },
+        {
+          "label": "H1",
+          "x": 29,
+          "y": 373.5,
+          "width": 125,
+          "height": 44,
+          "top": 373.5,
+          "right": 154,
+          "bottom": 417.5,
+          "left": 29
+        },
+        {
+          "label": "H2",
+          "x": 29,
+          "y": 423.5,
+          "width": 125,
+          "height": 44,
+          "top": 423.5,
+          "right": 154,
+          "bottom": 467.5,
+          "left": 29
+        },
+        {
+          "label": "H3",
+          "x": 29,
+          "y": 473.5,
+          "width": 125,
+          "height": 44,
+          "top": 473.5,
+          "right": 154,
+          "bottom": 517.5,
+          "left": 29
+        },
+        {
+          "label": "H4",
+          "x": 29,
+          "y": 523.5,
+          "width": 125,
+          "height": 44,
+          "top": 523.5,
+          "right": 154,
+          "bottom": 567.5,
+          "left": 29
+        },
+        {
+          "label": "H5",
+          "x": 29,
+          "y": 573.5,
+          "width": 125,
+          "height": 44,
+          "top": 573.5,
+          "right": 154,
+          "bottom": 617.5,
+          "left": 29
+        },
+        {
+          "label": "H6",
+          "x": 29,
+          "y": 623.5,
+          "width": 125,
+          "height": 44,
+          "top": 623.5,
+          "right": 154,
+          "bottom": 667.5,
+          "left": 29
+        },
+        {
+          "label": "P · Parágrafo",
+          "x": 29,
+          "y": 673.5,
+          "width": 125,
+          "height": 44,
+          "top": 673.5,
+          "right": 154,
+          "bottom": 717.5,
+          "left": 29
+        },
+        {
+          "label": "Vermelho",
+          "x": 166,
+          "y": 373.5,
+          "width": 125,
+          "height": 44,
+          "top": 373.5,
+          "right": 291,
+          "bottom": 417.5,
+          "left": 166
+        },
+        {
+          "label": "Amarelo",
+          "x": 166,
+          "y": 423.5,
+          "width": 125,
+          "height": 44,
+          "top": 423.5,
+          "right": 291,
+          "bottom": 467.5,
+          "left": 166
+        },
+        {
+          "label": "Verde",
+          "x": 166,
+          "y": 473.5,
+          "width": 125,
+          "height": 44,
+          "top": 473.5,
+          "right": 291,
+          "bottom": 517.5,
+          "left": 166
+        },
+        {
+          "label": "Azul",
+          "x": 166,
+          "y": 523.5,
+          "width": 125,
+          "height": 44,
+          "top": 523.5,
+          "right": 291,
+          "bottom": 567.5,
+          "left": 166
+        },
+        {
+          "label": "Roxo",
+          "x": 166,
+          "y": 573.5,
+          "width": 125,
+          "height": 44,
+          "top": 573.5,
+          "right": 291,
+          "bottom": 617.5,
+          "left": 166
+        },
+        {
+          "label": "Sem cor",
+          "x": 166,
+          "y": 623.5,
+          "width": 125,
+          "height": 44,
+          "top": 623.5,
+          "right": 291,
+          "bottom": 667.5,
+          "left": 166
+        },
+        {
+          "label": "Remover formatação",
+          "x": 166,
+          "y": 673.5,
+          "width": 125,
+          "height": 49,
+          "top": 673.5,
+          "right": 291,
+          "bottom": 722.5,
+          "left": 166
+        },
+        {
+          "label": "Largura ampla",
+          "x": 166,
+          "y": 728.5,
+          "width": 125,
+          "height": 44,
+          "top": 728.5,
+          "right": 291,
+          "bottom": 772.5,
+          "left": 166
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": null,
+      "width": 375,
+      "scrollWidth": 375,
+      "editorWidth": 335,
+      "document": {
+        "x": 20,
+        "y": 563,
+        "width": 335,
+        "height": 240,
+        "top": 563,
+        "right": 355,
+        "bottom": 803,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "controls": [],
+      "overlaps": []
+    },
+    {
+      "tool": "Propriedades",
+      "width": 375,
+      "scrollWidth": 375,
+      "editorWidth": 335,
+      "document": {
+        "x": 20,
+        "y": 563,
+        "width": 335,
+        "height": 240,
+        "top": 563,
+        "right": 355,
+        "bottom": 803,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 27.5,
+        "y": 180.25,
+        "width": 320,
+        "height": 539.5,
+        "top": 180.25,
+        "right": 347.5,
+        "bottom": 719.75,
+        "left": 27.5
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 286.5,
+          "y": 197.25,
+          "width": 44,
+          "height": 44,
+          "top": 197.25,
+          "right": 330.5,
+          "bottom": 241.25,
+          "left": 286.5
+        },
+        {
+          "label": "INPUT",
+          "x": 44.5,
+          "y": 292.75,
+          "width": 286,
+          "height": 44,
+          "top": 292.75,
+          "right": 330.5,
+          "bottom": 336.75,
+          "left": 44.5
+        },
+        {
+          "label": "Página principal",
+          "x": 44.5,
+          "y": 376.25,
+          "width": 286,
+          "height": 44,
+          "top": 376.25,
+          "right": 330.5,
+          "bottom": 420.25,
+          "left": 44.5
+        },
+        {
+          "label": "Sem referência",
+          "x": 44.5,
+          "y": 459.75,
+          "width": 286,
+          "height": 44,
+          "top": 459.75,
+          "right": 330.5,
+          "bottom": 503.75,
+          "left": 44.5
+        },
+        {
+          "label": "Iniciante (1 de 5)",
+          "x": 81.90625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 125.90625,
+          "bottom": 571.75,
+          "left": 81.90625
+        },
+        {
+          "label": "Básico (2 de 5)",
+          "x": 129.90625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 173.90625,
+          "bottom": 571.75,
+          "left": 129.90625
+        },
+        {
+          "label": "Intermediário (3 de 5)",
+          "x": 177.90625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 221.90625,
+          "bottom": 571.75,
+          "left": 177.90625
+        },
+        {
+          "label": "Bom (4 de 5)",
+          "x": 225.90625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 269.90625,
+          "bottom": 571.75,
+          "left": 225.90625
+        },
+        {
+          "label": "Domino (5 de 5)",
+          "x": 273.90625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 317.90625,
+          "bottom": 571.75,
+          "left": 273.90625
+        },
+        {
+          "label": "Aplicar alterações",
+          "x": 44.5,
+          "y": 658.75,
+          "width": 286,
+          "height": 44,
+          "top": 658.75,
+          "right": 330.5,
+          "bottom": 702.75,
+          "left": 44.5
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Materiais (0)",
+      "width": 375,
+      "scrollWidth": 375,
+      "editorWidth": 335,
+      "document": {
+        "x": 20,
+        "y": 563,
+        "width": 335,
+        "height": 240,
+        "top": 563,
+        "right": 355,
+        "bottom": 803,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 27.5,
+        "y": 285,
+        "width": 320,
+        "height": 330,
+        "top": 285,
+        "right": 347.5,
+        "bottom": 615,
+        "left": 27.5
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 286.5,
+          "y": 302,
+          "width": 44,
+          "height": 44,
+          "top": 302,
+          "right": 330.5,
+          "bottom": 346,
+          "left": 286.5
+        },
+        {
+          "label": "Imagem",
+          "x": 44.5,
+          "y": 398,
+          "width": 286,
+          "height": 44,
+          "top": 398,
+          "right": 330.5,
+          "bottom": 442,
+          "left": 44.5
+        },
+        {
+          "label": "Link",
+          "x": 44.5,
+          "y": 448,
+          "width": 286,
+          "height": 44,
+          "top": 448,
+          "right": 330.5,
+          "bottom": 492,
+          "left": 44.5
+        },
+        {
+          "label": "Arquivo",
+          "x": 44.5,
+          "y": 498,
+          "width": 286,
+          "height": 44,
+          "top": 498,
+          "right": 330.5,
+          "bottom": 542,
+          "left": 44.5
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Formatar",
+      "width": 375,
+      "scrollWidth": 375,
+      "editorWidth": 335,
+      "document": {
+        "x": 20,
+        "y": 563,
+        "width": 335,
+        "height": 240,
+        "top": 563,
+        "right": 355,
+        "bottom": 803,
+        "left": 20
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 27.5,
+        "y": 134.5,
+        "width": 320,
+        "height": 631,
+        "top": 134.5,
+        "right": 347.5,
+        "bottom": 765.5,
+        "left": 27.5
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 286.5,
+          "y": 151.5,
+          "width": 44,
+          "height": 44,
+          "top": 151.5,
+          "right": 330.5,
+          "bottom": 195.5,
+          "left": 286.5
+        },
+        {
+          "label": "Negrito",
+          "x": 44.5,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 88.828125,
+          "bottom": 291.5,
+          "left": 44.5
+        },
+        {
+          "label": "Itálico",
+          "x": 92.828125,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 137.15625,
+          "bottom": 291.5,
+          "left": 92.828125
+        },
+        {
+          "label": "Sublinhado",
+          "x": 141.15625,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 185.484375,
+          "bottom": 291.5,
+          "left": 141.15625
+        },
+        {
+          "label": "Tachado",
+          "x": 189.484375,
+          "y": 247.5,
+          "width": 44.34375,
+          "height": 44,
+          "top": 247.5,
+          "right": 233.828125,
+          "bottom": 291.5,
+          "left": 189.484375
+        },
+        {
+          "label": "Lista",
+          "x": 237.828125,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 282.15625,
+          "bottom": 291.5,
+          "left": 237.828125
+        },
+        {
+          "label": "Lista numerada",
+          "x": 286.15625,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 330.484375,
+          "bottom": 291.5,
+          "left": 286.15625
+        },
+        {
+          "label": "Checklist",
+          "x": 44.5,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 88.828125,
+          "bottom": 339.5,
+          "left": 44.5
+        },
+        {
+          "label": "Citação",
+          "x": 92.828125,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 137.15625,
+          "bottom": 339.5,
+          "left": 92.828125
+        },
+        {
+          "label": "Bloco de código",
+          "x": 141.15625,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 185.484375,
+          "bottom": 339.5,
+          "left": 141.15625
+        },
+        {
+          "label": "Alternante",
+          "x": 189.484375,
+          "y": 295.5,
+          "width": 44.34375,
+          "height": 44,
+          "top": 295.5,
+          "right": 233.828125,
+          "bottom": 339.5,
+          "left": 189.484375
+        },
+        {
+          "label": "Destaque",
+          "x": 237.828125,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 282.15625,
+          "bottom": 339.5,
+          "left": 237.828125
+        },
+        {
+          "label": "Link",
+          "x": 286.15625,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 330.484375,
+          "bottom": 339.5,
+          "left": 286.15625
+        },
+        {
+          "label": "H1",
+          "x": 44.5,
+          "y": 349.5,
+          "width": 137,
+          "height": 44,
+          "top": 349.5,
+          "right": 181.5,
+          "bottom": 393.5,
+          "left": 44.5
+        },
+        {
+          "label": "H2",
+          "x": 44.5,
+          "y": 399.5,
+          "width": 137,
+          "height": 44,
+          "top": 399.5,
+          "right": 181.5,
+          "bottom": 443.5,
+          "left": 44.5
+        },
+        {
+          "label": "H3",
+          "x": 44.5,
+          "y": 449.5,
+          "width": 137,
+          "height": 44,
+          "top": 449.5,
+          "right": 181.5,
+          "bottom": 493.5,
+          "left": 44.5
+        },
+        {
+          "label": "H4",
+          "x": 44.5,
+          "y": 499.5,
+          "width": 137,
+          "height": 44,
+          "top": 499.5,
+          "right": 181.5,
+          "bottom": 543.5,
+          "left": 44.5
+        },
+        {
+          "label": "H5",
+          "x": 44.5,
+          "y": 549.5,
+          "width": 137,
+          "height": 44,
+          "top": 549.5,
+          "right": 181.5,
+          "bottom": 593.5,
+          "left": 44.5
+        },
+        {
+          "label": "H6",
+          "x": 44.5,
+          "y": 599.5,
+          "width": 137,
+          "height": 44,
+          "top": 599.5,
+          "right": 181.5,
+          "bottom": 643.5,
+          "left": 44.5
+        },
+        {
+          "label": "P · Parágrafo",
+          "x": 44.5,
+          "y": 649.5,
+          "width": 137,
+          "height": 44,
+          "top": 649.5,
+          "right": 181.5,
+          "bottom": 693.5,
+          "left": 44.5
+        },
+        {
+          "label": "Vermelho",
+          "x": 193.5,
+          "y": 349.5,
+          "width": 137,
+          "height": 44,
+          "top": 349.5,
+          "right": 330.5,
+          "bottom": 393.5,
+          "left": 193.5
+        },
+        {
+          "label": "Amarelo",
+          "x": 193.5,
+          "y": 399.5,
+          "width": 137,
+          "height": 44,
+          "top": 399.5,
+          "right": 330.5,
+          "bottom": 443.5,
+          "left": 193.5
+        },
+        {
+          "label": "Verde",
+          "x": 193.5,
+          "y": 449.5,
+          "width": 137,
+          "height": 44,
+          "top": 449.5,
+          "right": 330.5,
+          "bottom": 493.5,
+          "left": 193.5
+        },
+        {
+          "label": "Azul",
+          "x": 193.5,
+          "y": 499.5,
+          "width": 137,
+          "height": 44,
+          "top": 499.5,
+          "right": 330.5,
+          "bottom": 543.5,
+          "left": 193.5
+        },
+        {
+          "label": "Roxo",
+          "x": 193.5,
+          "y": 549.5,
+          "width": 137,
+          "height": 44,
+          "top": 549.5,
+          "right": 330.5,
+          "bottom": 593.5,
+          "left": 193.5
+        },
+        {
+          "label": "Sem cor",
+          "x": 193.5,
+          "y": 599.5,
+          "width": 137,
+          "height": 44,
+          "top": 599.5,
+          "right": 330.5,
+          "bottom": 643.5,
+          "left": 193.5
+        },
+        {
+          "label": "Remover formatação",
+          "x": 193.5,
+          "y": 649.5,
+          "width": 137,
+          "height": 49,
+          "top": 649.5,
+          "right": 330.5,
+          "bottom": 698.5,
+          "left": 193.5
+        },
+        {
+          "label": "Largura ampla",
+          "x": 193.5,
+          "y": 704.5,
+          "width": 137,
+          "height": 44,
+          "top": 704.5,
+          "right": 330.5,
+          "bottom": 748.5,
+          "left": 193.5
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": null,
+      "width": 768,
+      "scrollWidth": 768,
+      "editorWidth": 680,
+      "document": {
+        "x": 44,
+        "y": 452,
+        "width": 680,
+        "height": 240,
+        "top": 452,
+        "right": 724,
+        "bottom": 692,
+        "left": 44
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "controls": [],
+      "overlaps": []
+    },
+    {
+      "tool": "Propriedades",
+      "width": 768,
+      "scrollWidth": 768,
+      "editorWidth": 680,
+      "document": {
+        "x": 44,
+        "y": 452,
+        "width": 680,
+        "height": 240,
+        "top": 452,
+        "right": 724,
+        "bottom": 692,
+        "left": 44
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 224,
+        "y": 180.25,
+        "width": 320,
+        "height": 539.5,
+        "top": 180.25,
+        "right": 544,
+        "bottom": 719.75,
+        "left": 224
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 483,
+          "y": 197.25,
+          "width": 44,
+          "height": 44,
+          "top": 197.25,
+          "right": 527,
+          "bottom": 241.25,
+          "left": 483
+        },
+        {
+          "label": "INPUT",
+          "x": 241,
+          "y": 292.75,
+          "width": 286,
+          "height": 44,
+          "top": 292.75,
+          "right": 527,
+          "bottom": 336.75,
+          "left": 241
+        },
+        {
+          "label": "Página principal",
+          "x": 241,
+          "y": 376.25,
+          "width": 286,
+          "height": 44,
+          "top": 376.25,
+          "right": 527,
+          "bottom": 420.25,
+          "left": 241
+        },
+        {
+          "label": "Sem referência",
+          "x": 241,
+          "y": 459.75,
+          "width": 286,
+          "height": 44,
+          "top": 459.75,
+          "right": 527,
+          "bottom": 503.75,
+          "left": 241
+        },
+        {
+          "label": "Iniciante (1 de 5)",
+          "x": 278.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 322.40625,
+          "bottom": 571.75,
+          "left": 278.40625
+        },
+        {
+          "label": "Básico (2 de 5)",
+          "x": 326.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 370.40625,
+          "bottom": 571.75,
+          "left": 326.40625
+        },
+        {
+          "label": "Intermediário (3 de 5)",
+          "x": 374.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 418.40625,
+          "bottom": 571.75,
+          "left": 374.40625
+        },
+        {
+          "label": "Bom (4 de 5)",
+          "x": 422.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 466.40625,
+          "bottom": 571.75,
+          "left": 422.40625
+        },
+        {
+          "label": "Domino (5 de 5)",
+          "x": 470.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 514.40625,
+          "bottom": 571.75,
+          "left": 470.40625
+        },
+        {
+          "label": "Aplicar alterações",
+          "x": 241,
+          "y": 658.75,
+          "width": 286,
+          "height": 44,
+          "top": 658.75,
+          "right": 527,
+          "bottom": 702.75,
+          "left": 241
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Materiais (0)",
+      "width": 768,
+      "scrollWidth": 768,
+      "editorWidth": 680,
+      "document": {
+        "x": 44,
+        "y": 452,
+        "width": 680,
+        "height": 240,
+        "top": 452,
+        "right": 724,
+        "bottom": 692,
+        "left": 44
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 224,
+        "y": 335,
+        "width": 320,
+        "height": 230,
+        "top": 335,
+        "right": 544,
+        "bottom": 565,
+        "left": 224
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 483,
+          "y": 352,
+          "width": 44,
+          "height": 44,
+          "top": 352,
+          "right": 527,
+          "bottom": 396,
+          "left": 483
+        },
+        {
+          "label": "Imagem",
+          "x": 241,
+          "y": 448,
+          "width": 91.328125,
+          "height": 44,
+          "top": 448,
+          "right": 332.328125,
+          "bottom": 492,
+          "left": 241
+        },
+        {
+          "label": "Link",
+          "x": 338.328125,
+          "y": 448,
+          "width": 91.328125,
+          "height": 44,
+          "top": 448,
+          "right": 429.65625,
+          "bottom": 492,
+          "left": 338.328125
+        },
+        {
+          "label": "Arquivo",
+          "x": 435.65625,
+          "y": 448,
+          "width": 91.34375,
+          "height": 44,
+          "top": 448,
+          "right": 527,
+          "bottom": 492,
+          "left": 435.65625
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Formatar",
+      "width": 768,
+      "scrollWidth": 768,
+      "editorWidth": 680,
+      "document": {
+        "x": 44,
+        "y": 452,
+        "width": 680,
+        "height": 240,
+        "top": 452,
+        "right": 724,
+        "bottom": 692,
+        "left": 44
+      },
+      "rootPadding": "0px",
+      "titleFont": "26px",
+      "panel": {
+        "x": 224,
+        "y": 134.5,
+        "width": 320,
+        "height": 631,
+        "top": 134.5,
+        "right": 544,
+        "bottom": 765.5,
+        "left": 224
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 483,
+          "y": 151.5,
+          "width": 44,
+          "height": 44,
+          "top": 151.5,
+          "right": 527,
+          "bottom": 195.5,
+          "left": 483
+        },
+        {
+          "label": "Negrito",
+          "x": 241,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 285.328125,
+          "bottom": 291.5,
+          "left": 241
+        },
+        {
+          "label": "Itálico",
+          "x": 289.328125,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 333.65625,
+          "bottom": 291.5,
+          "left": 289.328125
+        },
+        {
+          "label": "Sublinhado",
+          "x": 337.65625,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 381.984375,
+          "bottom": 291.5,
+          "left": 337.65625
+        },
+        {
+          "label": "Tachado",
+          "x": 385.984375,
+          "y": 247.5,
+          "width": 44.34375,
+          "height": 44,
+          "top": 247.5,
+          "right": 430.328125,
+          "bottom": 291.5,
+          "left": 385.984375
+        },
+        {
+          "label": "Lista",
+          "x": 434.328125,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 478.65625,
+          "bottom": 291.5,
+          "left": 434.328125
+        },
+        {
+          "label": "Lista numerada",
+          "x": 482.65625,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 526.984375,
+          "bottom": 291.5,
+          "left": 482.65625
+        },
+        {
+          "label": "Checklist",
+          "x": 241,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 285.328125,
+          "bottom": 339.5,
+          "left": 241
+        },
+        {
+          "label": "Citação",
+          "x": 289.328125,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 333.65625,
+          "bottom": 339.5,
+          "left": 289.328125
+        },
+        {
+          "label": "Bloco de código",
+          "x": 337.65625,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 381.984375,
+          "bottom": 339.5,
+          "left": 337.65625
+        },
+        {
+          "label": "Alternante",
+          "x": 385.984375,
+          "y": 295.5,
+          "width": 44.34375,
+          "height": 44,
+          "top": 295.5,
+          "right": 430.328125,
+          "bottom": 339.5,
+          "left": 385.984375
+        },
+        {
+          "label": "Destaque",
+          "x": 434.328125,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 478.65625,
+          "bottom": 339.5,
+          "left": 434.328125
+        },
+        {
+          "label": "Link",
+          "x": 482.65625,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 526.984375,
+          "bottom": 339.5,
+          "left": 482.65625
+        },
+        {
+          "label": "H1",
+          "x": 241,
+          "y": 349.5,
+          "width": 137,
+          "height": 44,
+          "top": 349.5,
+          "right": 378,
+          "bottom": 393.5,
+          "left": 241
+        },
+        {
+          "label": "H2",
+          "x": 241,
+          "y": 399.5,
+          "width": 137,
+          "height": 44,
+          "top": 399.5,
+          "right": 378,
+          "bottom": 443.5,
+          "left": 241
+        },
+        {
+          "label": "H3",
+          "x": 241,
+          "y": 449.5,
+          "width": 137,
+          "height": 44,
+          "top": 449.5,
+          "right": 378,
+          "bottom": 493.5,
+          "left": 241
+        },
+        {
+          "label": "H4",
+          "x": 241,
+          "y": 499.5,
+          "width": 137,
+          "height": 44,
+          "top": 499.5,
+          "right": 378,
+          "bottom": 543.5,
+          "left": 241
+        },
+        {
+          "label": "H5",
+          "x": 241,
+          "y": 549.5,
+          "width": 137,
+          "height": 44,
+          "top": 549.5,
+          "right": 378,
+          "bottom": 593.5,
+          "left": 241
+        },
+        {
+          "label": "H6",
+          "x": 241,
+          "y": 599.5,
+          "width": 137,
+          "height": 44,
+          "top": 599.5,
+          "right": 378,
+          "bottom": 643.5,
+          "left": 241
+        },
+        {
+          "label": "P · Parágrafo",
+          "x": 241,
+          "y": 649.5,
+          "width": 137,
+          "height": 44,
+          "top": 649.5,
+          "right": 378,
+          "bottom": 693.5,
+          "left": 241
+        },
+        {
+          "label": "Vermelho",
+          "x": 390,
+          "y": 349.5,
+          "width": 137,
+          "height": 44,
+          "top": 349.5,
+          "right": 527,
+          "bottom": 393.5,
+          "left": 390
+        },
+        {
+          "label": "Amarelo",
+          "x": 390,
+          "y": 399.5,
+          "width": 137,
+          "height": 44,
+          "top": 399.5,
+          "right": 527,
+          "bottom": 443.5,
+          "left": 390
+        },
+        {
+          "label": "Verde",
+          "x": 390,
+          "y": 449.5,
+          "width": 137,
+          "height": 44,
+          "top": 449.5,
+          "right": 527,
+          "bottom": 493.5,
+          "left": 390
+        },
+        {
+          "label": "Azul",
+          "x": 390,
+          "y": 499.5,
+          "width": 137,
+          "height": 44,
+          "top": 499.5,
+          "right": 527,
+          "bottom": 543.5,
+          "left": 390
+        },
+        {
+          "label": "Roxo",
+          "x": 390,
+          "y": 549.5,
+          "width": 137,
+          "height": 44,
+          "top": 549.5,
+          "right": 527,
+          "bottom": 593.5,
+          "left": 390
+        },
+        {
+          "label": "Sem cor",
+          "x": 390,
+          "y": 599.5,
+          "width": 137,
+          "height": 44,
+          "top": 599.5,
+          "right": 527,
+          "bottom": 643.5,
+          "left": 390
+        },
+        {
+          "label": "Remover formatação",
+          "x": 390,
+          "y": 649.5,
+          "width": 137,
+          "height": 49,
+          "top": 649.5,
+          "right": 527,
+          "bottom": 698.5,
+          "left": 390
+        },
+        {
+          "label": "Largura ampla",
+          "x": 390,
+          "y": 704.5,
+          "width": 137,
+          "height": 44,
+          "top": 704.5,
+          "right": 527,
+          "bottom": 748.5,
+          "left": 390
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": null,
+      "width": 1024,
+      "scrollWidth": 1024,
+      "editorWidth": 760,
+      "document": {
+        "x": 132,
+        "y": 452,
+        "width": 760,
+        "height": 240,
+        "top": 452,
+        "right": 892,
+        "bottom": 692,
+        "left": 132
+      },
+      "rootPadding": "0px",
+      "titleFont": "30.72px",
+      "controls": [],
+      "overlaps": []
+    },
+    {
+      "tool": "Propriedades",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "editorWidth": 760,
+      "document": {
+        "x": 132,
+        "y": 452,
+        "width": 760,
+        "height": 240,
+        "top": 452,
+        "right": 892,
+        "bottom": 692,
+        "left": 132
+      },
+      "rootPadding": "0px",
+      "titleFont": "30.72px",
+      "panel": {
+        "x": 352,
+        "y": 180.25,
+        "width": 320,
+        "height": 539.5,
+        "top": 180.25,
+        "right": 672,
+        "bottom": 719.75,
+        "left": 352
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 611,
+          "y": 197.25,
+          "width": 44,
+          "height": 44,
+          "top": 197.25,
+          "right": 655,
+          "bottom": 241.25,
+          "left": 611
+        },
+        {
+          "label": "INPUT",
+          "x": 369,
+          "y": 292.75,
+          "width": 286,
+          "height": 44,
+          "top": 292.75,
+          "right": 655,
+          "bottom": 336.75,
+          "left": 369
+        },
+        {
+          "label": "Página principal",
+          "x": 369,
+          "y": 376.25,
+          "width": 286,
+          "height": 44,
+          "top": 376.25,
+          "right": 655,
+          "bottom": 420.25,
+          "left": 369
+        },
+        {
+          "label": "Sem referência",
+          "x": 369,
+          "y": 459.75,
+          "width": 286,
+          "height": 44,
+          "top": 459.75,
+          "right": 655,
+          "bottom": 503.75,
+          "left": 369
+        },
+        {
+          "label": "Iniciante (1 de 5)",
+          "x": 406.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 450.40625,
+          "bottom": 571.75,
+          "left": 406.40625
+        },
+        {
+          "label": "Básico (2 de 5)",
+          "x": 454.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 498.40625,
+          "bottom": 571.75,
+          "left": 454.40625
+        },
+        {
+          "label": "Intermediário (3 de 5)",
+          "x": 502.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 546.40625,
+          "bottom": 571.75,
+          "left": 502.40625
+        },
+        {
+          "label": "Bom (4 de 5)",
+          "x": 550.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 594.40625,
+          "bottom": 571.75,
+          "left": 550.40625
+        },
+        {
+          "label": "Domino (5 de 5)",
+          "x": 598.40625,
+          "y": 527.75,
+          "width": 44,
+          "height": 44,
+          "top": 527.75,
+          "right": 642.40625,
+          "bottom": 571.75,
+          "left": 598.40625
+        },
+        {
+          "label": "Aplicar alterações",
+          "x": 369,
+          "y": 658.75,
+          "width": 286,
+          "height": 44,
+          "top": 658.75,
+          "right": 655,
+          "bottom": 702.75,
+          "left": 369
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Materiais (0)",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "editorWidth": 760,
+      "document": {
+        "x": 132,
+        "y": 452,
+        "width": 760,
+        "height": 240,
+        "top": 452,
+        "right": 892,
+        "bottom": 692,
+        "left": 132
+      },
+      "rootPadding": "0px",
+      "titleFont": "30.72px",
+      "panel": {
+        "x": 352,
+        "y": 335,
+        "width": 320,
+        "height": 230,
+        "top": 335,
+        "right": 672,
+        "bottom": 565,
+        "left": 352
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 611,
+          "y": 352,
+          "width": 44,
+          "height": 44,
+          "top": 352,
+          "right": 655,
+          "bottom": 396,
+          "left": 611
+        },
+        {
+          "label": "Imagem",
+          "x": 369,
+          "y": 448,
+          "width": 91.328125,
+          "height": 44,
+          "top": 448,
+          "right": 460.328125,
+          "bottom": 492,
+          "left": 369
+        },
+        {
+          "label": "Link",
+          "x": 466.328125,
+          "y": 448,
+          "width": 91.328125,
+          "height": 44,
+          "top": 448,
+          "right": 557.65625,
+          "bottom": 492,
+          "left": 466.328125
+        },
+        {
+          "label": "Arquivo",
+          "x": 563.65625,
+          "y": 448,
+          "width": 91.34375,
+          "height": 44,
+          "top": 448,
+          "right": 655,
+          "bottom": 492,
+          "left": 563.65625
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Formatar",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "editorWidth": 760,
+      "document": {
+        "x": 132,
+        "y": 452,
+        "width": 760,
+        "height": 240,
+        "top": 452,
+        "right": 892,
+        "bottom": 692,
+        "left": 132
+      },
+      "rootPadding": "0px",
+      "titleFont": "30.72px",
+      "panel": {
+        "x": 352,
+        "y": 134.5,
+        "width": 320,
+        "height": 631,
+        "top": 134.5,
+        "right": 672,
+        "bottom": 765.5,
+        "left": 352
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 611,
+          "y": 151.5,
+          "width": 44,
+          "height": 44,
+          "top": 151.5,
+          "right": 655,
+          "bottom": 195.5,
+          "left": 611
+        },
+        {
+          "label": "Negrito",
+          "x": 369,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 413.328125,
+          "bottom": 291.5,
+          "left": 369
+        },
+        {
+          "label": "Itálico",
+          "x": 417.328125,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 461.65625,
+          "bottom": 291.5,
+          "left": 417.328125
+        },
+        {
+          "label": "Sublinhado",
+          "x": 465.65625,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 509.984375,
+          "bottom": 291.5,
+          "left": 465.65625
+        },
+        {
+          "label": "Tachado",
+          "x": 513.984375,
+          "y": 247.5,
+          "width": 44.34375,
+          "height": 44,
+          "top": 247.5,
+          "right": 558.328125,
+          "bottom": 291.5,
+          "left": 513.984375
+        },
+        {
+          "label": "Lista",
+          "x": 562.328125,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 606.65625,
+          "bottom": 291.5,
+          "left": 562.328125
+        },
+        {
+          "label": "Lista numerada",
+          "x": 610.65625,
+          "y": 247.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 247.5,
+          "right": 654.984375,
+          "bottom": 291.5,
+          "left": 610.65625
+        },
+        {
+          "label": "Checklist",
+          "x": 369,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 413.328125,
+          "bottom": 339.5,
+          "left": 369
+        },
+        {
+          "label": "Citação",
+          "x": 417.328125,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 461.65625,
+          "bottom": 339.5,
+          "left": 417.328125
+        },
+        {
+          "label": "Bloco de código",
+          "x": 465.65625,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 509.984375,
+          "bottom": 339.5,
+          "left": 465.65625
+        },
+        {
+          "label": "Alternante",
+          "x": 513.984375,
+          "y": 295.5,
+          "width": 44.34375,
+          "height": 44,
+          "top": 295.5,
+          "right": 558.328125,
+          "bottom": 339.5,
+          "left": 513.984375
+        },
+        {
+          "label": "Destaque",
+          "x": 562.328125,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 606.65625,
+          "bottom": 339.5,
+          "left": 562.328125
+        },
+        {
+          "label": "Link",
+          "x": 610.65625,
+          "y": 295.5,
+          "width": 44.328125,
+          "height": 44,
+          "top": 295.5,
+          "right": 654.984375,
+          "bottom": 339.5,
+          "left": 610.65625
+        },
+        {
+          "label": "H1",
+          "x": 369,
+          "y": 349.5,
+          "width": 137,
+          "height": 44,
+          "top": 349.5,
+          "right": 506,
+          "bottom": 393.5,
+          "left": 369
+        },
+        {
+          "label": "H2",
+          "x": 369,
+          "y": 399.5,
+          "width": 137,
+          "height": 44,
+          "top": 399.5,
+          "right": 506,
+          "bottom": 443.5,
+          "left": 369
+        },
+        {
+          "label": "H3",
+          "x": 369,
+          "y": 449.5,
+          "width": 137,
+          "height": 44,
+          "top": 449.5,
+          "right": 506,
+          "bottom": 493.5,
+          "left": 369
+        },
+        {
+          "label": "H4",
+          "x": 369,
+          "y": 499.5,
+          "width": 137,
+          "height": 44,
+          "top": 499.5,
+          "right": 506,
+          "bottom": 543.5,
+          "left": 369
+        },
+        {
+          "label": "H5",
+          "x": 369,
+          "y": 549.5,
+          "width": 137,
+          "height": 44,
+          "top": 549.5,
+          "right": 506,
+          "bottom": 593.5,
+          "left": 369
+        },
+        {
+          "label": "H6",
+          "x": 369,
+          "y": 599.5,
+          "width": 137,
+          "height": 44,
+          "top": 599.5,
+          "right": 506,
+          "bottom": 643.5,
+          "left": 369
+        },
+        {
+          "label": "P · Parágrafo",
+          "x": 369,
+          "y": 649.5,
+          "width": 137,
+          "height": 44,
+          "top": 649.5,
+          "right": 506,
+          "bottom": 693.5,
+          "left": 369
+        },
+        {
+          "label": "Vermelho",
+          "x": 518,
+          "y": 349.5,
+          "width": 137,
+          "height": 44,
+          "top": 349.5,
+          "right": 655,
+          "bottom": 393.5,
+          "left": 518
+        },
+        {
+          "label": "Amarelo",
+          "x": 518,
+          "y": 399.5,
+          "width": 137,
+          "height": 44,
+          "top": 399.5,
+          "right": 655,
+          "bottom": 443.5,
+          "left": 518
+        },
+        {
+          "label": "Verde",
+          "x": 518,
+          "y": 449.5,
+          "width": 137,
+          "height": 44,
+          "top": 449.5,
+          "right": 655,
+          "bottom": 493.5,
+          "left": 518
+        },
+        {
+          "label": "Azul",
+          "x": 518,
+          "y": 499.5,
+          "width": 137,
+          "height": 44,
+          "top": 499.5,
+          "right": 655,
+          "bottom": 543.5,
+          "left": 518
+        },
+        {
+          "label": "Roxo",
+          "x": 518,
+          "y": 549.5,
+          "width": 137,
+          "height": 44,
+          "top": 549.5,
+          "right": 655,
+          "bottom": 593.5,
+          "left": 518
+        },
+        {
+          "label": "Sem cor",
+          "x": 518,
+          "y": 599.5,
+          "width": 137,
+          "height": 44,
+          "top": 599.5,
+          "right": 655,
+          "bottom": 643.5,
+          "left": 518
+        },
+        {
+          "label": "Remover formatação",
+          "x": 518,
+          "y": 649.5,
+          "width": 137,
+          "height": 49,
+          "top": 649.5,
+          "right": 655,
+          "bottom": 698.5,
+          "left": 518
+        },
+        {
+          "label": "Largura ampla",
+          "x": 518,
+          "y": 704.5,
+          "width": 137,
+          "height": 44,
+          "top": 704.5,
+          "right": 655,
+          "bottom": 748.5,
+          "left": 518
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": null,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "editorWidth": 760,
+      "document": {
+        "x": 456,
+        "y": 453.1875,
+        "width": 760,
+        "height": 240,
+        "top": 453.1875,
+        "right": 1216,
+        "bottom": 693.1875,
+        "left": 456
+      },
+      "rootPadding": "0px",
+      "titleFont": "36px",
+      "controls": [],
+      "overlaps": []
+    },
+    {
+      "tool": "Propriedades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "editorWidth": 760,
+      "document": {
+        "x": 290,
+        "y": 453.1875,
+        "width": 760,
+        "height": 240,
+        "top": 453.1875,
+        "right": 1050,
+        "bottom": 693.1875,
+        "left": 290
+      },
+      "rootPadding": "0px",
+      "titleFont": "36px",
+      "panel": {
+        "x": 1108,
+        "y": 12,
+        "width": 320,
+        "height": 539.5,
+        "top": 12,
+        "right": 1428,
+        "bottom": 551.5,
+        "left": 1108
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 1367,
+          "y": 29,
+          "width": 44,
+          "height": 44,
+          "top": 29,
+          "right": 1411,
+          "bottom": 73,
+          "left": 1367
+        },
+        {
+          "label": "INPUT",
+          "x": 1125,
+          "y": 124.5,
+          "width": 286,
+          "height": 44,
+          "top": 124.5,
+          "right": 1411,
+          "bottom": 168.5,
+          "left": 1125
+        },
+        {
+          "label": "Página principal",
+          "x": 1125,
+          "y": 208,
+          "width": 286,
+          "height": 44,
+          "top": 208,
+          "right": 1411,
+          "bottom": 252,
+          "left": 1125
+        },
+        {
+          "label": "Sem referência",
+          "x": 1125,
+          "y": 291.5,
+          "width": 286,
+          "height": 44,
+          "top": 291.5,
+          "right": 1411,
+          "bottom": 335.5,
+          "left": 1125
+        },
+        {
+          "label": "Iniciante (1 de 5)",
+          "x": 1162.40625,
+          "y": 359.5,
+          "width": 44,
+          "height": 44,
+          "top": 359.5,
+          "right": 1206.40625,
+          "bottom": 403.5,
+          "left": 1162.40625
+        },
+        {
+          "label": "Básico (2 de 5)",
+          "x": 1210.40625,
+          "y": 359.5,
+          "width": 44,
+          "height": 44,
+          "top": 359.5,
+          "right": 1254.40625,
+          "bottom": 403.5,
+          "left": 1210.40625
+        },
+        {
+          "label": "Intermediário (3 de 5)",
+          "x": 1258.40625,
+          "y": 359.5,
+          "width": 44,
+          "height": 44,
+          "top": 359.5,
+          "right": 1302.40625,
+          "bottom": 403.5,
+          "left": 1258.40625
+        },
+        {
+          "label": "Bom (4 de 5)",
+          "x": 1306.40625,
+          "y": 359.5,
+          "width": 44,
+          "height": 44,
+          "top": 359.5,
+          "right": 1350.40625,
+          "bottom": 403.5,
+          "left": 1306.40625
+        },
+        {
+          "label": "Domino (5 de 5)",
+          "x": 1354.40625,
+          "y": 359.5,
+          "width": 44,
+          "height": 44,
+          "top": 359.5,
+          "right": 1398.40625,
+          "bottom": 403.5,
+          "left": 1354.40625
+        },
+        {
+          "label": "Aplicar alterações",
+          "x": 1125,
+          "y": 490.5,
+          "width": 286,
+          "height": 44,
+          "top": 490.5,
+          "right": 1411,
+          "bottom": 534.5,
+          "left": 1125
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Materiais (0)",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "editorWidth": 760,
+      "document": {
+        "x": 290,
+        "y": 453.1875,
+        "width": 760,
+        "height": 240,
+        "top": 453.1875,
+        "right": 1050,
+        "bottom": 693.1875,
+        "left": 290
+      },
+      "rootPadding": "0px",
+      "titleFont": "36px",
+      "panel": {
+        "x": 1108,
+        "y": 12,
+        "width": 320,
+        "height": 230,
+        "top": 12,
+        "right": 1428,
+        "bottom": 242,
+        "left": 1108
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 1367,
+          "y": 29,
+          "width": 44,
+          "height": 44,
+          "top": 29,
+          "right": 1411,
+          "bottom": 73,
+          "left": 1367
+        },
+        {
+          "label": "Imagem",
+          "x": 1125,
+          "y": 125,
+          "width": 91.328125,
+          "height": 44,
+          "top": 125,
+          "right": 1216.328125,
+          "bottom": 169,
+          "left": 1125
+        },
+        {
+          "label": "Link",
+          "x": 1222.328125,
+          "y": 125,
+          "width": 91.328125,
+          "height": 44,
+          "top": 125,
+          "right": 1313.65625,
+          "bottom": 169,
+          "left": 1222.328125
+        },
+        {
+          "label": "Arquivo",
+          "x": 1319.65625,
+          "y": 125,
+          "width": 91.34375,
+          "height": 44,
+          "top": 125,
+          "right": 1411,
+          "bottom": 169,
+          "left": 1319.65625
+        }
+      ],
+      "overlaps": []
+    },
+    {
+      "tool": "Formatar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "editorWidth": 760,
+      "document": {
+        "x": 290,
+        "y": 453.1875,
+        "width": 760,
+        "height": 240,
+        "top": 453.1875,
+        "right": 1050,
+        "bottom": 693.1875,
+        "left": 290
+      },
+      "rootPadding": "0px",
+      "titleFont": "36px",
+      "panel": {
+        "x": 1108,
+        "y": 12,
+        "width": 320,
+        "height": 631,
+        "top": 12,
+        "right": 1428,
+        "bottom": 643,
+        "left": 1108
+      },
+      "controls": [
+        {
+          "label": "Fechar ferramenta",
+          "x": 1367,
+          "y": 29,
+          "width": 44,
+          "height": 44,
+          "top": 29,
+          "right": 1411,
+          "bottom": 73,
+          "left": 1367
+        },
+        {
+          "label": "Negrito",
+          "x": 1125,
+          "y": 125,
+          "width": 44.328125,
+          "height": 44,
+          "top": 125,
+          "right": 1169.328125,
+          "bottom": 169,
+          "left": 1125
+        },
+        {
+          "label": "Itálico",
+          "x": 1173.328125,
+          "y": 125,
+          "width": 44.328125,
+          "height": 44,
+          "top": 125,
+          "right": 1217.65625,
+          "bottom": 169,
+          "left": 1173.328125
+        },
+        {
+          "label": "Sublinhado",
+          "x": 1221.65625,
+          "y": 125,
+          "width": 44.328125,
+          "height": 44,
+          "top": 125,
+          "right": 1265.984375,
+          "bottom": 169,
+          "left": 1221.65625
+        },
+        {
+          "label": "Tachado",
+          "x": 1269.984375,
+          "y": 125,
+          "width": 44.34375,
+          "height": 44,
+          "top": 125,
+          "right": 1314.328125,
+          "bottom": 169,
+          "left": 1269.984375
+        },
+        {
+          "label": "Lista",
+          "x": 1318.328125,
+          "y": 125,
+          "width": 44.328125,
+          "height": 44,
+          "top": 125,
+          "right": 1362.65625,
+          "bottom": 169,
+          "left": 1318.328125
+        },
+        {
+          "label": "Lista numerada",
+          "x": 1366.65625,
+          "y": 125,
+          "width": 44.328125,
+          "height": 44,
+          "top": 125,
+          "right": 1410.984375,
+          "bottom": 169,
+          "left": 1366.65625
+        },
+        {
+          "label": "Checklist",
+          "x": 1125,
+          "y": 173,
+          "width": 44.328125,
+          "height": 44,
+          "top": 173,
+          "right": 1169.328125,
+          "bottom": 217,
+          "left": 1125
+        },
+        {
+          "label": "Citação",
+          "x": 1173.328125,
+          "y": 173,
+          "width": 44.328125,
+          "height": 44,
+          "top": 173,
+          "right": 1217.65625,
+          "bottom": 217,
+          "left": 1173.328125
+        },
+        {
+          "label": "Bloco de código",
+          "x": 1221.65625,
+          "y": 173,
+          "width": 44.328125,
+          "height": 44,
+          "top": 173,
+          "right": 1265.984375,
+          "bottom": 217,
+          "left": 1221.65625
+        },
+        {
+          "label": "Alternante",
+          "x": 1269.984375,
+          "y": 173,
+          "width": 44.34375,
+          "height": 44,
+          "top": 173,
+          "right": 1314.328125,
+          "bottom": 217,
+          "left": 1269.984375
+        },
+        {
+          "label": "Destaque",
+          "x": 1318.328125,
+          "y": 173,
+          "width": 44.328125,
+          "height": 44,
+          "top": 173,
+          "right": 1362.65625,
+          "bottom": 217,
+          "left": 1318.328125
+        },
+        {
+          "label": "Link",
+          "x": 1366.65625,
+          "y": 173,
+          "width": 44.328125,
+          "height": 44,
+          "top": 173,
+          "right": 1410.984375,
+          "bottom": 217,
+          "left": 1366.65625
+        },
+        {
+          "label": "H1",
+          "x": 1125,
+          "y": 227,
+          "width": 137,
+          "height": 44,
+          "top": 227,
+          "right": 1262,
+          "bottom": 271,
+          "left": 1125
+        },
+        {
+          "label": "H2",
+          "x": 1125,
+          "y": 277,
+          "width": 137,
+          "height": 44,
+          "top": 277,
+          "right": 1262,
+          "bottom": 321,
+          "left": 1125
+        },
+        {
+          "label": "H3",
+          "x": 1125,
+          "y": 327,
+          "width": 137,
+          "height": 44,
+          "top": 327,
+          "right": 1262,
+          "bottom": 371,
+          "left": 1125
+        },
+        {
+          "label": "H4",
+          "x": 1125,
+          "y": 377,
+          "width": 137,
+          "height": 44,
+          "top": 377,
+          "right": 1262,
+          "bottom": 421,
+          "left": 1125
+        },
+        {
+          "label": "H5",
+          "x": 1125,
+          "y": 427,
+          "width": 137,
+          "height": 44,
+          "top": 427,
+          "right": 1262,
+          "bottom": 471,
+          "left": 1125
+        },
+        {
+          "label": "H6",
+          "x": 1125,
+          "y": 477,
+          "width": 137,
+          "height": 44,
+          "top": 477,
+          "right": 1262,
+          "bottom": 521,
+          "left": 1125
+        },
+        {
+          "label": "P · Parágrafo",
+          "x": 1125,
+          "y": 527,
+          "width": 137,
+          "height": 44,
+          "top": 527,
+          "right": 1262,
+          "bottom": 571,
+          "left": 1125
+        },
+        {
+          "label": "Vermelho",
+          "x": 1274,
+          "y": 227,
+          "width": 137,
+          "height": 44,
+          "top": 227,
+          "right": 1411,
+          "bottom": 271,
+          "left": 1274
+        },
+        {
+          "label": "Amarelo",
+          "x": 1274,
+          "y": 277,
+          "width": 137,
+          "height": 44,
+          "top": 277,
+          "right": 1411,
+          "bottom": 321,
+          "left": 1274
+        },
+        {
+          "label": "Verde",
+          "x": 1274,
+          "y": 327,
+          "width": 137,
+          "height": 44,
+          "top": 327,
+          "right": 1411,
+          "bottom": 371,
+          "left": 1274
+        },
+        {
+          "label": "Azul",
+          "x": 1274,
+          "y": 377,
+          "width": 137,
+          "height": 44,
+          "top": 377,
+          "right": 1411,
+          "bottom": 421,
+          "left": 1274
+        },
+        {
+          "label": "Roxo",
+          "x": 1274,
+          "y": 427,
+          "width": 137,
+          "height": 44,
+          "top": 427,
+          "right": 1411,
+          "bottom": 471,
+          "left": 1274
+        },
+        {
+          "label": "Sem cor",
+          "x": 1274,
+          "y": 477,
+          "width": 137,
+          "height": 44,
+          "top": 477,
+          "right": 1411,
+          "bottom": 521,
+          "left": 1274
+        },
+        {
+          "label": "Remover formatação",
+          "x": 1274,
+          "y": 527,
+          "width": 137,
+          "height": 49,
+          "top": 527,
+          "right": 1411,
+          "bottom": 576,
+          "left": 1274
+        },
+        {
+          "label": "Largura ampla",
+          "x": 1274,
+          "y": 582,
+          "width": 137,
+          "height": 44,
+          "top": 582,
+          "right": 1411,
+          "bottom": 626,
+          "left": 1274
+        }
+      ],
+      "overlaps": []
+    }
+  ],
+  "checks": [
+    "Same editor DOM retained across tools and five viewport widths",
+    "Single main landmark with named editor region",
+    "Modal contains Tab focus and returns to trigger with Escape"
+  ],
+  "errors": [],
+  "tabFocus": [
+    {
+      "tag": "BUTTON",
+      "text": "Fechar ferramenta",
+      "inDialog": true
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "inDialog": true
+    },
+    {
+      "tag": "SELECT",
+      "text": "Página principal",
+      "inDialog": true
+    },
+    {
+      "tag": "SELECT",
+      "text": "Sem referência",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Iniciante (1 de 5)",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Básico (2 de 5)",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Intermediário (3 de 5)",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Bom (4 de 5)",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Domino (5 de 5)",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Aplicar alterações",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Fechar ferramenta",
+      "inDialog": true
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "inDialog": true
+    }
+  ],
+  "contrasts": [
+    {
+      "selector": ".tiptap",
+      "color": "rgb(237, 238, 245)",
+      "background": "rgb(23, 24, 30)",
+      "ratio": 15.305053587239842
+    },
+    {
+      "selector": "[data-testid=\"save-status\"]",
+      "color": "rgb(187, 172, 255)",
+      "background": "rgb(23, 24, 30)",
+      "ratio": 8.819092478866473
+    },
+    {
+      "selector": "[data-testid=\"rail-save\"]",
+      "color": "rgb(33, 23, 56)",
+      "background": "rgb(187, 172, 255)",
+      "ratio": 8.40449882056577
+    },
+    {
+      "selector": "[aria-label=\"Nome da página\"]",
+      "color": "rgb(237, 238, 245)",
+      "background": "rgb(23, 24, 30)",
+      "ratio": 15.305053587239842
+    }
+  ]
+}

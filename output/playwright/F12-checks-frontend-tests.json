@@ -1,0 +1,12 @@
+{
+  "name": "frontend-tests",
+  "passed": true,
+  "seconds": 14.208,
+  "verifiedAt": "2026-11-17T12:52:05.348Z",
+  "summary": [
+    "Test Suites: 19 passed, 19 total",
+    "Tests:       141 passed, 141 total",
+    "Snapshots:   0 total",
+    "Time:        13.708 s"
+  ]
+}

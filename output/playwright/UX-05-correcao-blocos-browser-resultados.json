@@ -1,0 +1,109 @@
+{
+  "state": "VERIFICADO COM LIMITES",
+  "database": "biblioteca_test_ux05_20261115",
+  "checks": [
+    "Duplicação conserva japonês e links",
+    "Mover e duplicar têm passos independentes de undo e conservam HTML",
+    "Conversão que apagaria marcas/link fica indisponível",
+    "Transformação preserva seleção de texto",
+    "Transformação preserva link e negrito",
+    "Barra dentro de código permanece texto",
+    "Comando / filtra e insere bloco de código real",
+    "Busca sem resultados mantém texto",
+    "Escape fecha menu antes de sair do foco",
+    "Escape de menu não sai da página",
+    "Alternante usa título atualizado",
+    "Renomear alternante por teclado permite desfazer",
+    "Abrir/fechar alternante persiste estado real",
+    "Undo do alternante não é revertido por evento nativo",
+    "Composição sintética não captura /",
+    "Composição sintética não captura Enter",
+    "Composição sintética não captura ArrowDown",
+    "Composição sintética não captura Escape",
+    "Composição sintética não abre menu",
+    "Eventos de composição não alteram JSON",
+    "Menus e materiais preservam a instância do editor",
+    "Referência de página por ID preservada",
+    "Operações de bloco preservam material por ID",
+    "Linguagem e texto do código legado preservados",
+    "H6 legado preservado em nova leitura HTTP",
+    "Tarefas e aninhamento preservados em nova leitura HTTP",
+    "Recarga recupera blocos editados do PostgreSQL",
+    "Menu e documento sem overflow em 320px",
+    "Alvos de menu >=44px em 320px",
+    "Escape retorna foco ao acionador em 320px",
+    "Menu e documento sem overflow em 375px",
+    "Alvos de menu >=44px em 375px",
+    "Escape retorna foco ao acionador em 375px",
+    "Menu e documento sem overflow em 768px",
+    "Alvos de menu >=44px em 768px",
+    "Escape retorna foco ao acionador em 768px",
+    "Menu e documento sem overflow em 1024px",
+    "Alvos de menu >=44px em 1024px",
+    "Escape retorna foco ao acionador em 1024px",
+    "Menu e documento sem overflow em 1440px",
+    "Alvos de menu >=44px em 1440px",
+    "Escape retorna foco ao acionador em 1440px",
+    "Acionador de bloco funciona por toque em contexto com hasTouch",
+    "Documento com mídia/referências ainda não suportadas bloqueia edição destrutiva",
+    "Salvar metadados preserva JSON original com IDs de mídia/referência",
+    "Conflito real 409 mantém a alteração local no editor",
+    "Conflito real não sobrescreve a versão concorrente",
+    "Undo continua disponível após conflito",
+    "Sem exceções JavaScript no navegador"
+  ],
+  "viewports": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "menu": {
+        "x": 12,
+        "y": 468,
+        "width": 296,
+        "height": 420
+      }
+    },
+    {
+      "width": 375,
+      "scrollWidth": 375,
+      "menu": {
+        "x": 20,
+        "y": 456,
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "menu": {
+        "x": 44,
+        "y": 416.5,
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "menu": {
+        "x": 132,
+        "y": 416.5,
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "menu": {
+        "x": 456,
+        "y": 417.6875,
+        "width": 300,
+        "height": 420
+      }
+    }
+  ],
+  "errors": [],
+  "ime": "NÃO EXECUTADO — IME físico. Eventos sintéticos não comprovam composição real."
+}

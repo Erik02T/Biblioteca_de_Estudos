@@ -1,0 +1,86 @@
+{
+  "verifiedAt": "2026-11-17T13:30:53.898Z",
+  "engine": "chromium",
+  "script": "compatibility",
+  "seconds": 7.263,
+  "passed": true,
+  "checks": [
+    {
+      "name": "legacy: servidor retém texto editado",
+      "passed": true
+    },
+    {
+      "name": "legacy: reabrir preserva a edição",
+      "passed": true
+    },
+    {
+      "name": "Referência legada resolve o destino sem perder identidade",
+      "passed": true
+    },
+    {
+      "name": "legacyReference: servidor retém texto editado",
+      "passed": true
+    },
+    {
+      "name": "Referência legada normaliza pageId para targetPageId",
+      "passed": true
+    },
+    {
+      "name": "legacyReference: reabrir preserva a edição",
+      "passed": true
+    },
+    {
+      "name": "versioned: servidor retém texto editado",
+      "passed": true
+    },
+    {
+      "name": "schemaVersion conhecido permanece no documento salvo",
+      "passed": true
+    },
+    {
+      "name": "versioned: reabrir preserva a edição",
+      "passed": true
+    },
+    {
+      "name": "unknownNode: corpo incompatível bloqueado com aviso",
+      "passed": true
+    },
+    {
+      "name": "unknownNode: alterar metadados não envia conteudo",
+      "passed": true
+    },
+    {
+      "name": "unknownNode: JSON original permanece idêntico no servidor",
+      "passed": true
+    },
+    {
+      "name": "unknownRoot: corpo incompatível bloqueado com aviso",
+      "passed": true
+    },
+    {
+      "name": "unknownRoot: alterar metadados não envia conteudo",
+      "passed": true
+    },
+    {
+      "name": "unknownRoot: JSON original permanece idêntico no servidor",
+      "passed": true
+    },
+    {
+      "name": "future: corpo incompatível bloqueado com aviso",
+      "passed": true
+    },
+    {
+      "name": "future: alterar metadados não envia conteudo",
+      "passed": true
+    },
+    {
+      "name": "future: JSON original permanece idêntico no servidor",
+      "passed": true
+    },
+    {
+      "name": "Compatibilidade sem erro de execução",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

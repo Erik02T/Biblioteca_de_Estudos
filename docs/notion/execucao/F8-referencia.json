@@ -1,0 +1,20 @@
+{
+  "createdAt": "2026-11-16T14:37:48.280Z",
+  "timezone": "America/Fortaleza",
+  "head": "f87fdbcda593e7005ea43eaa229bb8b09cbc9990",
+  "branch": "refactor/cleanup-general",
+  "sourceFingerprint": "50db62e9f9ac72df08bd8154575d3c116d4b69cae333d83ce5e7775b1fddad16",
+  "archiveSha256": "aed3d1a42bd870fb28ea80732e3552aa50313609f469dbb089ca58ea8b8f43ef",
+  "fileCount": 201,
+  "archive": ".f8-artifacts/source.zip",
+  "manifest": ".f8-artifacts/reference.json",
+  "trackedPatch": ".f8-artifacts/tracked.patch",
+  "evidence": {
+    "backend-tests.json": "cf7ffc833433f9b62c3d7c2690976a75f67931a9f8115077793ff8a8ea0ff8a6",
+    "frontend-tests.json": "8e711b0b964ab19a86bfd16141a7d0d19c0500975e085e628c2cd18241509b76",
+    "http-e2e.json": "9d0cc012abc7f58601b6e172031dffcf9f4d89ea5fa7074e3471c10f450dd61f",
+    "upgrade.json": "ef472ca25231326b650d21ecd24a13c2ccefeb37153da9d1ac6ecc78dabcf38d",
+    "browser-result.json": "5705750e32f4bdc70095734d3d75a471753c76a1f69e95e53a9d7af340f690ad",
+    "f7-audit.json": "f74d4900f3c4c79ac508a8be60e9382451efe65daa5b48ccac8a3936fbb7e3d8"
+  }
+}

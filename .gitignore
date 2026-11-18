@@ -8,6 +8,9 @@ frontend/.env*
 **/node_modules/
 backend/dist/
 frontend/.next/
+frontend/.next-f10/
+frontend/.next-f11/
+frontend/.next-f12/
 frontend/out/
 coverage/
 .turbo/
@@ -19,6 +22,17 @@ Thumbs.db
 
 # Local archives and test artifacts
 *.zip
+!output/playwright/F10-documento-misto.zip
+!output/playwright/F12-chromium-F10-documento-misto.zip
+!output/playwright/F12-firefox-F10-documento-misto.zip
+!output/playwright/UX-05-correcao-exportacao.zip
+!output/playwright/UX-05-exportacao.zip
+.f7-artifacts/
+.f8-artifacts/
+.f12-artifacts/
+.playwright-mcp/
+.playwright-cli/
+backend/f7-lint.json
 
 # Temporary extracted files
 files_extracted/

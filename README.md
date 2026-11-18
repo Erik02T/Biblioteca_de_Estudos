@@ -1,197 +1,23 @@
-# Biblioteca do Conhecimento
+# Biblioteca de Estudos
 
-Aplicação web para organizar conhecimentos, matérias e projetos em uma biblioteca pessoal. O projeto permite separar áreas por seção e status de estudo, editar conteúdo com formatação rica e associar links, imagens e arquivos a cada bloco.
+Biblioteca pessoal de páginas hierárquicas para organizar estudos e projetos, com editor por blocos, materiais anexados, busca, tabela/quadro, modelos, versões e exportação.
 
-## Pra que serve
+A entrega F12 inclui fontes, migrações, testes e evidências públicas versionados. A [homologação F12](docs/notion/execucao/F12.md) e seu [manifesto](output/playwright/F12-codigo.json) registram o estado e os limites daquela rodada local. A [preparação posterior de commits](docs/development/PRONTIDAO_F12.md) registra as correções de instalação/CI e suas verificações atuais.
 
-A Biblioteca do Conhecimento resolve o problema de espalhar anotações entre matérias, projetos e referências sem uma organização consistente. Cada assunto fica em uma área própria, dentro de uma das quatro seções fixas, com categoria, nível de entendimento, conteúdo editável e anexos relacionados.
+## Começar
 
-## Como foi planejado
+- [Índice e mapa do repositório](docs/README.md)
+- [Setup, comandos e testes](docs/development/DESENVOLVIMENTO.md)
+- [Arquitetura atual](docs/development/ARQUITETURA.md)
+- [Operação local e recuperação](docs/deployment/OPERACAO_LOCAL.md)
+- [Prontidão dos commits](docs/development/PRONTIDAO_F12.md) e [runbook de publicação](docs/deployment/PUBLICACAO_F12.md)
 
-O projeto foi dividido em fases incrementais, validando a base antes de adicionar novas telas:
+No ambiente já configurado, inicie o backend em `backend/` com `npm.cmd run start:dev` e o frontend em `frontend/` com `npm.cmd run dev -- --port 3001`. API: `http://localhost:3000`; interface: `http://localhost:3001`. Em outros shells, use `npm` no lugar de `npm.cmd`. Confira o setup antes de instalar dependências ou aplicar migrações a um acervo existente.
 
-0. Infraestrutura de desenvolvimento com Docker Compose.
-1. Modelagem de dados com Prisma e PostgreSQL.
-2. CRUD de áreas e anexos no backend.
-3. Navegação e listagem no frontend.
-4. Formulário de criação, edição e exclusão de blocos.
-5. Editor rico com Tiptap, headings h1-h6, destaque multicolorido e autosave.
-6. Links, imagens e arquivos anexados às áreas.
+## Fontes e aceite
 
-### Decisões de arquitetura
+NestJS, Prisma/PostgreSQL e storage S3 compatível sustentam a API; Next.js/React e Tiptap sustentam a interface. Os [documentos de requisitos](docs/notion/Engenharia_Reversa_Notion_Biblioteca/08_Requisitos_e_Historias.md) e de [rastreabilidade](docs/notion/Engenharia_Reversa_Notion_Biblioteca/14_Rastreabilidade_e_Testes.md) preservam RF-001–026 e CT/QA; a [matriz F12](docs/notion/execucao/F12-testes.md) registra os resultados finais.
 
-- **NestJS no backend:** organiza a API em módulos, controllers, services e DTOs com validação.
-- **Prisma + PostgreSQL:** fornece migrations versionadas, enums para os valores fixos e uma relação explícita entre áreas e anexos.
-- **Next.js no frontend:** concentra a aplicação web em uma interface React com navegação client-side.
-- **Tiptap:** permite persistir o conteúdo do editor como JSON estruturado, mantendo headings e destaques editáveis.
-- **Autenticação por JWT e sessão:** o frontend usa access tokens curtos e refresh tokens rotativos. O backend deriva o usuário do claim `sub`, persiste sessões para renovação/revogação e aplica ownership nas consultas.
+Os relatórios [F8](docs/notion/execucao/F8.md), [F11](docs/notion/execucao/F11.md) e demais fases são registros históricos. Não representam pendências atuais quando uma fase posterior registra sua resolução. O [resultado consolidado F12](output/playwright/F12-resultados.json) distingue testes automatizados, aceite humano e limitações aceitas. Publicação é uma ação separada.
 
-## Como foi implementado
-
-### Modelo de dados
-
-O banco possui duas entidades principais:
-
-- **Area:** pertence a um `userId`, possui uma seção (`LINGUAGENS`, `FACULDADE`, `PROJETOS` ou `OUTROS`), uma subseção (`ESTUDANDO` ou `ESTUDADO`), nome, categoria, nível de entendimento, ícone e conteúdo JSON do Tiptap.
-- **Attachment:** representa um link, imagem ou arquivo associado a uma `Area`. A relação usa exclusão em cascata no banco.
-
-O backend também possui upload compatível com S3/R2/MinIO. O endpoint de upload salva o objeto e cria o `Attachment` na mesma operação lógica; se a persistência no banco falhar, o objeto enviado é removido do storage como compensação.
-
-### Estrutura do repositório
-
-```text
-.
-├── backend/                 # API NestJS
-│   ├── prisma/             # Schema e migrations do banco
-│   ├── scripts/            # Scripts de validação
-│   └── src/                # Código fonte (areas, attachments, auth, etc.)
-├── frontend/               # Aplicação Next.js
-│   ├── public/             # Arquivos estáticos
-│   └── src/app/            # Componentes e páginas
-├── docs/                   # Documentação organizada
-│   ├── development/        # Guias de desenvolvimento e testes
-│   ├── deployment/         # Documentação de produção e homologação
-│   └── archive/            # Relatórios históricos de fases
-├── docker-compose.yml      # Infraestrutura local (PostgreSQL + MinIO)
-└── env.example             # Template de variáveis de ambiente
-```
-
-Para mais detalhes, consulte a [documentação completa](docs/README.md).
-
-## Como usar
-
-### Pré-requisitos
-
-- Git
-- Node.js compatível com os tipos usados no projeto, preferencialmente Node.js 20 ou superior
-- npm
-- Docker Desktop com Docker Compose
-- Uma conta no storage S3/R2, ou um MinIO local configurado para o upload de anexos
-
-### Clonar e instalar
-
-```bash
-git clone https://github.com/Erik02T/Biblioteca_de_Estudos.git
-cd Biblioteca_de_Estudos
-
-cd backend
-npm install
-cd ../frontend
-npm install
-cd ..
-```
-
-### Subir a infraestrutura local
-
-```bash
-docker compose up -d
-docker compose ps
-```
-
-O Compose inicia:
-
-- PostgreSQL em `localhost:5432`
-- MinIO API em `localhost:9000`
-- MinIO Console em `http://localhost:9001`
-
-### Configurar variáveis de ambiente
-
-Copie o exemplo para um arquivo local e preencha as credenciais do storage:
-
-```powershell
-Copy-Item env.example .env
-Copy-Item env.example backend\.env
-```
-
-```bash
-cp env.example .env
-cp env.example backend/.env
-```
-
-O arquivo não deve ser commitado. Os valores mínimos são:
-
-```env
-DATABASE_URL="postgresql://usuario:senha@localhost:5432/biblioteca_estudos"
-FRONTEND_URL="http://localhost:3001"
-JWT_SECRET="substitua-por-um-segredo-aleatorio-real-de-pelo-menos-32-bytes"
-STORAGE_BUCKET="biblioteca-estudos"
-STORAGE_PUBLIC_URL="http://localhost:9000/biblioteca-estudos"
-STORAGE_ENDPOINT="http://localhost:9000"
-STORAGE_REGION="us-east-1"
-STORAGE_ACCESS_KEY_ID="SUA_ACCESS_KEY"
-STORAGE_SECRET_ACCESS_KEY="SUA_SECRET_KEY"
-STORAGE_FORCE_PATH_STYLE="true"
-STORAGE_SIGNED_URLS="true"
-STORAGE_URL_EXPIRES_IN="3600"
-```
-
-O bucket e as credenciais do MinIO precisam existir antes de testar uploads. Para links, áreas e editor, apenas o PostgreSQL é necessário.
-
-Para configurar o MinIO localmente, abra `http://localhost:9001` e entre com:
-
-- Usuário: `SEU_USUARIO_MINIO`
-- Senha: `SUA_SENHA_MINIO`
-
-Crie o bucket `biblioteca-estudos`. O sistema utiliza **storage privado por padrão**, gerando URLs assinadas temporárias com tempo de expiração configurável via `STORAGE_URL_EXPIRES_IN` (padrão 3600s / 1h). Isso garante que arquivos da sua biblioteca pessoal não fiquem expostos publicamente de forma aberta.
-
-
-> Observação: o Prisma CLI lê `backend/.env` durante as migrations. O processo Nest também precisa receber `DATABASE_URL` e as demais variáveis no ambiente em que for iniciado. Em shells que não carregam `.env` automaticamente, exporte-as antes de iniciar o backend ou use uma ferramenta de carregamento de ambiente.
-
-### Rodar as migrations
-
-```bash
-cd backend
-npx prisma migrate deploy
-npx prisma generate
-```
-
-Durante o desenvolvimento, quando houver uma alteração no schema, use:
-
-```bash
-npx prisma migrate dev --name nome_da_mudanca
-```
-
-### Iniciar o backend
-
-Em um terminal, com as variáveis de ambiente disponíveis:
-
-```bash
-cd backend
-npm run start:dev
-```
-
-A API ficará disponível em `http://localhost:3000`.
-
-### Iniciar o frontend
-
-Em outro terminal:
-
-```bash
-cd frontend
-npm run dev
-```
-
-Abra `http://localhost:3001`. Para usar outra URL da API, defina `NEXT_PUBLIC_API_URL` antes de iniciar o frontend.
-
-### Testes e validações
-
-```bash
-cd backend
-npm test
-npm run test:e2e
-npm run build
-
-cd ../frontend
-npm run lint
-npm run build
-```
-
-## Revisão rápida para quem acabou de clonar
-
-- O Docker Compose fornece PostgreSQL e MinIO, mas não cria automaticamente o bucket do MinIO.
-- O upload de imagem/arquivo depende de um storage configurado; adicionar links não depende dele.
-- O backend exige `Authorization: Bearer <accessToken>` nas rotas de áreas e anexos; `X-User-Id` não é aceito.
-- `POST /auth/register` e `POST /auth/login` retornam access token (15 minutos) e refresh token (30 dias). Use `POST /auth/refresh` para renovar e `POST /auth/logout` para revogar a sessão.
-- Gere um `JWT_SECRET` diferente por ambiente e nunca use o valor de exemplo em produção.
-- O frontend espera a API em `http://localhost:3000` e normalmente roda em `http://localhost:3001`.
-- O processo Nest precisa receber `DATABASE_URL`; copiar o arquivo de ambiente sem carregá-lo no processo pode causar erro de conexão.
+A organização documental desta rodada, suas verificações e a recuperação estão no [relatório pós-F12](docs/archive/ORGANIZACAO_POS_F12.md).

@@ -1,0 +1,384 @@
+{
+  "verifiedAt": "2026-11-17T13:50:23.697Z",
+  "passed": true,
+  "status": "HOMOLOGADO_NO_RECORTE_F12",
+  "automatedPassed": true,
+  "humanPassed": true,
+  "limitationsAccepted": true,
+  "requirements": [
+    {
+      "name": "backend-tests",
+      "evidence": "F12-checks-backend-tests.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:20:47.455Z",
+      "summary": [
+        "Test Suites: 29 passed, 29 total",
+        "Tests:       168 passed, 168 total",
+        "Snapshots:   0 total",
+        "Time:        21.009 s, estimated 22 s"
+      ]
+    },
+    {
+      "name": "backend-http-mocked",
+      "evidence": "F12-checks-backend-http-mocked.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T12:31:54.902Z",
+      "summary": [
+        "Test Suites: 1 passed, 1 total",
+        "Tests:       26 passed, 26 total",
+        "Snapshots:   0 total",
+        "Time:        6.586 s"
+      ]
+    },
+    {
+      "name": "backend-lint",
+      "evidence": "F12-checks-backend-lint.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:20:55.007Z",
+      "summary": []
+    },
+    {
+      "name": "frontend-tests",
+      "evidence": "F12-checks-frontend-tests.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T12:52:05.348Z",
+      "summary": [
+        "Test Suites: 19 passed, 19 total",
+        "Tests:       141 passed, 141 total",
+        "Snapshots:   0 total",
+        "Time:        13.708 s"
+      ]
+    },
+    {
+      "name": "frontend-lint",
+      "evidence": "F12-checks-frontend-lint.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:18:18.322Z",
+      "summary": []
+    },
+    {
+      "name": "frontend-build",
+      "evidence": "F12-checks-frontend-build.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:18:24.087Z",
+      "summary": []
+    },
+    {
+      "name": "chromium/journey",
+      "evidence": "F12-chromium-journey-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:30:43.860Z",
+      "checks": 14
+    },
+    {
+      "name": "chromium/compatibility",
+      "evidence": "F12-chromium-compatibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:30:53.898Z",
+      "checks": 19
+    },
+    {
+      "name": "chromium/surfaces",
+      "evidence": "F12-chromium-surfaces-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:30:58.564Z",
+      "checks": 26
+    },
+    {
+      "name": "chromium/accessibility",
+      "evidence": "F12-chromium-accessibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:03.200Z"
+    },
+    {
+      "name": "chromium/clipboard",
+      "evidence": "F12-chromium-clipboard-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:07.699Z",
+      "checks": 4
+    },
+    {
+      "name": "chromium/native-paste-before",
+      "evidence": "F12-chromium-native-paste-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:11.199Z"
+    },
+    {
+      "name": "chromium/native-paste-after",
+      "evidence": "F12-chromium-native-paste-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:13.455Z",
+      "checks": 2
+    },
+    {
+      "name": "chromium/integrity",
+      "evidence": "F12-chromium-integrity-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:31:19.732Z",
+      "checks": 5
+    },
+    {
+      "name": "chromium/trash",
+      "evidence": "F12-chromium-trash-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:36:47.228Z",
+      "checks": 5
+    },
+    {
+      "name": "chromium/recovery-before",
+      "evidence": "F12-chromium-recovery-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:36:51.475Z"
+    },
+    {
+      "name": "chromium/recovery-after",
+      "evidence": "F12-chromium-recovery-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:40.570Z",
+      "checks": 2
+    },
+    {
+      "name": "chromium/performance",
+      "evidence": "F12-chromium-performance-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T12:59:03.878Z"
+    },
+    {
+      "name": "chromium/replay-f9-navigation",
+      "evidence": "F12-chromium-replay-f9-navigation-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:51.083Z"
+    },
+    {
+      "name": "chromium/replay-f9-presentation",
+      "evidence": "F12-chromium-replay-f9-presentation-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:58.276Z"
+    },
+    {
+      "name": "chromium/replay-f9-icon",
+      "evidence": "F12-chromium-replay-f9-icon-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:45:31.025Z"
+    },
+    {
+      "name": "chromium/replay-f10-setup",
+      "evidence": "F12-chromium-replay-f10-setup-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:09:23.718Z"
+    },
+    {
+      "name": "chromium/replay-f10-browser",
+      "evidence": "F12-chromium-replay-f10-browser-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:10:23.176Z",
+      "checks": 22
+    },
+    {
+      "name": "chromium/replay-f10-operations",
+      "evidence": "F12-chromium-replay-f10-operations-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:11:55.812Z",
+      "checks": 14
+    },
+    {
+      "name": "chromium/replay-f10-portability",
+      "evidence": "F12-chromium-replay-f10-portability-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:13:39.996Z",
+      "checks": 6
+    },
+    {
+      "name": "chromium/replay-f11-setup",
+      "evidence": "F12-chromium-replay-f11-setup-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:27:19.239Z"
+    },
+    {
+      "name": "chromium/replay-f11-collections",
+      "evidence": "F12-chromium-replay-f11-collections-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:27:23.536Z",
+      "checks": 10
+    },
+    {
+      "name": "chromium/replay-f11-models",
+      "evidence": "F12-chromium-replay-f11-models-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:27:28.035Z",
+      "checks": 6
+    },
+    {
+      "name": "chromium/forced-exit",
+      "evidence": "F12-chromium-forced-exit-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:36:51.799Z"
+    },
+    {
+      "name": "firefox/journey",
+      "evidence": "F12-firefox-journey-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:15.485Z",
+      "checks": 14
+    },
+    {
+      "name": "firefox/compatibility",
+      "evidence": "F12-firefox-compatibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:25.971Z",
+      "checks": 19
+    },
+    {
+      "name": "firefox/surfaces",
+      "evidence": "F12-firefox-surfaces-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:32.404Z",
+      "checks": 26
+    },
+    {
+      "name": "firefox/accessibility",
+      "evidence": "F12-firefox-accessibility-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:37.942Z"
+    },
+    {
+      "name": "firefox/clipboard",
+      "evidence": "F12-firefox-clipboard-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:42.512Z",
+      "checks": 3
+    },
+    {
+      "name": "firefox/native-paste-before",
+      "evidence": "F12-firefox-native-paste-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:46.158Z"
+    },
+    {
+      "name": "firefox/native-paste-after",
+      "evidence": "F12-firefox-native-paste-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:48.426Z",
+      "checks": 2
+    },
+    {
+      "name": "firefox/integrity",
+      "evidence": "F12-firefox-integrity-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:55.529Z",
+      "checks": 5
+    },
+    {
+      "name": "firefox/trash",
+      "evidence": "F12-firefox-trash-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:59.648Z",
+      "checks": 5
+    },
+    {
+      "name": "firefox/recovery-before",
+      "evidence": "F12-firefox-recovery-before-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:41:03.960Z"
+    },
+    {
+      "name": "firefox/recovery-after",
+      "evidence": "F12-firefox-recovery-after-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:42:42.815Z",
+      "checks": 2
+    },
+    {
+      "name": "firefox/performance",
+      "evidence": "F12-firefox-performance-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:04:25.805Z"
+    },
+    {
+      "name": "firefox/replay-f9-navigation",
+      "evidence": "F12-firefox-replay-f9-navigation-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:44:02.919Z"
+    },
+    {
+      "name": "firefox/replay-f9-presentation",
+      "evidence": "F12-firefox-replay-f9-presentation-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:44:10.509Z"
+    },
+    {
+      "name": "firefox/replay-f9-icon",
+      "evidence": "F12-firefox-replay-f9-icon-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:45:37.064Z"
+    },
+    {
+      "name": "firefox/replay-f10-setup",
+      "evidence": "F12-firefox-replay-f10-setup-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:08.011Z"
+    },
+    {
+      "name": "firefox/replay-f10-browser",
+      "evidence": "F12-firefox-replay-f10-browser-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:22.526Z",
+      "checks": 22
+    },
+    {
+      "name": "firefox/replay-f10-operations",
+      "evidence": "F12-firefox-replay-f10-operations-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:39.312Z",
+      "checks": 14
+    },
+    {
+      "name": "firefox/replay-f10-portability",
+      "evidence": "F12-firefox-replay-f10-portability-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:45.954Z",
+      "checks": 6
+    },
+    {
+      "name": "firefox/replay-f11-setup",
+      "evidence": "F12-firefox-replay-f11-setup-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:29:32.136Z"
+    },
+    {
+      "name": "firefox/replay-f11-collections",
+      "evidence": "F12-firefox-replay-f11-collections-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:29:37.272Z",
+      "checks": 10
+    },
+    {
+      "name": "firefox/replay-f11-models",
+      "evidence": "F12-firefox-replay-f11-models-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:29:42.382Z",
+      "checks": 6
+    },
+    {
+      "name": "firefox/forced-exit",
+      "evidence": "F12-firefox-forced-exit-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:41:04.281Z"
+    },
+    {
+      "name": "recovery",
+      "evidence": "F12-recovery-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:46:50.012Z"
+    },
+    {
+      "name": "offline-exports",
+      "evidence": "F12-exports-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:40:11.905Z"
+    }
+  ],
+  "humanEvidence": "F12-aceite-humano.json",
+  "codeReference": "F12-codigo.json",
+  "publicationPerformed": false
+}

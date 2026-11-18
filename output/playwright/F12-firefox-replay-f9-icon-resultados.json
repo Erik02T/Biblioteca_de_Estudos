@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-11-17T13:45:37.064Z",
+  "engine": "firefox",
+  "script": "replay-f9-icon",
+  "seconds": 1.064,
+  "chosen": true,
+  "removed": false,
+  "reopen": true,
+  "passed": true
+}

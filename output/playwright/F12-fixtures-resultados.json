@@ -1,0 +1,23 @@
+{
+  "createdAt": "2026-11-17T12:10:24.503Z",
+  "volumePages": 1000,
+  "shortDocuments": 900,
+  "hundredBlockDocuments": 90,
+  "thousandBlockDocuments": 10,
+  "maximumDepth": 5,
+  "physicalObjects": 100,
+  "browserFixtures": [
+    "chromium",
+    "firefox",
+    "human"
+  ],
+  "accounts": [
+    "volume",
+    "chromium",
+    "firefox",
+    "other",
+    "human"
+  ],
+  "deterministicIds": true,
+  "personalDataUsed": false
+}

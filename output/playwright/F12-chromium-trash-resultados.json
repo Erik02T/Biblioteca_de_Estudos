@@ -1,0 +1,31 @@
+{
+  "verifiedAt": "2026-11-17T13:36:47.228Z",
+  "engine": "chromium",
+  "script": "trash",
+  "seconds": 1.518,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Restaurar ramo pela interface conserva exclusão anterior da filha",
+      "passed": true
+    },
+    {
+      "name": "Cancelar confirmação não envia purge",
+      "passed": true
+    },
+    {
+      "name": "Falha de limpeza preserva o cartão e a possibilidade de repetição",
+      "passed": true
+    },
+    {
+      "name": "Purge confirmado usa revisão exibida e retorna ID removido",
+      "passed": true
+    },
+    {
+      "name": "Lixeira é relida após a exclusão definitiva",
+      "passed": true
+    }
+  ],
+  "confirmationChoice": "window.confirm return values injected; gating also covered by React integration test",
+  "failureInjection": "503 UI route only; real partial storage failure and retry covered by PostgreSQL/MinIO integration"
+}

@@ -1,0 +1,30 @@
+{
+  "verifiedAt": "2026-11-17T13:40:11.905Z",
+  "passed": true,
+  "archives": [
+    {
+      "engine": "chromium",
+      "name": "F12-chromium-F10-documento-misto.zip",
+      "sha256": "5440a3cff6daf5450e2e938c9fe07a69e76eb1386141731a6f493bc4eba2babe",
+      "bytes": 5035,
+      "pages": 1,
+      "verifiedEntries": 7,
+      "limitations": [
+        "Alternantes são expandidos no Markdown."
+      ],
+      "offlineVerification": true
+    },
+    {
+      "engine": "firefox",
+      "name": "F12-firefox-F10-documento-misto.zip",
+      "sha256": "00e46d2474a0848a3d1309c0710e3a49c73df11f1a1145cc61a43504c2793403",
+      "bytes": 5045,
+      "pages": 1,
+      "verifiedEntries": 7,
+      "limitations": [
+        "Alternantes são expandidos no Markdown."
+      ],
+      "offlineVerification": true
+    }
+  ]
+}

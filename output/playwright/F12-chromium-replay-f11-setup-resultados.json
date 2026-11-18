@@ -1,0 +1,9 @@
+{
+  "verifiedAt": "2026-11-17T13:27:19.239Z",
+  "engine": "chromium",
+  "script": "replay-f11-setup",
+  "seconds": 1.6,
+  "source": "233b9344-f9b8-4699-83a8-196ae16bfa5e",
+  "pages": 26,
+  "passed": true
+}

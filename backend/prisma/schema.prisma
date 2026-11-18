@@ -25,10 +25,36 @@ enum AttachmentType {
   ARQUIVO
 }
 
+enum ViewLayout {
+  LIST
+  TABLE
+  BOARD
+}
+
+enum ViewScope {
+  ROOTS
+  ALL
+}
+
+enum TemplateType {
+  NOTE
+  LECTURE
+  PROJECT
+}
+
 model Area {
   id                 String         @id @default(uuid())
   userId             String
   user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId           String?
+  parent             Area?          @relation("AreaParent", fields: [parentId], references: [id], onDelete: SetNull)
+  targetPageId       String?
+  targetPage         Area?          @relation("AreaTarget", fields: [targetPageId], references: [id], onDelete: SetNull)
+  coverAttachmentId  String?
+  coverAttachment    Attachment?    @relation("AreaCover", fields: [coverAttachmentId], references: [id], onDelete: SetNull)
+  coverPosition      Float          @default(50)
+  fullWidth          Boolean        @default(false)
+  sortOrder          Int            @default(0)
   section            SectionType
   subSection         SubSectionType
   nome               String
@@ -36,33 +62,52 @@ model Area {
   nivelEntendimento  Int            @default(0)
   icone              String?
   conteudo           Json           @default("{}")
-  attachments        Attachment[]
+  isFavorite         Boolean        @default(false)
+  lastOpenedAt       DateTime?
+  deletedAt          DateTime?
+  deletionBatchId    String?
+  attachments        Attachment[]   @relation("AreaAttachments")
+  revisions          PageRevision[]
+  creationRequests   AreaCreationRequest[]
+  opening            AreaOpening?
+  children           Area[]         @relation("AreaParent")
+  referencedBy       Area[]         @relation("AreaTarget")
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
   @@index([userId, section, subSection, updatedAt])
+  @@index([userId, parentId, section, subSection, updatedAt])
+  @@index([userId, parentId, section, subSection, sortOrder, id])
+  @@index([userId, targetPageId, deletedAt])
+  @@index([userId, deletedAt, isFavorite, updatedAt])
+  @@index([userId, deletionBatchId])
 }
 
 model Attachment {
-  id        String         @id @default(uuid())
-  tipo      AttachmentType
-  url       String
-  nome      String?
-  areaId    String
-  area      Area           @relation(fields: [areaId], references: [id], onDelete: Cascade)
-  createdAt DateTime       @default(now())
+  id         String         @id @default(uuid())
+  tipo       AttachmentType
+  url        String
+  nome       String?
+  areaId     String
+  area       Area           @relation("AreaAttachments", fields: [areaId], references: [id], onDelete: Cascade)
+  usedAsCover Area[]        @relation("AreaCover")
+  createdAt  DateTime       @default(now())
 
   @@index([areaId])
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  passwordHash String
-  areas        Area[]
-  sessions     Session[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                  String              @id @default(uuid())
+  email               String              @unique
+  passwordHash        String
+  areas               Area[]
+  sessions            Session[]
+  viewConfigurations  ViewConfiguration[]
+  templates           Template[]
+  creationRequests    AreaCreationRequest[]
+  openings            AreaOpening[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 }
 
 model Session {
@@ -76,4 +121,109 @@ model Session {
   lastUsedAt       DateTime?
 
   @@index([userId, revokedAt, expiresAt])
+}
+
+// Retain the receipt after purge so a delayed retry cannot recreate a page.
+model AreaCreationRequest {
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key         String
+  requestHash String
+  areaId      String?
+  area        Area?    @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@id([userId, key])
+}
+
+model ViewConfiguration {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  layout      ViewLayout @default(LIST)
+  scope       ViewScope  @default(ROOTS)
+  section     SectionType?
+  subSection  SubSectionType?
+  filters     Json       @default("{}")
+  orderBy     String     @default("updatedAt")
+  orderDirection String  @default("desc")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([userId, name, section, subSection])
+  @@index([userId, section, subSection])
+}
+
+model Template {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  type        TemplateType
+  section     SectionType
+  subSection  SubSectionType
+  content     Json         @default("{}")
+  metadata    Json         @default("{}")
+  deletedAt   DateTime?
+  files       TemplateFile[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId, type, section, subSection])
+}
+
+// Opening a document must not advance Area's monotonic content revision.
+model AreaOpening {
+  areaId       String   @id
+  area         Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastOpenedAt DateTime @default(now())
+
+  @@index([userId, lastOpenedAt, areaId])
+}
+
+model TemplateFile {
+  id           String         @id @default(uuid())
+  templateId   String
+  template     Template       @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  attachmentId String
+  tipo         AttachmentType
+  nome         String?
+  storageKey   String?
+  linkUrl      String?
+  sha256       String?
+
+  @@unique([templateId, attachmentId])
+}
+
+model PageRevision {
+  id            String @id @default(uuid())
+  areaId        String
+  area          Area @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  name          String
+  sourceUpdatedAt DateTime
+  schemaVersion Int @default(1)
+  document      Json
+  metadata      Json
+  files         RevisionFile[]
+  createdAt     DateTime @default(now())
+
+  @@index([areaId, createdAt, id])
+}
+
+model RevisionFile {
+  id            String @id @default(uuid())
+  revisionId    String
+  revision      PageRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  attachmentId  String
+  tipo          AttachmentType
+  nome          String?
+  storageKey    String?
+  linkUrl       String?
+  sha256        String?
+
+  @@unique([revisionId, attachmentId])
 }

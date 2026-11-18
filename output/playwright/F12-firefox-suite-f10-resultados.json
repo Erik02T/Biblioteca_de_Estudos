@@ -1,0 +1,37 @@
+{
+  "verifiedAt": "2026-11-17T13:50:23.697Z",
+  "engine": "firefox",
+  "group": "f10",
+  "passed": true,
+  "resumed": false,
+  "note": "Consolidated from the individual scenario records; timestamps identify the actual executions.",
+  "steps": [
+    {
+      "name": "firefox/replay-f10-setup",
+      "evidence": "F12-firefox-replay-f10-setup-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:08.011Z"
+    },
+    {
+      "name": "firefox/replay-f10-browser",
+      "evidence": "F12-firefox-replay-f10-browser-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:22.526Z",
+      "checks": 22
+    },
+    {
+      "name": "firefox/replay-f10-operations",
+      "evidence": "F12-firefox-replay-f10-operations-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:39.312Z",
+      "checks": 14
+    },
+    {
+      "name": "firefox/replay-f10-portability",
+      "evidence": "F12-firefox-replay-f10-portability-resultados.json",
+      "passed": true,
+      "verifiedAt": "2026-11-17T13:26:45.954Z",
+      "checks": 6
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "verifiedAt": "2026-11-17T13:29:37.272Z",
+  "engine": "firefox",
+  "script": "replay-f11-collections",
+  "seconds": 2.73,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Tabela altera propriedades com mesmo ID e nova revisão",
+      "passed": true
+    },
+    {
+      "name": "Quadro agrupa a mesma página no status salvo",
+      "passed": true
+    },
+    {
+      "name": "Menu do quadro troca status persistido sem trocar ID",
+      "passed": true
+    },
+    {
+      "name": "Favoritar não registra abertura",
+      "passed": true
+    },
+    {
+      "name": "Trocar layout preserva paginação e ordenação",
+      "passed": true
+    },
+    {
+      "name": "Filtro acontece antes da paginação e volta à primeira página",
+      "passed": true
+    },
+    {
+      "name": "Visualização nomeada reabre depois de recarga",
+      "passed": true
+    },
+    {
+      "name": "Busca global no corpo alcança resultados além dos primeiros 20",
+      "passed": true
+    },
+    {
+      "name": "Busca abre o documento pelo ID original",
+      "passed": true
+    },
+    {
+      "name": "Recentes contém a página realmente aberta",
+      "passed": true
+    }
+  ]
+}

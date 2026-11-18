@@ -1,0 +1,10 @@
+.dialog { margin: auto; width: min(42rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); box-sizing: border-box; overflow: auto; border: 1px solid var(--ui-control-border); border-radius: 12px; padding: 24px; color: var(--ui-text); background: var(--ui-surface); }
+.dialog::backdrop { background: #15201999; }
+.controls { border: 0; padding: 0; min-width: 0; display: grid; gap: 12px; }
+.controls label { display: block; overflow-wrap: anywhere; }
+.controls input:not([type="checkbox"]) { display: block; box-sizing: border-box; width: 100%; padding: 8px; }
+.dialog button { padding: 8px 12px; margin: 4px 0; white-space: normal; overflow-wrap: anywhere; cursor: pointer; }
+.dialog button:focus-visible, .dialog input:focus-visible, .dialog summary:focus-visible { outline: 3px solid var(--ui-accent); outline-offset: 3px; }
+.dialog li { overflow-wrap: anywhere; }
+.preview { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 20rem; overflow: auto; }
+@media (max-width: 400px) { .dialog { padding: 12px; } }

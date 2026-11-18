@@ -1,4 +1,5 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
@@ -6,6 +7,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { AttachmentType } from '@prisma/client';
 import type { Readable } from 'node:stream';
 
@@ -96,6 +98,25 @@ export class StorageService {
     return `${this.publicUrl}/${key.split('/').map(encodeURIComponent).join('/')}`;
   }
 
+  requireOwnedAttachmentKey(
+    url: string,
+    userId: string,
+    areaId: string,
+  ): string {
+    const key = this.resolveStorageKeyFromUrl(url);
+    if (
+      !key ||
+      (!key.startsWith(`${userId}/${areaId}/`) &&
+        !key.startsWith(`uploads/${userId}/${areaId}/`)) ||
+      key.split('/').some((part) => part === '..' || part === '.')
+    ) {
+      throw new BadRequestException(
+        'O arquivo não pertence à página solicitada.',
+      );
+    }
+    return key;
+  }
+
   async upload(options: StorageUploadOptions): Promise<void> {
     if (!this.client || !this.bucket) {
       throw new InternalServerErrorException(
@@ -171,8 +192,72 @@ export class StorageService {
 
     const key = this.resolveStorageKeyFromUrl(url);
     if (!key || !this.bucket) return;
+    if (key.startsWith('revisions/') || key.startsWith('templates/')) {
+      throw new InternalServerErrorException(
+        'Objetos de versões não podem ser excluídos por anexos.',
+      );
+    }
 
     await this.delete({ bucket: this.bucket, key });
+  }
+
+  async readObject(key: string, maxBytes = 100 * 1024 * 1024): Promise<Buffer> {
+    if (!this.client || !this.bucket)
+      throw new InternalServerErrorException('Storage não configurado.');
+    try {
+      const object = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+      if (!object.Body || (object.ContentLength ?? 0) > maxBytes)
+        throw new Error('Objeto ausente ou acima do limite.');
+      const chunks: Buffer[] = [];
+      let size = 0;
+      for await (const chunk of object.Body as Readable) {
+        const bytes = Buffer.isBuffer(chunk)
+          ? chunk
+          : Buffer.from(chunk as Uint8Array);
+        size += bytes.length;
+        if (size > maxBytes) {
+          (object.Body as Readable).destroy();
+          throw new Error('Limite excedido.');
+        }
+        chunks.push(bytes);
+      }
+      return Buffer.concat(chunks);
+    } catch {
+      throw new InternalServerErrorException(
+        'Não foi possível ler o arquivo: ausente, indisponível ou acima do limite.',
+      );
+    }
+  }
+
+  async copyObject(sourceUrl: string, destinationKey: string): Promise<string> {
+    if (!this.client || !this.bucket || !this.publicUrl) {
+      throw new InternalServerErrorException('Storage não configurado.');
+    }
+
+    const sourceKey = this.resolveStorageKeyFromUrl(sourceUrl);
+    if (!sourceKey) {
+      throw new InternalServerErrorException(
+        'Não foi possível resolver a chave do arquivo de origem.',
+      );
+    }
+
+    try {
+      await this.client.send(
+        new CopyObjectCommand({
+          Bucket: this.bucket,
+          CopySource: `${this.bucket}/${sourceKey}`,
+          Key: destinationKey,
+        }),
+      );
+    } catch {
+      throw new InternalServerErrorException(
+        'Não foi possível copiar o arquivo no storage.',
+      );
+    }
+
+    return this.buildPublicUrlFromKey(destinationKey);
   }
 
   isConfigured(): boolean {

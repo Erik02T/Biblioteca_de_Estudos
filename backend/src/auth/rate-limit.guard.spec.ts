@@ -1,8 +1,13 @@
 import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthRateLimitGuard } from './rate-limit.guard';
 
-function context(path: string, ip: string, userAgent = 'test-agent') {
-  const request = { path, ip, headers: { 'user-agent': userAgent } };
+function context(
+  path: string,
+  ip: string,
+  userAgent = 'test-agent',
+  method = 'POST',
+) {
+  const request = { path, ip, method, headers: { 'user-agent': userAgent } };
   return {
     switchToHttp: () => ({ getRequest: () => request }),
   } as unknown as ExecutionContext;
@@ -50,5 +55,21 @@ describe('AuthRateLimitGuard', () => {
 
     jest.advanceTimersByTime(15 * 60 * 1000 + 1);
     expect(guard.canActivate(context('/areas', '198.51.100.1'))).toBe(true);
+  });
+
+  it('mantém limites de credenciais e API independentes para leitura autenticada da identidade', () => {
+    const guard = new AuthRateLimitGuard();
+    const identity = () =>
+      context('/auth/me', '192.0.2.8', 'test-agent', 'GET');
+    for (let attempt = 0; attempt < 10; attempt++) {
+      expect(guard.canActivate(identity())).toBe(true);
+      expect(guard.canActivate(context('/auth/login', '192.0.2.8'))).toBe(true);
+    }
+    expect(() =>
+      guard.canActivate(context('/auth/login', '192.0.2.8')),
+    ).toThrow(HttpException);
+    for (let attempt = 10; attempt < 120; attempt++)
+      expect(guard.canActivate(identity())).toBe(true);
+    expect(() => guard.canActivate(identity())).toThrow(HttpException);
   });
 });
