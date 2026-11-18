@@ -20,7 +20,9 @@ Executar checks em checkout descartável do conteúdo previsto para envio, sem c
 
 A integração exige `NODE_ENV=test`, PostgreSQL local com nome `biblioteca_test_*` e MinIO local na porta 9000 com bucket `biblioteca-test-f7*`. Nunca apontar essas suítes ao banco ou bucket de produção. As suítes de storage preparam o bucket e recusam destinos fora desses limites.
 
-Ordem de checks do backend: instalar, gerar Prisma Client, lint/tipos, aplicar as migrações no banco de teste novo, compilar, preparar storage, executar Jest e testes HTTP. O teste de bootstrap inicia o `dist/src/main.js` real, portanto o build precisa preceder o Jest. O workflow usa PostgreSQL e MinIO descartáveis, credenciais exclusivas de teste e imagem MinIO fixada por digest.
+Ordem de checks do backend: instalar, gerar Prisma Client, lint/tipos, aplicar as migrações no banco de teste novo, compilar, preparar storage, executar Jest e testes HTTP. O teste de bootstrap inicia o `dist/src/main.js` real, portanto o build precisa preceder o Jest. O workflow usa PostgreSQL e MinIO descartáveis e credenciais exclusivas de teste.
+
+O MinIO de CI é construído por `.github/docker/minio.Dockerfile` a partir do commit oficial `9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a` (RELEASE.2025-10-15T17-29-55Z), com Go/Alpine fixados por digest. A construção acessa Docker Hub, GitHub e os módulos Go públicos; não usa a imagem MinIO do Quay nem credenciais de registro. O digest anterior do Quay retornou `401` no runner limpo em 18/11/2026. Uma imagem já presente localmente não comprova disponibilidade no registro: validar acesso anônimo e uma construção com `--pull --no-cache` ao alterar essa dependência. Ver [release oficial](https://github.com/minio/minio/releases/tag/RELEASE.2025-10-15T17-29-55Z).
 
 Conferir também frontend (lint, testes, build/tipos), imagem Docker e `git diff --check`, incluindo os arquivos novos. O build frontend baixa fontes Google; garantir acesso do builder. A reprodução F12 está em [F12-testes](../notion/execucao/F12-testes.md). Não substituir as evidências históricas ao executar uma nova rodada.
 

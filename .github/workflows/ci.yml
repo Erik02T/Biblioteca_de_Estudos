@@ -82,13 +82,16 @@ jobs:
         working-directory: ${{ env.BACKEND_DIR }}
         run: npm run build
 
+      - name: Construir MinIO de testes a partir da fonte oficial
+        run: docker build --pull --file .github/docker/minio.Dockerfile --tag biblioteca-ci-minio:local .github/docker
+
       - name: Iniciar MinIO exclusivo de testes
         run: |
           docker run --detach --name biblioteca-ci-minio \
             --publish 127.0.0.1:9000:9000 \
             --env MINIO_ROOT_USER="$STORAGE_ACCESS_KEY_ID" \
             --env MINIO_ROOT_PASSWORD="$STORAGE_SECRET_ACCESS_KEY" \
-            quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e \
+            biblioteca-ci-minio:local \
             server /data
           for _ in {1..30}; do
             if curl --fail --silent http://localhost:9000/minio/health/ready; then

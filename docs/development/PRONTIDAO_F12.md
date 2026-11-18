@@ -9,10 +9,16 @@ Resultados resumidos e sem credenciais em [PRONTIDAO-F12-resultados.json](../../
 - Cada suíte de storage prepara seu bucket antes de usar mídia. O helper exige banco local biblioteca_test_*, NODE_ENV=test, MinIO local na porta 9000, bucket biblioteca-test-f7* e credenciais de fixtures. Há 16 novos testes dessa fronteira e do tratamento de erros.
 - A F11 passou isoladamente como primeira suíte, com bucket inicialmente ausente. A dependência da ordem das suítes foi removida.
 - Os dois lockfiles receberam as entradas opcionais transitivas @emnapi/core e @emnapi/runtime exigidas por npm ci em Linux/Node 22. Nenhuma versão já existente foi trocada.
-- O workflow instala pelo lockfile, aplica migrações em banco exclusivo, compila antes dos testes de bootstrap e provisiona MinIO/bucket de teste. A imagem MinIO foi fixada por digest; o job remove apenas o contêiner que criou.
+- O workflow instala pelo lockfile, aplica migrações em banco exclusivo, compila antes dos testes de bootstrap e provisiona MinIO/bucket de teste. A preparação inicial usou uma imagem MinIO fixada por digest; a correção de 18/11 descrita abaixo substituiu essa origem. O job remove apenas o contêiner que criou.
 - Os testes de navegação aguardam os efeitos iniciais de identidade/coleção antes de interagir com a tela. As asserções de preservação de dados e navegação foram mantidas.
 - Cinco ZIPs de fixtures receberam exceções nominais em .gitignore. Ambientes, dumps, perfis, builds e os demais ZIPs continuam excluídos.
 - Os 18 avisos de whitespace encontrados nos sete documentos novos foram tratados; quebras Markdown intencionais foram preservadas com quebras explícitas de linha.
+
+### Correção do runner limpo em 18/11/2026
+
+O primeiro push disparou o run [44305671650](https://github.com/Erik02T/Biblioteca_de_Estudos/actions/runs/44305671650): frontend aprovado e backend bloqueado no download MinIO do Quay (`401 UNAUTHORIZED`), antes dos testes. O ensaio local anterior tinha reutilizado a imagem existente e não comprovava pull anônimo. O CI passou a construir o serviço a partir de um commit fixo do [código oficial MinIO](https://github.com/minio/minio/tree/9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a), sem depender daquele registro. Os resultados de 17/11 abaixo são históricos; o resultado remoto da correção precisa corresponder ao novo SHA enviado.
+
+Validação da correção: acesso anônimo aos manifests Go/Alpine, construção com `--pull --no-cache` e configuração de registro vazia, actionlint/ShellCheck aprovados, 184 testes backend e 26 HTTP aprovados em Node 22 com PostgreSQL e o novo MinIO descartáveis. Os dados e serviços habituais foram preservados.
 
 ## Validação
 
