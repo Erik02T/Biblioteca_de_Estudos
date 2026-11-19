@@ -1,10 +1,11 @@
 import '@testing-library/jest-dom';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import Home, { type Area } from './page';
 import { draftStore } from './draft-store';
 
 jest.mock('./page.module.css', () => ({}));
 jest.mock('./EditorLayout.module.css', () => ({}));
+jest.mock('./LibraryNavigation.module.css', () => ({}));
 jest.mock('./PortabilityDialog.module.css', () => ({}));
 jest.mock('./BlockControls.module.css', () => ({}));
 jest.mock('@tiptap/react', () => ({ useEditor: () => null, EditorContent: () => null }));
@@ -393,8 +394,57 @@ test('busca aberta no editor consome Escape e mantém a página', async () => {
   fireEvent.click(screen.getByRole('button', {name:'Buscar páginas'}));
   fireEvent.keyDown(screen.getByRole('textbox', {name:'Buscar em toda a biblioteca'}), {key:'Escape'});
   expect(window.location.search).toBe(`?page=${id}`);
-  expect(screen.queryByRole('region', {name:'Busca na biblioteca'})).not.toBeInTheDocument();
+  expect(screen.queryByRole('dialog', {name:'Busca na biblioteca'})).not.toBeInTheDocument();
   expect(screen.getByRole('button', {name:'Buscar páginas'})).toHaveFocus();
+});
+
+test('área e página alternam o destino ativo sem retirar a árvore após recarregar ou voltar', async () => {
+  page.nome = 'English';
+  window.history.replaceState(null, '', '/?section=LINGUAGENS');
+  const first = await renderHome();
+  const navigation = () => within(screen.getByRole('navigation', { name: 'Biblioteca de Estudos' }));
+  expect(navigation().getByRole('link', { name: 'Idiomas' })).toHaveAttribute('aria-current', 'page');
+  fireEvent.click(await navigation().findByRole('link', { name: 'English' }));
+  await screen.findByRole('textbox', { name: 'Nome da página' });
+  expect(navigation().getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page');
+  expect(navigation().getByRole('link', { name: 'Idiomas' })).not.toHaveAttribute('aria-current');
+
+  first.unmount();
+  await renderHome();
+  expect(await navigation().findByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page');
+  await act(async () => window.history.back());
+  await waitFor(() => expect(navigation().getByRole('link', { name: 'Idiomas' })).toHaveAttribute('aria-current', 'page'));
+  window.history.forward();
+  await waitFor(() => expect(navigation().getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page'));
+});
+
+test('painel móvel volta ao acionador ao sair e foca o conteúdo ao navegar', async () => {
+  const media = jest.spyOn(window, 'matchMedia').mockImplementation(query => ({
+    matches: false, media: query, onchange: null, addEventListener: jest.fn(), removeEventListener: jest.fn(),
+    addListener: jest.fn(), removeListener: jest.fn(), dispatchEvent: jest.fn(),
+  }));
+  try {
+    page.nome = 'English';
+    window.history.replaceState(null, '', '/?section=LINGUAGENS');
+    await renderHome();
+    const trigger = screen.getByRole('button', { name: 'Navegação' });
+    expect(screen.getByRole('main')).toBeVisible();
+    fireEvent.click(trigger);
+    const drawer = () => within(screen.getByRole('dialog', { name: 'Biblioteca de Estudos' }));
+    const close = drawer().getByRole('button', { name: 'Fechar navegação' });
+    expect(close).toHaveFocus();
+    fireEvent.keyDown(close, { key: 'Escape' });
+    expect(trigger).toHaveFocus();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(trigger);
+    fireEvent.click(drawer().getByRole('link', { name: 'English' }));
+    await waitFor(() => expect(screen.getByRole('main', { name: 'English' })).toHaveFocus());
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('dialog', { name: 'Biblioteca de Estudos' })).not.toBeInTheDocument();
+  } finally {
+    media.mockRestore();
+  }
 });
 
 test('retorno do editor recupera filtros e visualização da coleção', async () => {

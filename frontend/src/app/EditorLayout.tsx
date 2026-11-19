@@ -24,6 +24,14 @@ const PATHS = {
   back: "M19 12H5M12 19l-7-7 7-7",
   menu: "M4 6h16M4 12h16M4 18h16",
   x: "M18 6L6 18M6 6l12 12",
+  book: "M12 5.5C9.8 4 6 3.5 3 4.5v14c3-1 6.8-.5 9 1 2.2-1.5 6-2 9-1v-14c-3-1-6.8-.5-9 1zM12 5.5v14",
+  home: "m3 11 9-8 9 8M5 10v10h5v-6h4v6h5V10",
+  star: "m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+  clock: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2",
+  grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+  trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
+  logout: "M9 4H5v16h4M16 8l4 4-4 4M20 12H9",
+  chevron: "m9 6 6 6-6 6",
 } as const;
 export type IconName = keyof typeof PATHS;
 
@@ -37,7 +45,6 @@ export function Icon({ name }: { name: IconName }) {
 
 /* Documento e ferramentas compartilham o layout sem remontar o editor. */
 export function EditorLayout(props: {
-  sidebar: ReactNode; // <EditorSidebar />
   outline?: ReactNode;
   topbar: ReactNode; // <EditorTopBar />
   cover?: ReactNode;
@@ -53,7 +60,6 @@ export function EditorLayout(props: {
 }) {
   const [tool, setTool] = useState<'properties' | 'materials' | 'format' | null>(null);
   const [focusMode, setFocusMode] = useState(false);
-  const [navigation, setNavigation] = useState<'auto' | 'open' | 'closed'>('auto');
   const [wide, setWide] = useState(false);
   const panel = useRef<HTMLDialogElement>(null);
   const panelTitle = useRef<HTMLHeadingElement>(null);
@@ -80,7 +86,7 @@ export function EditorLayout(props: {
   }, [tool, wide]);
   const labels = { properties: 'Propriedades', materials: `Materiais (${props.attachmentCount})`, format: 'Formatar' };
   return (
-    <section aria-label="Editor da página" className={cx(styles.root, props.fullWidth && styles.fullWidth, focusMode && styles.focusMode, navigation === 'open' && styles.navigationOpen, navigation === 'closed' && styles.navigationClosed, Boolean(tool) && styles.withTool)} data-testid="editor-root" data-full-width={props.fullWidth ? "true" : "false"} data-focus-mode={focusMode} onKeyDownCapture={event => {
+    <section aria-label="Editor da página" className={cx(styles.root, props.fullWidth && styles.fullWidth, Boolean(tool) && styles.withTool)} data-testid="editor-root" data-full-width={props.fullWidth ? "true" : "false"} data-focus-mode={focusMode} onKeyDownCapture={event => {
       if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
       // O editor consome Escape; sair do foco tem precedência apenas nessa camada.
       if (focusMode && !tool && event.key === 'Escape' && !(event.target as HTMLElement).closest('[data-block-menu-open="true"]') && (event.target as HTMLElement).closest('.tiptap')) {
@@ -90,17 +96,14 @@ export function EditorLayout(props: {
       if (event.key !== 'Escape' || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229 || event.defaultPrevented) return;
       if (tool) { event.preventDefault(); event.stopPropagation(); closeTool(); }
       else if (focusMode) { event.preventDefault(); event.stopPropagation(); setFocusMode(false); }
-      else if (navigation === 'open') { event.preventDefault(); event.stopPropagation(); setNavigation('closed'); document.getElementById('editor-navigation-toggle')?.focus(); }
     }}>
       <div className={styles.documentActions}>
         {props.rail}
         <div className={styles.toolTriggers} role="group" aria-label="Ferramentas da página">
-          <Button id="editor-navigation-toggle" aria-controls="editor-navigation" aria-expanded={!focusMode && (navigation === 'open' || (navigation === 'auto' && wide))} onClick={() => { setFocusMode(false); setNavigation(navigation === 'open' || (navigation === 'auto' && wide) ? 'closed' : 'open'); }}>Navegação</Button>
           {(['properties', 'materials', 'format'] as const).map(name => <Button key={name} aria-controls="editor-tool" aria-expanded={tool === name} onMouseDown={event => event.preventDefault()} onClick={event => { trigger.current = event.currentTarget; if (tool === name) closeTool(); else setTool(name); }}>{labels[name]}</Button>)}
           <Button aria-pressed={focusMode} onClick={() => { closeTool(false); setFocusMode(!focusMode); if (!focusMode) documentRef.current?.querySelector<HTMLElement>('.tiptap, [role="textbox"]')?.focus({ preventScroll: true }); }}>{focusMode ? 'Sair do foco' : 'Modo foco'}</Button>
         </div>
       </div>
-      <div id="editor-navigation" className={styles.navigation}>{props.sidebar}</div>
       <section className={styles.center} ref={documentRef}>
         {props.error && <p role={tool ? undefined : 'alert'} className={styles.formError}>{props.error}</p>}
         <div className={cx(styles.card, styles.editorCard)} data-testid="editor-card">
@@ -171,21 +174,6 @@ export function PageCover(props: {
         </Button>
       )}
     </div>
-  );
-}
-
-export function EditorSidebar(props: {
-  navigation?: ReactNode;
-  onNew: () => void;
-}) {
-  return (
-    <aside className={cx(styles.card, styles.sidebar)} data-testid="sidebar">
-      {props.navigation}
-      <Button type="button" className={styles.btn} onClick={props.onNew} data-testid="sidebar-new">
-        <Icon name="back" />
-        <b className={styles.hideCompact}>Voltar à coleção</b>
-      </Button>
-    </aside>
   );
 }
 

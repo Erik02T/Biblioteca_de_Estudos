@@ -1,10 +1,10 @@
 "use client";
 
-import { Button, Input, Select, Field } from './ui';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Button, Input, Select, Field, containModalTab } from './ui';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { ActionRail, AttachmentsPanel, EditorLayout, EditorOutline, EditorSidebar, EditorTopBar, EditorProperties, FormatPanel, PageCover, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
+import { ActionRail, AttachmentsPanel, EditorLayout, EditorOutline, EditorTopBar, EditorProperties, FormatPanel, PageCover, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
 import { wordCount } from "./AreaEditor";
 import { documentHeadings } from './document-outline';
 import { editorExtensions } from "./extensions";
@@ -31,7 +31,6 @@ import { LibraryNavigation, librarySections, PageBreadcrumb } from './LibraryNav
 import { pageAncestors, parentCandidates } from './page-hierarchy';
 import { advancedFilters, collectionOrder, collectionParameters, responseValue, type LibraryRequest } from './collection-query';
 import type { UpdateStudy, ReloadStudy } from './StudyProperties';
-import type { ReactNode } from 'react';
 
 type Section = "LINGUAGENS" | "FACULDADE" | "PROJETOS" | "OUTROS";
 type SubSection = "ESTUDANDO" | "ESTUDADO";
@@ -160,7 +159,13 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
   const [isCreating, setIsCreating] = useState(false);
   const [creationParent, setCreationParent] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [focusRequest, setFocusRequest] = useState(0);
+  const main = useRef<HTMLElement>(null);
+  const searchDialog = useRef<HTMLDialogElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const searchTrigger = useRef<HTMLElement>(null);
+  const searchId = useId();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Area[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -248,6 +253,15 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
     } finally { if (sequence === navigationSequence.current) setRouteLoading(false); }
   }, [userId]);
   const navigateTo = useCallback((route: LibraryRoute) => { void applyRoute(libraryUrl(route), 'push'); }, [applyRoute]);
+  const navigateFromLibrary = (route: LibraryRoute, focusContent: boolean) => {
+    void applyRoute(libraryUrl(route), 'push').then(() => {
+      if (focusContent) setFocusRequest(value => value + 1);
+    });
+  };
+  useEffect(() => {
+    if (focusRequest) main.current?.focus();
+  }, [focusRequest]);
+
   useEffect(() => {
     if (!userId) return;
     const sequence = navigationSequence;
@@ -257,18 +271,42 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
     return () => { ++sequence.current; request.current?.abort(); window.removeEventListener('popstate', load); };
   }, [applyRoute, userId]);
 
+  const openSearch = useCallback((button?: HTMLButtonElement) => {
+    const panel = searchDialog.current;
+    if (!panel) return;
+    if (!panel.open) {
+      const searchButton = document.querySelector<HTMLButtonElement>('[data-library-search]');
+      searchTrigger.current = button ?? (searchButton?.getClientRects().length ? searchButton :
+        document.querySelector<HTMLButtonElement>('[data-library-menu]') ?? (document.activeElement as HTMLElement));
+      panel.showModal();
+    }
+    searchInput.current?.focus();
+  }, []);
+
+  const closeSearch = (restoreFocus: boolean) => {
+    searchDialog.current?.close();
+    if (!restoreFocus) return;
+    searchTrigger.current?.focus();
+    if (document.activeElement !== searchTrigger.current) {
+      const fallback = document.querySelector<HTMLButtonElement>('[data-library-menu]') ?? main.current;
+      fallback?.focus();
+    }
+  };
+
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
-      if (event.key === "/" && !event.isComposing && !(event.target as HTMLElement).isContentEditable && !["INPUT", "TEXTAREA", "SELECT"].includes((event.target as HTMLElement).tagName)) {
-        event.preventDefault();
-        setIsSearchOpen(true);
-      }
-      if (event.key === "Escape") setIsSearchOpen(false);
+      const target = event.target;
+      const slash = event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey &&
+        !(target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select')));
+      const command = (event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k';
+      if ((!slash && !command) || document.querySelector('dialog:modal:not([data-library-drawer])')) return;
+      event.preventDefault();
+      openSearch();
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, []);
+  }, [openSearch]);
 
   useEffect(() => {
     if (!userId) return;
@@ -516,17 +554,16 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
 
   if (!userId) return <AuthView onAuthenticated={saveTokens} />;
   const logout = () => { void (async () => { try { await beforeNavigate.current?.(); } catch (failure) { setRouteError(failure instanceof Error ? failure.message : 'Salve as pendências antes de sair.'); return; } beforeNavigate.current = null; window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); window.history.replaceState(null, '', '/'); notifyAuthTokenListeners(); })(); };
-  const navigation = <LibraryNavigation loading={isLoading} error={error} onRetry={() => setRetryKey(key => key + 1)} pages={areas} current={editingArea ? { pageId: editingArea.id, section: editingArea.section } : isCreating ? { section: selectedSection } : collectionRoute} onNavigate={navigateTo} onSearch={() => setIsSearchOpen(true)} onLogout={logout} />;
-  const closeSearch = () => { setIsSearchOpen(false); document.querySelector<HTMLButtonElement>('[data-library-search]')?.focus(); };
-  const searchPanel = isSearchOpen && <section className="library-search" aria-label="Busca na biblioteca" onKeyDown={event => { if (event.key === 'Escape' && !event.nativeEvent.isComposing) { event.stopPropagation(); closeSearch(); } }}>
-    <label>Buscar em toda a biblioteca<Input autoFocus value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setSearchPage(1); }} placeholder="Digite pelo menos 2 caracteres" /></label>
-    <Button onClick={closeSearch}>Fechar busca</Button>
-    {searchQuery.trim().length >= 2 && (searchLoading ? <p role="status">Buscando…</p> : searchError ? <p role="alert">{searchError}<Button onClick={() => setRetryKey(key => key + 1)}>Tentar busca novamente</Button></p> : <><p role="status">{searchPagination?.total ?? 0} resultados em toda a biblioteca.</p><ul>{searchResults.map(item => <li key={item.id}><Button onClick={() => { setIsSearchOpen(false); openEdit(item); }}>{item.nome}</Button><small>{sections.find(section => section.value === item.section)?.label} / {pageAncestors(areas, item.parentId).map(page => page.nome).join(' / ') || 'Página principal'}</small></li>)}</ul>{searchPagination && searchPagination.totalPages > 1 && <nav aria-label="Paginação da busca global"><Button disabled={searchPage <= 1} onClick={() => setSearchPage(value => value - 1)}>Resultados anteriores</Button><span>Página {searchPage} de {searchPagination.totalPages}</span><Button disabled={searchPage >= searchPagination.totalPages} onClick={() => setSearchPage(value => value + 1)}>Próximos resultados</Button></nav>}</>)}
-  </section>;
+  const indexedPage = editingArea && areas.find(page => page.id === editingArea.id);
+  const currentPage = indexedPage ?? editingArea;
+  const navigationPages = editingArea && !indexedPage ? [...areas, editingArea] : areas;
+  const activeRoute = currentPage ? { pageId: currentPage.id, section: currentPage.section } :
+    isCreating ? { section: selectedSection } : collectionRoute;
   return <div className={`${styles.page} ${styles.workspace}`}>
-    {!(editingArea || isCreating) && <aside className={styles.librarySidebar}>{navigation}</aside>}
-    <main className={styles.main}>
-    {!(editingArea || isCreating) && searchPanel}
+    <LibraryNavigation current={activeRoute} pages={navigationPages} loading={isLoading} error={error}
+      drawerOpen={drawerOpen} searchId={searchId} onDrawerChange={setDrawerOpen} onRetry={() => setRetryKey(key => key + 1)}
+      onNavigate={navigateFromLibrary} onSearch={openSearch} onLogout={logout} />
+    <main ref={main} className={styles.main} tabIndex={-1} aria-label={currentPage?.nome ?? 'Conteúdo da biblioteca'}>
     {openingError && editingArea && <p role="status">{openingError}<Button onClick={() => setOpeningRetry(value => value + 1)}>Atualizar Recentes novamente</Button></p>}
     <DraftRecovery ownerId={ownerId} refreshKey={String(retryKey) + ':' + (editingArea?.id ?? String(isCreating))} onSelect={draft => {
       void (async () => {
@@ -545,7 +582,6 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
           onRecoveryHandled={() => setRecoveryDraft(undefined)}
           section={currentSection?.value ?? 'LINGUAGENS'}
           subSection={currentSubSection?.value ?? 'ESTUDANDO'}
-          navigation={<>{navigation}{searchPanel}</>}
           area={editingArea}
           navigationError={routeError}
           onCheckpointSaved={clearNavigationError}
@@ -599,6 +635,40 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
         </section></>
       )}
     </main>
+    <dialog id={searchId} ref={searchDialog} className="library-search" aria-label="Busca na biblioteca"
+      onKeyDown={event => {
+        containModalTab(event);
+        if (event.key === 'Escape' && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeSearch(true);
+        }
+      }}
+      onCancel={event => { event.preventDefault(); closeSearch(true); }}>
+      <label>Buscar em toda a biblioteca
+        <Input ref={searchInput} value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setSearchPage(1); }}
+          placeholder="Digite pelo menos 2 caracteres" />
+      </label>
+      <Button onClick={() => closeSearch(true)}>Fechar busca</Button>
+      {searchQuery.trim().length >= 2 && (searchLoading ? <p role="status">Buscando…</p> : searchError ? (
+        <p role="alert">{searchError}<Button onClick={() => setRetryKey(key => key + 1)}>Tentar busca novamente</Button></p>
+      ) : <>
+        <p role="status">{searchPagination?.total ?? 0} resultados em toda a biblioteca.</p>
+        <ul>{searchResults.map(item => <li key={item.id}>
+          <Button onClick={() => {
+            closeSearch(false);
+            setDrawerOpen(false);
+            navigateFromLibrary({ pageId: item.id }, true);
+          }}>{item.nome}</Button>
+          <small>{librarySections.find(section => section.value === item.section)?.label} / {pageAncestors(areas, item.parentId).map(page => page.nome).join(' / ') || 'Página principal'}</small>
+        </li>)}</ul>
+        {searchPagination && searchPagination.totalPages > 1 && <nav aria-label="Paginação da busca global">
+          <Button disabled={searchPage <= 1} onClick={() => setSearchPage(value => value - 1)}>Resultados anteriores</Button>
+          <span>Página {searchPage} de {searchPagination.totalPages}</span>
+          <Button disabled={searchPage >= searchPagination.totalPages} onClick={() => setSearchPage(value => value + 1)}>Próximos resultados</Button>
+        </nav>}
+      </>)}
+    </dialog>
     {showTemplateGallery && (
       <TemplateGallery
         templates={templates}
@@ -943,7 +1013,7 @@ function AreaCard({ manualOrder, area, onEdit, onDelete, onPurge, onFavoriteTogg
   </article>;
 }
 
-function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, ownerId, recoveryDraft, onRecoveryHandled, navigation, navigationError, onCheckpointSaved, section, subSection, area, parentOptions, userId, onCancel, onSaved, onDeleted, onDuplicated, registerNavigationGuard }: { initialParentId: string | null; onCreateChild: (area: Area) => Promise<void>; onNavigate: (route: LibraryRoute) => void; onPersisted: (area: Area, moved: boolean) => void; ownerId: string; recoveryDraft?: LocalDraft; onRecoveryHandled?: () => void; navigation?: ReactNode; navigationError?: string; onCheckpointSaved: () => void; section: Section; subSection: SubSection; area: Area | null; parentOptions?: Area[]; userId?: string; onCancel: () => void; onSaved: (area: Area) => void; onDeleted: (areaId: string) => void; onDuplicated?: (copied: Area) => void; registerNavigationGuard: (guard: (() => Promise<void>) | null) => void }) {
+function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, ownerId, recoveryDraft, onRecoveryHandled, navigationError, onCheckpointSaved, section, subSection, area, parentOptions, userId, onCancel, onSaved, onDeleted, onDuplicated, registerNavigationGuard }: { initialParentId: string | null; onCreateChild: (area: Area) => Promise<void>; onNavigate: (route: LibraryRoute) => void; onPersisted: (area: Area, moved: boolean) => void; ownerId: string; recoveryDraft?: LocalDraft; onRecoveryHandled?: () => void; navigationError?: string; onCheckpointSaved: () => void; section: Section; subSection: SubSection; area: Area | null; parentOptions?: Area[]; userId?: string; onCancel: () => void; onSaved: (area: Area) => void; onDeleted: (areaId: string) => void; onDuplicated?: (copied: Area) => void; registerNavigationGuard: (guard: (() => Promise<void>) | null) => void }) {
   const [portabilityMode, setPortabilityMode] = useState<"export" | "revisions" | null>(null);
   const [portabilityBusy, setPortabilityBusy] = useState(false);
   const [values, setValues] = useState<AreaFormValues>({ nome: area?.nome ?? "Sem título", categoria: area?.categoria ?? "Geral", nivelEntendimento: area?.nivelEntendimento ?? 0, icone: area?.icone ?? "✦", parentId: area ? area.parentId ?? null : initialParentId, targetPageId: area?.targetPageId ?? null, coverAttachmentId: area?.coverAttachmentId ?? null, coverPosition: area?.coverPosition ?? 50, fullWidth: Boolean(area?.fullWidth), conteudo: getEditorContent(area?.conteudo), updatedAt: area?.updatedAt });
@@ -1264,5 +1334,5 @@ function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, own
   const parentOptionsList = parentCandidates(parentOptions ?? [], area?.id).filter(item => item.section === section);
   const referenceOptionsList = (parentOptions ?? []).filter((item) => item.id !== area?.id && !item.deletedAt);
   const coverAttachment = attachments.find((item) => item.id === values.coverAttachmentId && item.tipo === "IMAGEM");
-  return <>{saveTemplateOpen && area && <SaveTemplateDialog pageId={area.id} name={values.nome} checkpoint={checkpoint} request={documentRequest} onClose={() => setSaveTemplateOpen(false)} />}{resourcePicker && <DocumentResourcePicker kind={resourcePicker.kind} insertion={resourcePicker.insertion} areaId={area?.id} attachments={attachments} request={documentRequest} onAttachment={attachment => setAttachments(current => [attachment, ...current])} onClose={() => setResourcePicker(null)} />}{coordinator.blocked && <section role="alert"><p>A versão remota mudou. Seu rascunho local foi preservado.</p><Button onClick={() => downloadDraft(coordinator.draft)}>Baixar rascunho atual</Button><Button onClick={() => { void coordinator.durable().then(() => window.location.reload()).catch(() => setError('Não foi possível guardar o rascunho antes de recarregar.')); }}>Reabrir versão remota</Button></section>}{recoveryDraft && <section aria-label="Recuperação de rascunho"><p>Rascunho local disponível: {recoveryDraft.snapshot.nome}. Recuperar exige conferir a versão remota.</p><Button onClick={() => void recoverLocalDraft()}>Recuperar para edição</Button><Button onClick={() => downloadDraft(recoveryDraft)}>Baixar rascunho para comparar</Button></section>}<div inert={portabilityBusy || isSaving}> <EditorLayout fullWidth={values.fullWidth} properties={<EditorProperties level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} saving={isSaving} onApply={area ? () => { applyFocus.current = document.activeElement as HTMLElement; setIsSaving(true); setError(undefined); void checkpoint().catch(cause => setError(cause instanceof Error ? cause.message : "Não foi possível aplicar as propriedades.")).finally(() => setIsSaving(false)); } : undefined}><div className="ui-properties"><Field label="Categoria"><Input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} /></Field><Field label="Página mãe"><Select value={values.parentId ?? ""} onChange={(event) => updateValue("parentId", event.target.value || null)}><option value="">Página principal</option>{parentOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field><Field label="Página referenciada"><Select value={values.targetPageId ?? ""} onChange={(event) => updateValue("targetPageId", event.target.value || null)}><option value="">Sem referência</option>{referenceOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field></div></EditorProperties>} attachmentCount={attachments.length} sidebar={<EditorSidebar navigation={navigation} onNew={onCancel} />} outline={outline} topbar={<><PageBreadcrumb pages={parentOptions ?? []} parentId={values.parentId} section={section} name={values.nome} onNavigate={onNavigate} /><EditorTopBar onStartWriting={() => editor?.commands.focus()} selectName={!area} iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} saveStatus={getSavePresentation({ isNew: !area, saving: isSaving, autosaving: isAutosaving, contentDirty: isContentDirty, metadataDirty: coordinator.dirty, error: error ?? navigationError ?? coordinator.error })} saveHint={area ? "Conteúdo e propriedades são salvos automaticamente. Conflitos preservam o rascunho local." : "Crie a página para confirmar o rascunho e habilitar anexos."} /></>} cover={<><Input ref={coverInputRef} type="file" accept="image/*" onChange={uploadCover} hidden /><PageCover imageUrl={coverAttachment?.url} position={values.coverPosition} onPosition={(value) => updateValue("coverPosition", value)} onPick={() => { if (!area?.id) { setAttachmentError("Salve a página antes de adicionar uma capa."); return; } const existing = attachments.find((item) => item.tipo === "IMAGEM"); if (existing && window.confirm("Usar uma imagem já anexada como capa?")) { updateValue("coverAttachmentId", existing.id); return; } coverInputRef.current?.click(); }} onRemove={() => updateValue("coverAttachmentId", null)} disabled={!area?.id} /></>} editor={unsupportedContent.length ? <section aria-label="Conteúdo original preservado"><p role="alert">Esta página contém conteúdo ainda não compatível com o editor. A edição do corpo está bloqueada para preservar o original. Materiais e exportação continuam disponíveis.</p><p style={{ whiteSpace: "pre-wrap" }}>{originalDocumentText(values.conteudo)}</p></section> : editor ? <BlockControls editor={editor} onInsertResource={insertResource}><EditorContent editor={editor} /></BlockControls> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<><Input ref={fileInputRef} type="file" accept={fileAccept} onChange={uploadAttachment} hidden /><AttachmentsPanel items={attachmentItems} onAdd={addAttachment} onRemove={removeAttachment} onInsert={unsupportedContent.length ? undefined : insertExistingAttachment} loading={materialsLoading} loadError={materialsLoadError} onRetry={() => { setMaterialsLoading(true); setMaterialsLoadError(undefined); setMaterialsRetry(value => value + 1); }} /></>} format={unsupportedContent.length ? <p>A formatação está indisponível para preservar o conteúdo original.</p> : <FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} fullWidth={values.fullWidth} onFullWidth={(value) => updateValue("fullWidth", value)} onBlock={block => transformBlock(block === "p" ? "paragraph" : block)} onMark={mark => { if (!editor) return; if (mark === "bold" || mark === "italic" || mark === "strike") editor.chain().focus().toggleMark(mark).run(); else if (["bulletList", "orderedList", "taskList", "blockquote", "codeBlock", "toggleBlock", "callout"].includes(mark)) transformBlock(mark as BlockType); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); if (color) { chain.toggleHighlight({ color }).run(); } else { chain.unsetHighlight().run(); } } }} onClear={() => editor?.chain().focus().unsetAllMarks().run()} />} error={error ?? navigationError ?? coordinator.error ?? attachmentError} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} saving={isSaving} saveLabel={area ? "Salvar e voltar" : "Criar página"} menuItems={[...(area ? [{ label: "Nova subpágina", onClick: () => { void onCreateChild(area); } }, { label: "Salvar como modelo", onClick: () => setSaveTemplateOpen(true) }, { label: "Exportar", onClick: () => setPortabilityMode("export") }, { label: "Versões", onClick: () => setPortabilityMode("revisions") }] : []), ...(area ? [{ label: `Mover para ${targetSubSection === "ESTUDADO" ? "Estudado" : "Estudando"}`, onClick: () => void handleSubmit(targetSubSection) }, { label: "Duplicar página", onClick: () => void duplicateFromEditor(false) }, { label: "Duplicar com subpáginas", onClick: () => void duplicateFromEditor(true) }] : []), ...(area ? [{ label: "Excluir página", danger: true, onClick: () => void deleteArea() }] : []), { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva a página. Esc volta, salvando pendências de páginas existentes; não desfaz alterações.") }]} />} /></div>{area && userId && portabilityMode && <PortabilityDialog mode={portabilityMode} areaId={area.id} request={(path, init) => apiFetch(`${apiUrl}${path}`, { ...init, headers: { "Content-Type": "application/json", ...authHeaders(userId) } }, userId)} checkpoint={checkpoint} onBusy={busy => { setPortabilityBusy(busy); editor?.setEditable(!busy); }} onRestored={saved => { setPortabilityMode(null); onSaved(saved); }} onClose={() => setPortabilityMode(null)} />}</>;
+  return <>{saveTemplateOpen && area && <SaveTemplateDialog pageId={area.id} name={values.nome} checkpoint={checkpoint} request={documentRequest} onClose={() => setSaveTemplateOpen(false)} />}{resourcePicker && <DocumentResourcePicker kind={resourcePicker.kind} insertion={resourcePicker.insertion} areaId={area?.id} attachments={attachments} request={documentRequest} onAttachment={attachment => setAttachments(current => [attachment, ...current])} onClose={() => setResourcePicker(null)} />}{coordinator.blocked && <section role="alert"><p>A versão remota mudou. Seu rascunho local foi preservado.</p><Button onClick={() => downloadDraft(coordinator.draft)}>Baixar rascunho atual</Button><Button onClick={() => { void coordinator.durable().then(() => window.location.reload()).catch(() => setError('Não foi possível guardar o rascunho antes de recarregar.')); }}>Reabrir versão remota</Button></section>}{recoveryDraft && <section aria-label="Recuperação de rascunho"><p>Rascunho local disponível: {recoveryDraft.snapshot.nome}. Recuperar exige conferir a versão remota.</p><Button onClick={() => void recoverLocalDraft()}>Recuperar para edição</Button><Button onClick={() => downloadDraft(recoveryDraft)}>Baixar rascunho para comparar</Button></section>}<div inert={portabilityBusy || isSaving}> <EditorLayout fullWidth={values.fullWidth} properties={<EditorProperties level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} saving={isSaving} onApply={area ? () => { applyFocus.current = document.activeElement as HTMLElement; setIsSaving(true); setError(undefined); void checkpoint().catch(cause => setError(cause instanceof Error ? cause.message : "Não foi possível aplicar as propriedades.")).finally(() => setIsSaving(false)); } : undefined}><div className="ui-properties"><Field label="Categoria"><Input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} /></Field><Field label="Página mãe"><Select value={values.parentId ?? ""} onChange={(event) => updateValue("parentId", event.target.value || null)}><option value="">Página principal</option>{parentOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field><Field label="Página referenciada"><Select value={values.targetPageId ?? ""} onChange={(event) => updateValue("targetPageId", event.target.value || null)}><option value="">Sem referência</option>{referenceOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field></div></EditorProperties>} attachmentCount={attachments.length} outline={outline} topbar={<><PageBreadcrumb pages={parentOptions ?? []} parentId={values.parentId} section={section} name={values.nome} onNavigate={onNavigate} /><EditorTopBar onStartWriting={() => editor?.commands.focus()} selectName={!area} iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} saveStatus={getSavePresentation({ isNew: !area, saving: isSaving, autosaving: isAutosaving, contentDirty: isContentDirty, metadataDirty: coordinator.dirty, error: error ?? navigationError ?? coordinator.error })} saveHint={area ? "Conteúdo e propriedades são salvos automaticamente. Conflitos preservam o rascunho local." : "Crie a página para confirmar o rascunho e habilitar anexos."} /></>} cover={<><Input ref={coverInputRef} type="file" accept="image/*" onChange={uploadCover} hidden /><PageCover imageUrl={coverAttachment?.url} position={values.coverPosition} onPosition={(value) => updateValue("coverPosition", value)} onPick={() => { if (!area?.id) { setAttachmentError("Salve a página antes de adicionar uma capa."); return; } const existing = attachments.find((item) => item.tipo === "IMAGEM"); if (existing && window.confirm("Usar uma imagem já anexada como capa?")) { updateValue("coverAttachmentId", existing.id); return; } coverInputRef.current?.click(); }} onRemove={() => updateValue("coverAttachmentId", null)} disabled={!area?.id} /></>} editor={unsupportedContent.length ? <section aria-label="Conteúdo original preservado"><p role="alert">Esta página contém conteúdo ainda não compatível com o editor. A edição do corpo está bloqueada para preservar o original. Materiais e exportação continuam disponíveis.</p><p style={{ whiteSpace: "pre-wrap" }}>{originalDocumentText(values.conteudo)}</p></section> : editor ? <BlockControls editor={editor} onInsertResource={insertResource}><EditorContent editor={editor} /></BlockControls> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<><Input ref={fileInputRef} type="file" accept={fileAccept} onChange={uploadAttachment} hidden /><AttachmentsPanel items={attachmentItems} onAdd={addAttachment} onRemove={removeAttachment} onInsert={unsupportedContent.length ? undefined : insertExistingAttachment} loading={materialsLoading} loadError={materialsLoadError} onRetry={() => { setMaterialsLoading(true); setMaterialsLoadError(undefined); setMaterialsRetry(value => value + 1); }} /></>} format={unsupportedContent.length ? <p>A formatação está indisponível para preservar o conteúdo original.</p> : <FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} fullWidth={values.fullWidth} onFullWidth={(value) => updateValue("fullWidth", value)} onBlock={block => transformBlock(block === "p" ? "paragraph" : block)} onMark={mark => { if (!editor) return; if (mark === "bold" || mark === "italic" || mark === "strike") editor.chain().focus().toggleMark(mark).run(); else if (["bulletList", "orderedList", "taskList", "blockquote", "codeBlock", "toggleBlock", "callout"].includes(mark)) transformBlock(mark as BlockType); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); if (color) { chain.toggleHighlight({ color }).run(); } else { chain.unsetHighlight().run(); } } }} onClear={() => editor?.chain().focus().unsetAllMarks().run()} />} error={error ?? navigationError ?? coordinator.error ?? attachmentError} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} saving={isSaving} saveLabel={area ? "Salvar e voltar" : "Criar página"} menuItems={[...(area ? [{ label: "Nova subpágina", onClick: () => { void onCreateChild(area); } }, { label: "Salvar como modelo", onClick: () => setSaveTemplateOpen(true) }, { label: "Exportar", onClick: () => setPortabilityMode("export") }, { label: "Versões", onClick: () => setPortabilityMode("revisions") }] : []), ...(area ? [{ label: `Mover para ${targetSubSection === "ESTUDADO" ? "Estudado" : "Estudando"}`, onClick: () => void handleSubmit(targetSubSection) }, { label: "Duplicar página", onClick: () => void duplicateFromEditor(false) }, { label: "Duplicar com subpáginas", onClick: () => void duplicateFromEditor(true) }] : []), ...(area ? [{ label: "Excluir página", danger: true, onClick: () => void deleteArea() }] : []), { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva a página. Esc volta, salvando pendências de páginas existentes; não desfaz alterações.") }]} />} /></div>{area && userId && portabilityMode && <PortabilityDialog mode={portabilityMode} areaId={area.id} request={(path, init) => apiFetch(`${apiUrl}${path}`, { ...init, headers: { "Content-Type": "application/json", ...authHeaders(userId) } }, userId)} checkpoint={checkpoint} onBusy={busy => { setPortabilityBusy(busy); editor?.setEditable(!busy); }} onRestored={saved => { setPortabilityMode(null); onSaved(saved); }} onClose={() => setPortabilityMode(null)} />}</>;
 }
