@@ -161,15 +161,30 @@ a {
 .document-block-target { outline: 1px solid var(--ui-accent); outline-offset: 3px; }
 
 /* F11: reuse the library's existing surfaces, spacing and controls. */
-.saved-views { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-block: 16px 24px; padding-bottom: 16px; border-bottom: 1px solid var(--ui-border); }
-.saved-views label { display: grid; gap: 8px; flex: 1 1 200px; min-width: 0; color: var(--ui-muted); font-size: 13px; }
-.saved-views > p { flex-basis: 100%; overflow-wrap: anywhere; }
-.saved-views button { max-width: 100%; white-space: normal; }
-.table-view input { min-width: 150px !important; }
-.table-view select { min-width: 110px !important; }
 .table-view th { white-space: nowrap; overflow-wrap: normal; }
-.table-view td:last-child { min-width: 190px; }
 .table-view td button { margin-block: 4px; }
+.table-field-label { display: none; }
+@media (min-width: 681px) {
+  .table-view td input { min-width: 150px; }
+  .table-view td select { min-width: 110px; }
+  .table-view td:last-child { min-width: 190px; }
+}
+@media (max-width: 680px) {
+  .table-view, .table-view tbody { display: grid; gap: 12px; }
+  .table-view thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .table-view tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    padding: 12px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius);
+  }
+  .table-view td, .table-view td:first-child { display: block; min-width: 0; padding: 0; border: 0; }
+  .table-view td:nth-child(-n+2), .table-view td:last-child { grid-column: 1 / -1; }
+  .table-field-label { display: block; margin-bottom: 4px; color: var(--ui-muted); font-size: var(--ui-text-small); }
+}
 .board-card details { margin-top: 12px; }
 .board-card summary { min-height: 44px; padding-block: 12px; cursor: pointer; }
 .board-card h4 { margin-block: 8px; }

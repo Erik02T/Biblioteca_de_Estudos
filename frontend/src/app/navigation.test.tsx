@@ -47,6 +47,59 @@ async function renderHome() {
   return view;
 }
 
+test('busca da coleção espera o fim da composição e aplica após 300 ms', async () => {
+  window.history.replaceState(null, '', '/?section=LINGUAGENS');
+  await renderHome();
+  await screen.findByRole('heading', { name: 'Página persistida' });
+  const search = screen.getByRole('searchbox', { name: 'Buscar por título ou categoria' });
+  jest.useFakeTimers();
+  try {
+    fireEvent.compositionStart(search);
+    fireEvent.change(search, { target: { value: 'にほんご' } });
+    fireEvent.keyDown(search, { key: 'Enter', isComposing: true });
+    await act(async () => { jest.advanceTimersByTime(350); });
+    expect(window.location.search).toBe('?section=LINGUAGENS');
+    fireEvent.change(search, { target: { value: '日本語' } });
+    fireEvent.compositionEnd(search, { data: '日本語' });
+    await act(async () => { jest.advanceTimersByTime(299); });
+    expect(window.location.search).toBe('?section=LINGUAGENS');
+    await act(async () => { jest.advanceTimersByTime(1); });
+    expect(new URLSearchParams(window.location.search).get('q')).toBe('日本語');
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
+test('uma resposta antiga da coleção não substitui resultados nem corrige a página atual', async () => {
+  window.history.replaceState(null, '', '/?section=LINGUAGENS');
+  const baseFetch = global.fetch;
+  let signal: AbortSignal | null | undefined;
+  let respond!: (value: Response) => void;
+  const delayed = new Promise<Response>(resolve => { respond = resolve; });
+  const result = (name: string) => ({ items: [{ ...page, nome: name }], pagination: { page: 1, limit: 20, total: 1, totalPages: 1 } });
+  global.fetch = jest.fn().mockImplementation((input: string, init?: RequestInit) => {
+    const url = new URL(input);
+    if (url.pathname === '/areas' && url.searchParams.get('q') === 'antiga') {
+      signal = init?.signal;
+      return delayed;
+    }
+    if (url.pathname === '/areas' && url.searchParams.get('q') === 'atual') return response(result('Consulta atual'));
+    return baseFetch(input, init);
+  });
+  await renderHome();
+  const search = await screen.findByRole('searchbox', { name: 'Buscar por título ou categoria' });
+  fireEvent.change(search, { target: { value: 'antiga' } });
+  fireEvent.keyDown(search, { key: 'Enter' });
+  expect(new URLSearchParams(window.location.search).get('q')).toBe('antiga');
+  fireEvent.change(search, { target: { value: 'atual' } });
+  fireEvent.keyDown(search, { key: 'Enter' });
+  await screen.findByRole('heading', { name: 'Consulta atual' });
+  expect(signal?.aborted).toBe(true);
+  await act(async () => { respond(await response(result('Resposta antiga'))); });
+  expect(screen.queryByRole('heading', { name: 'Resposta antiga' })).not.toBeInTheDocument();
+  expect(new URLSearchParams(window.location.search).get('q')).toBe('atual');
+});
+
 
 test('F12: editar título de raiz desconhecida não sobrescreve seu JSON com documento vazio', async () => {
   const original = { futureFormat: { value: 'Preservar 日本語' } };
@@ -199,7 +252,7 @@ test('página indisponível não exibe conteúdo de outra conta nem deixa formul
 test('criar página adiciona seu endereço ao histórico sem substituir a coleção anterior', async () => {
   window.history.replaceState(null, '', '/?section=LINGUAGENS&status=ESTUDANDO');
   await renderHome();
-  fireEvent.click(await screen.findByRole('button', { name: '+ Nova página' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Nova página' }));
   expect(screen.getByTestId('save-status')).toHaveTextContent('Página ainda não criada');
   fireEvent.change(screen.getByRole('textbox', { name: 'Nome da página' }), { target: { value: 'Página nova' } });
   fireEvent.click(screen.getByRole('button', { name: 'Propriedades' }));
@@ -208,7 +261,7 @@ test('criar página adiciona seu endereço ao histórico sem substituir a coleç
   fireEvent.click(screen.getByRole('button', { name: 'Criar página' }));
   await waitFor(() => expect(window.location.search).toBe('?page=22222222-2222-4222-8222-222222222222'));
   window.history.back();
-  await screen.findByRole('button', { name: '+ Nova página' });
+  await screen.findByRole('button', { name: 'Nova página' });
   expect(window.location.search).toBe('?section=LINGUAGENS&status=ESTUDANDO');
 });
 
@@ -354,7 +407,7 @@ test('retorno do editor recupera filtros e visualização da coleção', async (
   fireEvent.click(screen.getByRole('button', {name:'Voltar'}));
   await screen.findByRole('heading', {name:'Página persistida'});
   expect(new URLSearchParams(window.location.search).get('q')).toBe('Página');
-  expect(screen.getByRole('combobox', {name:'Ordenar por:'})).toHaveValue('nome');
+  expect(screen.getByRole('combobox', {name:'Ordem'})).toHaveValue('nome:asc');
 });
 
 test('duplicação grava propriedades pendentes antes de criar a cópia', async () => {

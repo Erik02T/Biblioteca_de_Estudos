@@ -10,19 +10,14 @@ type TableViewProps = {
 
 export function TableView({ areas, onEdit, onUpdate, onReload }: TableViewProps) {
   return (
-    <div className="table-scroll" role="region" aria-label="Tabela de páginas" tabIndex={0}><table className="table-view">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Categoria</th>
-          <th>Nível</th>
-          <th>Status</th>
-          <th>Favorito</th>
-          <th>Atualizado</th>
-          <th>Ações</th>
+    <div className="table-scroll" role="region" aria-label="Tabela de páginas" tabIndex={0}><table className="table-view" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          {["Nome", "Categoria", "Nível", "Status", "Favorito", "Atualizado", "Ações"].map(label =>
+            <th key={label} scope="col" role="columnheader">{label}</th>)}
         </tr>
       </thead>
-      <tbody>
+      <tbody role="rowgroup">
         {areas.map((area) => (
           <PropertyRow key={area.id} area={area} onEdit={onEdit} onUpdate={onUpdate} onReload={onReload} />
         ))}
