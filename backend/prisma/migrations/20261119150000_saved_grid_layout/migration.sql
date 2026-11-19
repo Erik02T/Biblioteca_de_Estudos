@@ -1,0 +1,1 @@
+ALTER TYPE "ViewLayout" ADD VALUE 'GRID';

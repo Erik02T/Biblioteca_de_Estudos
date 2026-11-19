@@ -29,6 +29,7 @@ enum ViewLayout {
   LIST
   TABLE
   BOARD
+  GRID
 }
 
 enum ViewScope {

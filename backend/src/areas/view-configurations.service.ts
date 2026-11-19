@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, ViewLayout } from '@prisma/client';
 import {
   BadRequestException,
   ConflictException,
@@ -36,7 +36,7 @@ export class ViewConfigurationsService {
     if (
       dto.layout !== undefined &&
       (typeof dto.layout !== 'string' ||
-        !['LIST', 'TABLE', 'BOARD'].includes(dto.layout))
+        !Object.values(ViewLayout).some((layout) => layout === dto.layout))
     )
       throw new BadRequestException('Layout inválido.');
     if (
