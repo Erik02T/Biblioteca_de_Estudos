@@ -1,7 +1,8 @@
 "use client";
 
 import { Button, Input, containModalTab } from './ui';
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import type { OutlineHeading } from './document-outline';
 import type { SavePresentation } from './save-status';
 import styles from "./EditorLayout.module.css";
 
@@ -37,6 +38,7 @@ export function Icon({ name }: { name: IconName }) {
 /* Documento e ferramentas compartilham o layout sem remontar o editor. */
 export function EditorLayout(props: {
   sidebar: ReactNode; // <EditorSidebar />
+  outline?: ReactNode;
   topbar: ReactNode; // <EditorTopBar />
   cover?: ReactNode;
   editor: ReactNode; // <EditorContent editor={editor} />
@@ -110,6 +112,7 @@ export function EditorLayout(props: {
           </span>
         </div>
       </section>
+      {!focusMode && !tool && props.outline}
       <dialog id="editor-tool" ref={panel} className={styles.toolDialog} aria-labelledby="editor-tool-title" onKeyDown={containModalTab} onCancel={event => { event.preventDefault(); event.stopPropagation(); closeTool(); }}>
         <div className={styles.toolHeading}><h2 id="editor-tool-title" ref={panelTitle} tabIndex={-1}>{tool ? labels[tool] : 'Ferramentas'}</h2><Button aria-label="Fechar ferramenta" onClick={() => closeTool()}><Icon name="x" /></Button></div>
         {tool && props.error && <p role="alert" className={styles.formError}>{props.error}</p>}
@@ -171,59 +174,96 @@ export function PageCover(props: {
   );
 }
 
-/* ---------- 2. Lateral esquerda ---------- */
-export type SidebarItem = { id: string; icon: string; name: string; level?: number; active?: boolean };
-
 export function EditorSidebar(props: {
   navigation?: ReactNode;
-  title: string; // ex.: "Idiomas"
-  query: string;
-  onQuery: (v: string) => void;
-  tab: "blocos" | "indice";
-  onTab: (t: "blocos" | "indice") => void;
-  items: SidebarItem[];
-  onSelect: (id: string) => void;
   onNew: () => void;
 }) {
   return (
     <aside className={cx(styles.card, styles.sidebar)} data-testid="sidebar">
       {props.navigation}
-      <details className={styles.outline} open={props.tab === 'indice'} onToggle={event => {
-        const next = event.currentTarget.open ? 'indice' : 'blocos';
-        if (next !== props.tab) props.onTab(next);
-      }}>
-      <summary>Índice da página</summary>
-      <label className={styles.search} data-testid="sidebar-search">
-        <Icon name="search" />
-        <Input
-          value={props.query}
-          onChange={(e) => props.onQuery(e.target.value)}
-          placeholder="Filtrar títulos…"
-          aria-label="Filtrar índice"
-        />
-      </label>
-      <ul className={styles.list} data-testid="block-list">
-        {props.tab === 'indice' && props.items.map((it) => (
-          <li key={it.id}>
-            <Button
-              type="button"
-              className={cx(styles.listItem, it.active && styles.listActive)}
-              onClick={() => props.onSelect(it.id)}
-              title={it.name}
-            >
-              <b>{it.icon}</b>
-              <span className={cx(styles.listName, styles.hideCompact)}>{it.name}</span>
-            </Button>
-          </li>
-        ))}
-      </ul>
-      {props.tab === 'indice' && !props.items.length && <p className={styles.saveHint}>{props.query ? 'Nenhum título encontrado.' : 'Adicione títulos ao texto para navegar pelo índice.'}</p>}
-      </details>
       <Button type="button" className={styles.btn} onClick={props.onNew} data-testid="sidebar-new">
         <Icon name="back" />
         <b className={styles.hideCompact}>Voltar à coleção</b>
       </Button>
     </aside>
+  );
+}
+
+export function EditorOutline({ headings, onSelect }: { headings: OutlineHeading[]; onSelect: (key: string) => void }) {
+  const [mode, setMode] = useState<'mouse' | 'explicit' | null>(null);
+  const [query, setQuery] = useState('');
+  const panelId = useId();
+  const root = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const pointerInside = useRef(false);
+  const open = mode !== null;
+  const filter = query.trim().toLowerCase();
+  const items = headings.filter(item => item.text.toLowerCase().includes(filter));
+
+  const closeAndFocus = useCallback(() => {
+    setMode(null);
+    trigger.current?.focus({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
+      if (document.querySelector('dialog[open], [data-block-menu-open="true"]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeAndFocus();
+    };
+    const outside = (event: PointerEvent) => {
+      if (mode === 'explicit' && !root.current?.contains(event.target as Node)) setMode(null);
+    };
+    window.addEventListener('keydown', escape, true);
+    window.addEventListener('pointerdown', outside, true);
+    return () => {
+      window.removeEventListener('keydown', escape, true);
+      window.removeEventListener('pointerdown', outside, true);
+    };
+  }, [closeAndFocus, mode, open]);
+
+  return (
+    <div ref={root} className={styles.outline} onPointerEnter={event => {
+      if (event.pointerType !== 'mouse') return;
+      pointerInside.current = true;
+      setMode(current => current ?? 'mouse');
+    }} onPointerLeave={event => {
+      if (event.pointerType !== 'mouse') return;
+      pointerInside.current = false;
+      if (mode === 'mouse' && !panel.current?.contains(document.activeElement)) setMode(null);
+    }} onBlur={event => {
+      if (mode === 'explicit' && !event.currentTarget.contains(event.relatedTarget)) setMode(null);
+      if (mode === 'mouse' && !pointerInside.current && !panel.current?.contains(event.relatedTarget)) setMode(null);
+    }}>
+      <Button ref={trigger} className={styles.outlineTrigger} aria-label="Índice da página" title="Índice da página" aria-expanded={open} aria-controls={panelId} onMouseDown={event => event.preventDefault()} onClick={event => {
+        const pointer = (event.nativeEvent as PointerEvent).pointerType;
+        const mouse = event.detail > 0 && (pointer ? pointer === 'mouse' : window.matchMedia('(hover: hover)').matches);
+        if (mouse) setMode(current => current ?? 'mouse');
+        else setMode(current => current === 'explicit' ? null : 'explicit');
+      }}>
+        <Icon name="ul" />
+      </Button>
+      <div id={panelId} ref={panel} hidden={!open} className={styles.outlinePanel}>
+        <nav aria-label="Índice da página" className={styles.outlineNavigation}>
+          <label className={styles.search}>
+            <Icon name="search" />
+            <Input value={query} onChange={event => setQuery(event.target.value)} placeholder="Filtrar títulos…" aria-label="Filtrar índice" />
+          </label>
+          {items.length ? <ul className={styles.outlineList}>
+            {items.map(item => <li key={item.key} data-level={item.level}>
+              <Button className={styles.outlineItem} onMouseDown={event => event.preventDefault()} onClick={event => {
+                onSelect(item.key);
+                if (event.detail === 0 || mode === 'explicit') closeAndFocus();
+              }}>{item.text}</Button>
+            </li>)}
+          </ul> : <p className={styles.saveHint} role="status">Nenhum título encontrado.</p>}
+        </nav>
+      </div>
+    </div>
   );
 }
 

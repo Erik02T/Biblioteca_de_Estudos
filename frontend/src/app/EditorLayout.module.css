@@ -41,22 +41,63 @@
 
 /* lateral */
 .sidebar { padding: 14px 12px; gap: 10px; overflow-y: auto; }
-.outline { border-top: 1px solid var(--bd); padding-top: 8px; }
-.outline summary { min-height: 44px; padding: 10px 4px; cursor: pointer; }
-.outline .list { margin-top: 8px; }
-.sideTitle { margin: 0; font: 700 20px var(--font-geist-sans), sans-serif; display: flex; align-items: center; gap: 8px; }
-.sideTitle .icon { color: var(--glow); }
+
+.outline {
+  --outline-inset: 16px;
+  --outline-bottom: calc(var(--outline-inset) + env(safe-area-inset-bottom, 0px));
+  --outline-right: calc(var(--outline-inset) + env(safe-area-inset-right, 0px));
+  position: fixed;
+  right: var(--outline-right);
+  bottom: var(--outline-bottom);
+  z-index: 8;
+}
+.outline .outlineTrigger {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: var(--s1);
+  color: var(--mut);
+  border-radius: var(--ui-radius);
+}
+.outline .outlineTrigger[aria-expanded="true"] { color: var(--pri); border-color: var(--pri); }
+.outlinePanel {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  width: min(320px, calc(100vw - var(--outline-right) - var(--outline-inset) - env(safe-area-inset-left, 0px)));
+  padding-block-end: 8px;
+}
+.outlineNavigation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(440px, calc(100dvh - var(--outline-bottom) - 68px - env(safe-area-inset-top, 0px)));
+  padding: 8px;
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--ui-radius);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
 .search { position: relative; display: block; }
 .search .icon { position: absolute; left: 10px; top: 14px; width: 16px; height: 16px; color: var(--mut); }
 .search input { width: 100%; height: 44px; padding: 0 10px 0 32px; background: var(--s2); color: inherit; border: 1px solid var(--bd); border-radius: 10px; font: inherit; }
-.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.tabs .btn { min-height: var(--ui-control-height); font-size: var(--ui-text-small); }
-.list { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
-.listItem { width: 100%; text-align: left; background: none; color: inherit; font: inherit; cursor: pointer; border: 0; border-left: 3px solid transparent; border-radius: 8px; padding: 9px 10px; display: flex; gap: 8px; align-items: center; }
-.listItem:hover { background: var(--s2); }
-.listActive { border-left-color: var(--pri); background: var(--ui-selected); }
-.listName { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.listItem small { color: var(--mut); }
+.outlineList { min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 4px; list-style: none; }
+.outlineList .outlineItem {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 36px;
+  padding: 6px 8px;
+  background: transparent;
+  border: 0;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.outlineList .outlineItem:hover { background: var(--s2); }
+.outlineList [data-level="1"] button { font-weight: 700; }
+.outlineList [data-level="2"] button { padding-inline-start: 20px; }
+.outlineList [data-level="3"] button { padding-inline-start: 32px; }
+@media (pointer: coarse) { .outlineList .outlineItem { min-height: 44px; } }
 
 /* centro */
 .center { display: flex; flex-direction: column; gap: 12px; grid-column: 2; min-width: 0; }
