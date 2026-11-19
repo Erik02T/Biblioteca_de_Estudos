@@ -5,7 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { ActionRail, AttachmentsPanel, EditorLayout, EditorSidebar, EditorTopBar, EditorProperties, FormatPanel, PageCover, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
-import { contentHeadings, wordCount } from "./AreaEditor";
+import { wordCount } from "./AreaEditor";
+import { documentHeadings } from './document-outline';
 import { editorExtensions } from "./extensions";
 import { BlockControls, type ResourceInsertKind } from "./BlockControls";
 import { DocumentResourcePicker } from './DocumentResourcePicker';
@@ -980,6 +981,14 @@ function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, own
     valuesRef.current = next; setValues(next); coordinator.update(payload(next));
   };
   const editor = useEditor({ extensions: editorExtensions, content: unsupportedContent.length ? { type: 'doc', content: [{ type: 'paragraph' }] } : values.conteudo, editable: !unsupportedContent.length, editorProps: { attributes: { role: 'textbox', 'aria-label': 'Conteúdo da página', 'aria-multiline': 'true' } }, immediatelyRender: false, onUpdate: ({ editor: current }) => { if (!unsupportedContent.length) updateValue('conteudo', editedDocumentContent(current.getJSON(), valuesRef.current.conteudo)); } });
+  const subscribeToDocument = useCallback((notify: () => void) => {
+    if (!editor) return () => {};
+    editor.on('transaction', notify);
+    return () => { editor.off('transaction', notify); };
+  }, [editor]);
+  const getDocument = useCallback(() => editor?.state.doc ?? null, [editor]);
+  const outlineDocument = useSyncExternalStore(subscribeToDocument, getDocument, () => null);
+  const headings = useMemo(() => outlineDocument ? documentHeadings(outlineDocument) : [], [outlineDocument]);
   const [resourcePicker, setResourcePicker] = useState<{ kind: ResourceInsertKind; insertion: DocumentInsertion } | null>(null);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const navigateResource = useRef(onNavigate);
@@ -1204,26 +1213,20 @@ function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, own
     }
   };
   const selectSidebarItem = (id: string) => {
-    if (tab !== "indice" || !editor) return;
-    const headingMatch = /^heading-(\d+)$/.exec(id);
-    if (!headingMatch) return;
-    const targetIndex = Number(headingMatch[1]);
-    let headingIndex = 0;
-    let position: number | undefined;
-    editor.state.doc.descendants((node, nodePosition) => {
-      if (node.type.name !== "heading") return;
-      if (headingIndex === targetIndex) {
-        position = nodePosition + 1;
-        return false;
-      }
-      headingIndex += 1;
-    });
-    if (position !== undefined) {
-      editor.chain().focus().setTextSelection(position).scrollIntoView().run();
-    }
+    if (!editor || editor.isDestroyed) return;
+    const { doc } = editor.state;
+    // Uma posição local só é válida para o documento que gerou a lista.
+    const currentHeadings = doc === outlineDocument ? headings : id.startsWith('id:') ? documentHeadings(doc) : [];
+    const heading = currentHeadings.find(item => item.key === id);
+    if (!heading) return;
+
+    const { view } = editor;
+    const target = view.nodeDOM(heading.position);
+    if (!(target instanceof HTMLElement) || !target.isConnected || target.parentElement !== view.dom || target.tagName !== `H${heading.level}`) return;
+    target.scrollIntoView({ block: 'start', inline: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   };
   const attachmentItems: AttachmentItem[] = attachments.map((attachment) => ({ id: attachment.id, kind: attachment.tipo === "LINK" ? "link" : attachment.tipo === "IMAGEM" ? "image" : "file", label: attachment.nome ?? attachment.url, href: attachment.url, previewUrl: attachment.tipo === "IMAGEM" ? attachment.url : undefined }));
-  const items = useMemo(() => { const source = tab === "indice" ? contentHeadings(values.conteudo).map((name, index) => ({ id: `heading-${index}`, icon: "#", name, level: 1 })) : [{ id: area?.id ?? "new", icon: values.icone, name: values.nome || "Nova página", level: values.nivelEntendimento }]; return source.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())); }, [area?.id, query, tab, values]);
+  const items = headings.filter(item => item.text.toLowerCase().includes(query.toLowerCase())).map(item => ({ id: item.key, icon: '#', name: item.text, level: item.level }));
   const activeBlock: BlockKind | null = editor?.isActive("heading", { level: 1 }) ? "h1" : editor?.isActive("heading", { level: 2 }) ? "h2" : editor?.isActive("heading", { level: 3 }) ? "h3" : editor?.isActive("heading", { level: 4 }) ? "h4" : editor?.isActive("heading", { level: 5 }) ? "h5" : editor?.isActive("heading", { level: 6 }) ? "h6" : editor?.isActive("paragraph") ? "p" : null;
   const marks: Partial<Record<MarkKind, boolean>> = { bold: editor?.isActive("bold"), italic: editor?.isActive("italic"), strike: editor?.isActive("strike"), bulletList: editor?.isActive("bulletList"), orderedList: editor?.isActive("orderedList"), taskList: editor?.isActive("taskList"), blockquote: editor?.isActive("blockquote"), codeBlock: editor?.isActive("codeBlock"), toggleBlock: editor?.isActive("toggleBlock"), callout: editor?.isActive("callout") };
   const iconSlot = <Button type="button" className="icon-picker" aria-label="Escolher ícone" onClick={() => { const next = window.prompt("Ícone da página (vazio remove)", values.icone); if (next === null) return; updateValue("icone", next.trim()); }}>{values.icone || "＋"}</Button>;

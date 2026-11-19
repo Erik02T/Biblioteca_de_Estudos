@@ -28,5 +28,4 @@ export default function AreaEditor({ content, onChange, onAutosaveStateChange, o
 }
 
 export function wordCount(content: JSONContent) { return (JSON.stringify(content).match(/"text":"([^"\\]|\\.)*"/g) ?? []).join(" ").replace(/"text":"|"/g, " ").trim().split(/\s+/).filter(Boolean).length; }
-export function contentHeadings(content: JSONContent) { return (content.content ?? []).filter((node) => node.type === "heading" && Number(node.attrs?.level) <= 3).map((node) => (node.content ?? []).map((item) => item.text ?? "").join("")); }
 export function highlightStyle(color: string) { return { "--hl": color } as React.CSSProperties; }
