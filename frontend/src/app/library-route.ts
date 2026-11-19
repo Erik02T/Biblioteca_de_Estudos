@@ -1,6 +1,6 @@
 export type LibrarySection = 'LINGUAGENS' | 'FACULDADE' | 'PROJETOS' | 'OUTROS';
 export type LibraryStatus = 'ESTUDANDO' | 'ESTUDADO';
-export type LibraryRoute = { pageId?: string; section?: LibrarySection; subSection?: LibraryStatus; view?: 'all' | 'favorites' | 'recent' | 'trash'; q?: string; categoria?: string; minLevel?: number; maxLevel?: number; favorite?: boolean; scope?: 'ROOTS' | 'ALL'; layout?: 'LIST' | 'TABLE' | 'BOARD'; order?: 'updatedAt' | 'nome' | 'nivelEntendimento' | 'sortOrder' | 'lastOpenedAt'; direction?: 'asc' | 'desc'; listPage?: number };
+export type LibraryRoute = { pageId?: string; section?: LibrarySection; subSection?: LibraryStatus; view?: 'all' | 'favorites' | 'recent' | 'trash'; q?: string; categoria?: string; minLevel?: number; maxLevel?: number; favorite?: boolean; scope?: 'ROOTS' | 'ALL'; layout?: 'LIST' | 'GRID' | 'TABLE' | 'BOARD'; order?: 'updatedAt' | 'nome' | 'nivelEntendimento' | 'sortOrder' | 'lastOpenedAt'; direction?: 'asc' | 'desc'; listPage?: number };
 export function readLibraryRoute(url: URL): LibraryRoute {
   const pageId = url.searchParams.get('page');
   if (pageId) {
@@ -16,7 +16,7 @@ export function readLibraryRoute(url: URL): LibraryRoute {
   const view = url.searchParams.get('view');
   if (view === 'all' || view === 'favorites' || view === 'recent' || view === 'trash') route.view = view;
   if ((route.section || route.view) && (status === 'ESTUDANDO' || status === 'ESTUDADO')) route.subSection = status;
-  for (const [key, choices] of Object.entries({ scope: ['ROOTS','ALL'], layout: ['LIST','TABLE','BOARD'], order: ['updatedAt','nome','nivelEntendimento','sortOrder','lastOpenedAt'], direction: ['asc','desc'] })) {
+  for (const [key, choices] of Object.entries({ scope: ['ROOTS','ALL'], layout: ['LIST','GRID','TABLE','BOARD'], order: ['updatedAt','nome','nivelEntendimento','sortOrder','lastOpenedAt'], direction: ['asc','desc'] })) {
     const value = url.searchParams.get(key);
     if (value && choices.includes(value)) Object.assign(route, { [key]: value });
   }

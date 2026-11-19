@@ -1,7 +1,8 @@
 "use client";
 
 import { Button, Input, containModalTab } from './ui';
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import type { OutlineHeading } from './document-outline';
 import type { SavePresentation } from './save-status';
 import styles from "./EditorLayout.module.css";
 
@@ -23,6 +24,19 @@ const PATHS = {
   back: "M19 12H5M12 19l-7-7 7-7",
   menu: "M4 6h16M4 12h16M4 18h16",
   x: "M18 6L6 18M6 6l12 12",
+  book: "M12 5.5C9.8 4 6 3.5 3 4.5v14c3-1 6.8-.5 9 1 2.2-1.5 6-2 9-1v-14c-3-1-6.8-.5-9 1zM12 5.5v14",
+  home: "m3 11 9-8 9 8M5 10v10h5v-6h4v6h5V10",
+  star: "m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+  clock: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2",
+  grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+  trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
+  logout: "M9 4H5v16h4M16 8l4 4-4 4M20 12H9",
+  chevron: "m9 6 6 6-6 6",
+  globe: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18-3-3-3-15 0-18",
+  filters: "M4 6h16M7 12h10M10 18h4",
+  template: "M4 4h16v6H4zM4 14h7v6H4zM15 14h5v6h-5z",
+  bookmark: "M6 4h12v17l-6-4-6 4z",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
 } as const;
 export type IconName = keyof typeof PATHS;
 
@@ -36,7 +50,7 @@ export function Icon({ name }: { name: IconName }) {
 
 /* Documento e ferramentas compartilham o layout sem remontar o editor. */
 export function EditorLayout(props: {
-  sidebar: ReactNode; // <EditorSidebar />
+  outline?: ReactNode;
   topbar: ReactNode; // <EditorTopBar />
   cover?: ReactNode;
   editor: ReactNode; // <EditorContent editor={editor} />
@@ -51,7 +65,6 @@ export function EditorLayout(props: {
 }) {
   const [tool, setTool] = useState<'properties' | 'materials' | 'format' | null>(null);
   const [focusMode, setFocusMode] = useState(false);
-  const [navigation, setNavigation] = useState<'auto' | 'open' | 'closed'>('auto');
   const [wide, setWide] = useState(false);
   const panel = useRef<HTMLDialogElement>(null);
   const panelTitle = useRef<HTMLHeadingElement>(null);
@@ -78,7 +91,7 @@ export function EditorLayout(props: {
   }, [tool, wide]);
   const labels = { properties: 'Propriedades', materials: `Materiais (${props.attachmentCount})`, format: 'Formatar' };
   return (
-    <section aria-label="Editor da página" className={cx(styles.root, props.fullWidth && styles.fullWidth, focusMode && styles.focusMode, navigation === 'open' && styles.navigationOpen, navigation === 'closed' && styles.navigationClosed, Boolean(tool) && styles.withTool)} data-testid="editor-root" data-full-width={props.fullWidth ? "true" : "false"} data-focus-mode={focusMode} onKeyDownCapture={event => {
+    <section aria-label="Editor da página" className={cx(styles.root, props.fullWidth && styles.fullWidth, Boolean(tool) && styles.withTool)} data-testid="editor-root" data-full-width={props.fullWidth ? "true" : "false"} data-focus-mode={focusMode} onKeyDownCapture={event => {
       if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
       // O editor consome Escape; sair do foco tem precedência apenas nessa camada.
       if (focusMode && !tool && event.key === 'Escape' && !(event.target as HTMLElement).closest('[data-block-menu-open="true"]') && (event.target as HTMLElement).closest('.tiptap')) {
@@ -88,17 +101,14 @@ export function EditorLayout(props: {
       if (event.key !== 'Escape' || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229 || event.defaultPrevented) return;
       if (tool) { event.preventDefault(); event.stopPropagation(); closeTool(); }
       else if (focusMode) { event.preventDefault(); event.stopPropagation(); setFocusMode(false); }
-      else if (navigation === 'open') { event.preventDefault(); event.stopPropagation(); setNavigation('closed'); document.getElementById('editor-navigation-toggle')?.focus(); }
     }}>
       <div className={styles.documentActions}>
         {props.rail}
         <div className={styles.toolTriggers} role="group" aria-label="Ferramentas da página">
-          <Button id="editor-navigation-toggle" aria-controls="editor-navigation" aria-expanded={!focusMode && (navigation === 'open' || (navigation === 'auto' && wide))} onClick={() => { setFocusMode(false); setNavigation(navigation === 'open' || (navigation === 'auto' && wide) ? 'closed' : 'open'); }}>Navegação</Button>
           {(['properties', 'materials', 'format'] as const).map(name => <Button key={name} aria-controls="editor-tool" aria-expanded={tool === name} onMouseDown={event => event.preventDefault()} onClick={event => { trigger.current = event.currentTarget; if (tool === name) closeTool(); else setTool(name); }}>{labels[name]}</Button>)}
           <Button aria-pressed={focusMode} onClick={() => { closeTool(false); setFocusMode(!focusMode); if (!focusMode) documentRef.current?.querySelector<HTMLElement>('.tiptap, [role="textbox"]')?.focus({ preventScroll: true }); }}>{focusMode ? 'Sair do foco' : 'Modo foco'}</Button>
         </div>
       </div>
-      <div id="editor-navigation" className={styles.navigation}>{props.sidebar}</div>
       <section className={styles.center} ref={documentRef}>
         {props.error && <p role={tool ? undefined : 'alert'} className={styles.formError}>{props.error}</p>}
         <div className={cx(styles.card, styles.editorCard)} data-testid="editor-card">
@@ -110,6 +120,7 @@ export function EditorLayout(props: {
           </span>
         </div>
       </section>
+      {!focusMode && !tool && props.outline}
       <dialog id="editor-tool" ref={panel} className={styles.toolDialog} aria-labelledby="editor-tool-title" onKeyDown={containModalTab} onCancel={event => { event.preventDefault(); event.stopPropagation(); closeTool(); }}>
         <div className={styles.toolHeading}><h2 id="editor-tool-title" ref={panelTitle} tabIndex={-1}>{tool ? labels[tool] : 'Ferramentas'}</h2><Button aria-label="Fechar ferramenta" onClick={() => closeTool()}><Icon name="x" /></Button></div>
         {tool && props.error && <p role="alert" className={styles.formError}>{props.error}</p>}
@@ -171,59 +182,81 @@ export function PageCover(props: {
   );
 }
 
-/* ---------- 2. Lateral esquerda ---------- */
-export type SidebarItem = { id: string; icon: string; name: string; level?: number; active?: boolean };
+export function EditorOutline({ headings, onSelect }: { headings: OutlineHeading[]; onSelect: (key: string) => void }) {
+  const [mode, setMode] = useState<'mouse' | 'explicit' | null>(null);
+  const [query, setQuery] = useState('');
+  const panelId = useId();
+  const root = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const pointerInside = useRef(false);
+  const open = mode !== null;
+  const filter = query.trim().toLowerCase();
+  const items = headings.filter(item => item.text.toLowerCase().includes(filter));
 
-export function EditorSidebar(props: {
-  navigation?: ReactNode;
-  title: string; // ex.: "Idiomas"
-  query: string;
-  onQuery: (v: string) => void;
-  tab: "blocos" | "indice";
-  onTab: (t: "blocos" | "indice") => void;
-  items: SidebarItem[];
-  onSelect: (id: string) => void;
-  onNew: () => void;
-}) {
+  const closeAndFocus = useCallback(() => {
+    setMode(null);
+    trigger.current?.focus({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
+      if (document.querySelector('dialog[open], [data-block-menu-open="true"]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeAndFocus();
+    };
+    const outside = (event: PointerEvent) => {
+      if (mode === 'explicit' && !root.current?.contains(event.target as Node)) setMode(null);
+    };
+    window.addEventListener('keydown', escape, true);
+    window.addEventListener('pointerdown', outside, true);
+    return () => {
+      window.removeEventListener('keydown', escape, true);
+      window.removeEventListener('pointerdown', outside, true);
+    };
+  }, [closeAndFocus, mode, open]);
+
   return (
-    <aside className={cx(styles.card, styles.sidebar)} data-testid="sidebar">
-      {props.navigation}
-      <details className={styles.outline} open={props.tab === 'indice'} onToggle={event => {
-        const next = event.currentTarget.open ? 'indice' : 'blocos';
-        if (next !== props.tab) props.onTab(next);
+    <div ref={root} className={styles.outline} onPointerEnter={event => {
+      if (event.pointerType !== 'mouse') return;
+      pointerInside.current = true;
+      setMode(current => current ?? 'mouse');
+    }} onPointerLeave={event => {
+      if (event.pointerType !== 'mouse') return;
+      pointerInside.current = false;
+      if (mode === 'mouse' && !panel.current?.contains(document.activeElement)) setMode(null);
+    }} onBlur={event => {
+      if (mode === 'explicit' && !event.currentTarget.contains(event.relatedTarget)) setMode(null);
+      if (mode === 'mouse' && !pointerInside.current && !panel.current?.contains(event.relatedTarget)) setMode(null);
+    }}>
+      <Button ref={trigger} className={styles.outlineTrigger} aria-label="Índice da página" title="Índice da página" aria-expanded={open} aria-controls={panelId} onMouseDown={event => event.preventDefault()} onClick={event => {
+        const pointer = (event.nativeEvent as PointerEvent).pointerType;
+        const mouse = event.detail > 0 && (pointer ? pointer === 'mouse' : window.matchMedia('(hover: hover)').matches);
+        if (mouse) setMode(current => current ?? 'mouse');
+        else setMode(current => current === 'explicit' ? null : 'explicit');
       }}>
-      <summary>Índice da página</summary>
-      <label className={styles.search} data-testid="sidebar-search">
-        <Icon name="search" />
-        <Input
-          value={props.query}
-          onChange={(e) => props.onQuery(e.target.value)}
-          placeholder="Filtrar títulos…"
-          aria-label="Filtrar índice"
-        />
-      </label>
-      <ul className={styles.list} data-testid="block-list">
-        {props.tab === 'indice' && props.items.map((it) => (
-          <li key={it.id}>
-            <Button
-              type="button"
-              className={cx(styles.listItem, it.active && styles.listActive)}
-              onClick={() => props.onSelect(it.id)}
-              title={it.name}
-            >
-              <b>{it.icon}</b>
-              <span className={cx(styles.listName, styles.hideCompact)}>{it.name}</span>
-            </Button>
-          </li>
-        ))}
-      </ul>
-      {props.tab === 'indice' && !props.items.length && <p className={styles.saveHint}>{props.query ? 'Nenhum título encontrado.' : 'Adicione títulos ao texto para navegar pelo índice.'}</p>}
-      </details>
-      <Button type="button" className={styles.btn} onClick={props.onNew} data-testid="sidebar-new">
-        <Icon name="back" />
-        <b className={styles.hideCompact}>Voltar à coleção</b>
+        <Icon name="ul" />
       </Button>
-    </aside>
+      <div id={panelId} ref={panel} hidden={!open} className={styles.outlinePanel}>
+        <nav aria-label="Índice da página" className={styles.outlineNavigation}>
+          <label className={styles.search}>
+            <Icon name="search" />
+            <Input value={query} onChange={event => setQuery(event.target.value)} placeholder="Filtrar títulos…" aria-label="Filtrar índice" />
+          </label>
+          {items.length ? <ul className={styles.outlineList}>
+            {items.map(item => <li key={item.key} data-level={item.level}>
+              <Button className={styles.outlineItem} onMouseDown={event => event.preventDefault()} onClick={event => {
+                onSelect(item.key);
+                if (event.detail === 0 || mode === 'explicit') closeAndFocus();
+              }}>{item.text}</Button>
+            </li>)}
+          </ul> : <p className={styles.saveHint} role="status">Nenhum título encontrado.</p>}
+        </nav>
+      </div>
+    </div>
   );
 }
 

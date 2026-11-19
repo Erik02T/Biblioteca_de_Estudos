@@ -1,11 +1,12 @@
 "use client";
 
-import { Button, Input, Select, Field } from './ui';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Button, Input, Select, Field, containModalTab } from './ui';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { ActionRail, AttachmentsPanel, EditorLayout, EditorSidebar, EditorTopBar, EditorProperties, FormatPanel, PageCover, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
-import { contentHeadings, wordCount } from "./AreaEditor";
+import { ActionRail, AttachmentsPanel, EditorLayout, EditorOutline, EditorTopBar, EditorProperties, FormatPanel, Icon, PageCover, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
+import { wordCount } from "./AreaEditor";
+import { documentHeadings } from './document-outline';
 import { editorExtensions } from "./extensions";
 import { BlockControls, type ResourceInsertKind } from "./BlockControls";
 import { DocumentResourcePicker } from './DocumentResourcePicker';
@@ -19,6 +20,7 @@ import { PageSaveCoordinator, PageSaveError, type SavedPage } from './page-save-
 import { TableView } from "./TableView";
 import { BoardView } from "./BoardView";
 import { ViewConfiguration } from "./ViewConfiguration";
+import { CollectionCard, MovePageDialog } from './CollectionCard';
 import { TemplateGallery } from "./TemplateGallery";
 import { SaveTemplateDialog } from './SaveTemplateDialog';
 import { PortabilityDialog } from "./PortabilityDialog";
@@ -26,18 +28,17 @@ import { libraryUrl, readLibraryRoute, type LibraryRoute } from "./library-route
 import { createAuthenticatedFetch, fetchApi, resolveApiUrl, type AuthTokens } from "./api-client";
 import { getSavePresentation } from './save-status';
 import styles from "./page.module.css";
-import { LibraryNavigation, PageBreadcrumb } from './LibraryNavigation';
+import { LibraryNavigation, librarySections, PageBreadcrumb } from './LibraryNavigation';
 import { pageAncestors, parentCandidates } from './page-hierarchy';
-import { collectionParameters, responseValue } from './collection-query';
-import { SavedViews } from './SavedViews';
+import { advancedFilters, collectionLayout, collectionOrder, collectionParameters, isLanguagesCollection, responseValue, type LibraryRequest, type StatusCounts } from './collection-query';
 import type { UpdateStudy, ReloadStudy } from './StudyProperties';
-import type { ReactNode } from 'react';
 
 type Section = "LINGUAGENS" | "FACULDADE" | "PROJETOS" | "OUTROS";
 type SubSection = "ESTUDANDO" | "ESTUDADO";
 type AreaContent = JSONContent | { texto?: string };
 export type Area = { id: string; section: Section; subSection: SubSection; nome: string; categoria: string; nivelEntendimento: number; icone: string | null; parentId?: string | null; targetPageId?: string | null; coverAttachmentId?: string | null; coverPosition?: number | null; fullWidth?: boolean | null; sortOrder?: number | null; conteudo?: AreaContent; updatedAt: string; isFavorite?: boolean | null; lastOpenedAt?: string | null; deletedAt?: string | null };
 type AreaPage = { items: Area[]; pagination: { page: number; limit: number; total: number; totalPages: number } };
+const emptyCollection: AreaPage = { items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
 type Attachment = ResolvedAttachment & { createdAt?: string };
 type AreaFormValues = { nome: string; categoria: string; nivelEntendimento: number; icone: string; parentId?: string | null; targetPageId?: string | null; coverAttachmentId?: string | null; coverPosition: number; fullWidth: boolean; conteudo: JSONContent; updatedAt?: string };
 function formSnapshot(value: AreaFormValues, section: Section, subSection: SubSection): PageSnapshot {
@@ -143,25 +144,29 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
   const [recoveryDraft, setRecoveryDraft] = useState<LocalDraft>();
   const [collectionRoute, setCollectionRoute] = useState<LibraryRoute>({});
   const returnRoute = useRef<LibraryRoute | null>(null);
+  const trashOrigin = useRef<{ url: string; route: LibraryRoute }>(undefined);
   const userId = useSyncExternalStore(subscribeToAuthToken, getAccessToken, getServerAuthToken);
   const [selectedSection, setSelectedSection] = useState<Section>();
   const [selectedSubSection, setSelectedSubSection] = useState<SubSection>();
   const [areas, setAreas] = useState<Area[]>([]);
-  const [collectionData, setCollectionData] = useState<AreaPage>({ items: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } });
-  const [collectionLoading, setCollectionLoading] = useState(true);
-  const [loadedCollectionQuery, setLoadedCollectionQuery] = useState('');
-  const [collectionError, setCollectionError] = useState<string>();
+  const [collectionResult, setCollectionResult] = useState<{ query: string; data?: AreaPage; error?: string }>();
   const [openingError, setOpeningError] = useState<string>();
   const [openingRetry, setOpeningRetry] = useState(0);
   const mutationQueues = useRef(new Map<string, Promise<Area>>());
   const localRevisions = useRef(new Map<string, string>());
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [editingArea, setEditingArea] = useState<Area | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [creationParent, setCreationParent] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [focusRequest, setFocusRequest] = useState(0);
+  const main = useRef<HTMLElement>(null);
+  const searchDialog = useRef<HTMLDialogElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const searchTrigger = useRef<HTMLElement>(null);
+  const searchId = useId();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Area[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -170,13 +175,7 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
   const [searchPagination, setSearchPagination] = useState<AreaPage['pagination']>();
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashError, setTrashError] = useState<string>();
-  const [showTrash, setShowTrash] = useState(false);
   const [trashAreas, setTrashAreas] = useState<Area[]>([]);
-  const [viewLayout, setViewLayout] = useState<"LIST" | "TABLE" | "BOARD">("LIST");
-  const [viewScope, setViewScope] = useState<"ROOTS" | "ALL">("ROOTS");
-  const [viewFilters, setViewFilters] = useState<Record<string, unknown>>({});
-  const [viewOrderBy, setViewOrderBy] = useState("updatedAt");
-  const [viewOrderDirection, setViewOrderDirection] = useState("desc");
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [templatesError, setTemplatesError] = useState<string>();
@@ -232,9 +231,6 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
       setEditingArea(page); setIsCreating(false);
       if (!page) {
         setCollectionRoute(route); returnRoute.current = route;
-        setShowTrash(route.view === 'trash');
-        setViewLayout(route.layout ?? 'LIST'); setViewScope(route.scope ?? 'ALL');
-        setViewFilters({ section: route.section, search: route.q ?? '', categoria: route.categoria, minLevel: route.minLevel, maxLevel: route.maxLevel, isFavorite: route.favorite || route.view === 'favorites' }); setViewOrderBy(route.order ?? (route.view === 'recent' ? 'lastOpenedAt' : 'updatedAt')); setViewOrderDirection(route.direction ?? (route.order === 'sortOrder' ? 'asc' : 'desc'));
       }
       setSearchQuery('');
       // Opening one document must not download the complete navigation again.
@@ -258,6 +254,18 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
     } finally { if (sequence === navigationSequence.current) setRouteLoading(false); }
   }, [userId]);
   const navigateTo = useCallback((route: LibraryRoute) => { void applyRoute(libraryUrl(route), 'push'); }, [applyRoute]);
+  const navigateFromLibrary = (route: LibraryRoute, focusContent: boolean) => {
+    if (route.view === 'trash' && collectionRoute.view !== 'trash') {
+      trashOrigin.current = { url: libraryUrl(route), route: collectionRoute };
+    }
+    void applyRoute(libraryUrl(route), 'push').then(() => {
+      if (focusContent) setFocusRequest(value => value + 1);
+    });
+  };
+  useEffect(() => {
+    if (focusRequest) main.current?.focus();
+  }, [focusRequest]);
+
   useEffect(() => {
     if (!userId) return;
     const sequence = navigationSequence;
@@ -267,18 +275,42 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
     return () => { ++sequence.current; request.current?.abort(); window.removeEventListener('popstate', load); };
   }, [applyRoute, userId]);
 
+  const openSearch = useCallback((button?: HTMLButtonElement) => {
+    const panel = searchDialog.current;
+    if (!panel) return;
+    if (!panel.open) {
+      const searchButton = document.querySelector<HTMLButtonElement>('[data-library-search]');
+      searchTrigger.current = button ?? (searchButton?.getClientRects().length ? searchButton :
+        document.querySelector<HTMLButtonElement>('[data-library-menu]') ?? (document.activeElement as HTMLElement));
+      panel.showModal();
+    }
+    searchInput.current?.focus();
+  }, []);
+
+  const closeSearch = (restoreFocus: boolean) => {
+    searchDialog.current?.close();
+    if (!restoreFocus) return;
+    searchTrigger.current?.focus();
+    if (document.activeElement !== searchTrigger.current) {
+      const fallback = document.querySelector<HTMLButtonElement>('[data-library-menu]') ?? main.current;
+      fallback?.focus();
+    }
+  };
+
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
-      if (event.key === "/" && !event.isComposing && !(event.target as HTMLElement).isContentEditable && !["INPUT", "TEXTAREA", "SELECT"].includes((event.target as HTMLElement).tagName)) {
-        event.preventDefault();
-        setIsSearchOpen(true);
-      }
-      if (event.key === "Escape") setIsSearchOpen(false);
+      const target = event.target;
+      const slash = event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey &&
+        !(target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select')));
+      const command = (event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k';
+      if ((!slash && !command) || document.querySelector('dialog:modal:not([data-library-drawer])')) return;
+      event.preventDefault();
+      openSearch();
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, []);
+  }, [openSearch]);
 
   useEffect(() => {
     if (!userId) return;
@@ -308,26 +340,39 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
     return () => controller.abort();
   }, [userId, retryKey]);
 
+  const isCollection = Object.keys(collectionRoute).length > 0;
+  const showTrash = collectionRoute.view === 'trash';
   const collectionQuery = collectionParameters(collectionRoute).toString();
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !isCollection || showTrash) return;
     const controller = new AbortController();
-    const load = async () => { setCollectionLoading(true); setCollectionError(undefined);
-    void request('/areas?' + collectionQuery, { signal: controller.signal }).then(responseValue<AreaPage>).then(result => {
-      if (controller.signal.aborted) return;
-      setCollectionData(result);
-      setLoadedCollectionQuery(collectionQuery);
-      const current = readLibraryRoute(new URL(window.location.href));
-      if (!current.pageId && (current.listPage ?? 1) !== result.pagination.page) {
-        const corrected = { ...current, listPage: result.pagination.page > 1 ? result.pagination.page : undefined };
-        const url = libraryUrl(corrected); window.history.replaceState(null, '', url); committedUrl.current = url;
-        returnRoute.current = corrected; setCollectionRoute(corrected);
+    const currentQuery = () => {
+      const current = returnRoute.current;
+      if (!controller.signal.aborted && current && current.view !== 'trash' && collectionParameters(current).toString() === collectionQuery) return current;
+    };
+    const load = async () => {
+      setCollectionResult(current => current?.error ? undefined : current);
+      try {
+        const data = await responseValue<AreaPage>(await request('/areas?' + collectionQuery, { signal: controller.signal }));
+        const current = currentQuery();
+        if (!current) return;
+        // The API may clamp an unavailable page. Keep the most recent display choice.
+        if (window.location.pathname + window.location.search === libraryUrl(current) && (current.listPage ?? 1) !== data.pagination.page) {
+          const corrected = { ...current, listPage: data.pagination.page > 1 ? data.pagination.page : undefined };
+          const url = libraryUrl(corrected);
+          window.history.replaceState(null, '', url);
+          committedUrl.current = url;
+          returnRoute.current = corrected;
+          setCollectionRoute(corrected);
+          setCollectionResult({ query: collectionParameters(corrected).toString(), data });
+        } else setCollectionResult({ query: collectionQuery, data });
+      } catch (cause) {
+        if (currentQuery()) setCollectionResult({ query: collectionQuery, error: cause instanceof Error ? cause.message : 'Não foi possível carregar a coleção.' });
       }
-    }).catch(cause => { if (!controller.signal.aborted) setCollectionError(cause.message); })
-      .finally(() => { if (!controller.signal.aborted) setCollectionLoading(false); });
-    }; void load();
+    };
+    void load();
     return () => controller.abort();
-  }, [collectionQuery, request, retryKey, userId]);
+  }, [collectionQuery, isCollection, request, retryKey, showTrash, userId]);
 
   const openedPageId = editingArea?.id;
   useEffect(() => {
@@ -400,11 +445,40 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
 
   const currentSection = sections.find((section) => section.value === selectedSection);
   const currentSubSection = subsections.find((subSection) => subSection.value === selectedSubSection);
-  const visibleAreas = collectionData.items;
-  const updateCollection = (patch: Partial<LibraryRoute>) => navigateTo({ ...collectionRoute, listPage: undefined, ...patch });
+  const result = collectionResult?.query === collectionQuery ? collectionResult : undefined;
+  const { items: visibleAreas, pagination } = result?.data ?? emptyCollection;
+  const categories = useMemo(() => {
+    if (isLoading || error) return undefined;
+    const names = new Set(areas.filter(area => !collectionRoute.section || area.section === collectionRoute.section).map(area => area.categoria.trim()).filter(Boolean));
+    return [...names].sort((first, second) => first.localeCompare(second, 'pt-BR'));
+  }, [areas, collectionRoute.section, error, isLoading]);
+  const languageCounts = useMemo(() => {
+    if (!isLanguagesCollection(collectionRoute) || isLoading || error) return undefined;
+    const counts: StatusCounts = { total: 0, ESTUDANDO: 0, ESTUDADO: 0 };
+    for (const area of areas) {
+      if (area.section === 'LINGUAGENS' && !area.deletedAt) {
+        counts.total++;
+        counts[area.subSection]++;
+      }
+    }
+    return counts;
+  }, [areas, collectionRoute, error, isLoading]);
+  const updateCollection = (patch: Partial<LibraryRoute>) => {
+    const next = { ...collectionRoute, listPage: 'layout' in patch ? collectionRoute.listPage : undefined, ...patch };
+    if (!next.section && !next.view) next.view = 'all';
+    navigateTo(next);
+  };
+  const returnFromTrash = () => {
+    const previous = trashOrigin.current;
+    navigateTo(previous?.url === libraryUrl(collectionRoute) ? previous.route : { ...collectionRoute, view: collectionRoute.section ? undefined : 'all' });
+  };
   const integratePage = (saved: Area) => {
     setAreas(items => items.map(item => item.id === saved.id ? { ...item, ...saved } : item));
-    setCollectionData(current => ({ ...current, items: current.items.map(item => item.id === saved.id ? { ...item, ...saved } : item) }));
+    setCollectionResult(current => {
+      if (!current?.data) return current;
+      const items = current.data.items.map(item => item.id === saved.id ? { ...item, ...saved } : item);
+      return { ...current, data: { ...current.data, items } };
+    });
     setSearchResults(items => items.map(item => item.id === saved.id ? { ...item, ...saved } : item));
   };
   const updateProperties: UpdateStudy = (area, patch) => {
@@ -489,17 +563,16 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
 
   if (!userId) return <AuthView onAuthenticated={saveTokens} />;
   const logout = () => { void (async () => { try { await beforeNavigate.current?.(); } catch (failure) { setRouteError(failure instanceof Error ? failure.message : 'Salve as pendências antes de sair.'); return; } beforeNavigate.current = null; window.localStorage.removeItem("biblioteca-access-token"); window.localStorage.removeItem("biblioteca-refresh-token"); window.history.replaceState(null, '', '/'); notifyAuthTokenListeners(); })(); };
-  const navigation = <LibraryNavigation loading={isLoading} error={error} onRetry={() => setRetryKey(key => key + 1)} pages={areas} current={editingArea ? { pageId: editingArea.id, section: editingArea.section } : isCreating ? { section: selectedSection } : collectionRoute} onNavigate={navigateTo} onSearch={() => setIsSearchOpen(true)} onLogout={logout} />;
-  const closeSearch = () => { setIsSearchOpen(false); document.querySelector<HTMLButtonElement>('[data-library-search]')?.focus(); };
-  const searchPanel = isSearchOpen && <section className="library-search" aria-label="Busca na biblioteca" onKeyDown={event => { if (event.key === 'Escape' && !event.nativeEvent.isComposing) { event.stopPropagation(); closeSearch(); } }}>
-    <label>Buscar em toda a biblioteca<Input autoFocus value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setSearchPage(1); }} placeholder="Digite pelo menos 2 caracteres" /></label>
-    <Button onClick={closeSearch}>Fechar busca</Button>
-    {searchQuery.trim().length >= 2 && (searchLoading ? <p role="status">Buscando…</p> : searchError ? <p role="alert">{searchError}<Button onClick={() => setRetryKey(key => key + 1)}>Tentar busca novamente</Button></p> : <><p role="status">{searchPagination?.total ?? 0} resultados em toda a biblioteca.</p><ul>{searchResults.map(item => <li key={item.id}><Button onClick={() => { setIsSearchOpen(false); openEdit(item); }}>{item.nome}</Button><small>{sections.find(section => section.value === item.section)?.label} / {pageAncestors(areas, item.parentId).map(page => page.nome).join(' / ') || 'Página principal'}</small></li>)}</ul>{searchPagination && searchPagination.totalPages > 1 && <nav aria-label="Paginação da busca global"><Button disabled={searchPage <= 1} onClick={() => setSearchPage(value => value - 1)}>Resultados anteriores</Button><span>Página {searchPage} de {searchPagination.totalPages}</span><Button disabled={searchPage >= searchPagination.totalPages} onClick={() => setSearchPage(value => value + 1)}>Próximos resultados</Button></nav>}</>)}
-  </section>;
+  const indexedPage = editingArea && areas.find(page => page.id === editingArea.id);
+  const currentPage = indexedPage ?? editingArea;
+  const navigationPages = editingArea && !indexedPage ? [...areas, editingArea] : areas;
+  const activeRoute = currentPage ? { pageId: currentPage.id, section: currentPage.section } :
+    isCreating ? { section: selectedSection } : collectionRoute;
   return <div className={`${styles.page} ${styles.workspace}`}>
-    {!(editingArea || isCreating) && <aside className={styles.librarySidebar}>{navigation}</aside>}
-    <main className={styles.main}>
-    {!(editingArea || isCreating) && searchPanel}
+    <LibraryNavigation current={activeRoute} pages={navigationPages} loading={isLoading} error={error}
+      drawerOpen={drawerOpen} searchId={searchId} onDrawerChange={setDrawerOpen} onRetry={() => setRetryKey(key => key + 1)}
+      onNavigate={navigateFromLibrary} onSearch={openSearch} onLogout={logout} />
+    <main ref={main} className={styles.main} tabIndex={-1} aria-label={currentPage?.nome ?? 'Conteúdo da biblioteca'}>
     {openingError && editingArea && <p role="status">{openingError}<Button onClick={() => setOpeningRetry(value => value + 1)}>Atualizar Recentes novamente</Button></p>}
     <DraftRecovery ownerId={ownerId} refreshKey={String(retryKey) + ':' + (editingArea?.id ?? String(isCreating))} onSelect={draft => {
       void (async () => {
@@ -518,7 +591,6 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
           onRecoveryHandled={() => setRecoveryDraft(undefined)}
           section={currentSection?.value ?? 'LINGUAGENS'}
           subSection={currentSubSection?.value ?? 'ESTUDANDO'}
-          navigation={<>{navigation}{searchPanel}</>}
           area={editingArea}
           navigationError={routeError}
           onCheckpointSaved={clearNavigationError}
@@ -537,48 +609,32 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
           onDuplicated={handleAreaDuplicated}
           registerNavigationGuard={registerNavigationGuard}
         />
-      ) : selectedSection || collectionRoute.view || collectionRoute.q ? (
-        <>
+      ) : isCollection ? (
         <SubSectionView
-          savedViews={!showTrash && <SavedViews route={collectionRoute} request={request} onApply={navigateTo} />}
-          section={currentSection ?? sections[0]}
-          subSection={currentSubSection}
-          title={collectionRoute.view === 'favorites' ? 'Favoritos' : collectionRoute.view === 'recent' ? 'Recentes' : currentSection?.label ?? 'Todas as páginas'}
+          route={collectionRoute}
+          categories={categories}
+          statusCounts={languageCounts}
+          request={request}
           creationHint={`Novas páginas: ${currentSection?.label ?? 'Idiomas'} / ${currentSubSection?.label ?? 'Estudando'}.`}
-          onStatusChange={status => updateCollection({ subSection: status })}
-          manualOrder={viewOrderBy === 'sortOrder' && viewOrderDirection === 'asc' && Boolean(selectedSection && selectedSubSection) && viewScope === 'ROOTS' && !collectionRoute.q && !collectionRoute.categoria && collectionRoute.minLevel === undefined && collectionRoute.maxLevel === undefined && !collectionRoute.favorite && (!collectionRoute.view || collectionRoute.view === 'all')}
           areas={visibleAreas}
-          pagination={collectionData.pagination}
+          pagination={pagination}
           userId={userId}
-          isLoading={showTrash ? trashLoading : collectionLoading && (loadedCollectionQuery !== collectionQuery || !collectionData.items.length)}
-          error={showTrash ? trashError : collectionError}
-          onBack={goHome}
+          isLoading={showTrash ? trashLoading : !result}
+          error={showTrash ? trashError : result?.error}
           onCreate={openCreate}
           onEdit={openEdit}
           onUpdate={updateProperties}
           onReload={reloadProperties}
-          onPageChange={listPage => updateCollection({ listPage })}
           onRetry={() => setRetryKey((key) => key + 1)}
           onDelete={handleAreaDeleted}
-          onToggleTrash={() => updateCollection({ view: showTrash ? undefined : 'trash' })}
-          showTrash={showTrash}
+          onReturnFromTrash={returnFromTrash}
           trashItems={trashAreas}
-          onRestore={() => { setTrashAreas([]); updateCollection({ view: undefined }); }}
-          onFavoriteChange={(updatedArea) => { setAreas((current) => current.map((area) => area.id === updatedArea.id ? { ...area, isFavorite: updatedArea.isFavorite } : area)); setSearchResults((current) => current.map((area) => area.id === updatedArea.id ? { ...area, isFavorite: updatedArea.isFavorite } : area)); }}
-          onAreasChange={updated => setAreas(current => current.map(item => updated.find(next => next.id === item.id) ?? item))}
+          onRestore={() => { setTrashAreas([]); setRetryKey(key => key + 1); returnFromTrash(); }}
           onDuplicate={handleAreaDuplicated}
-          viewLayout={viewLayout}
-          viewScope={viewScope}
-          viewFilters={viewFilters}
-          viewOrderBy={viewOrderBy}
-          viewOrderDirection={viewOrderDirection}
-          onViewLayoutChange={layout => navigateTo({ ...collectionRoute, layout })}
-          onViewScopeChange={scope => updateCollection({ scope })}
-          onViewFiltersChange={filters => updateCollection({ section: filters.section as Section | undefined, view: collectionRoute.view === 'favorites' && !filters.isFavorite ? 'all' : collectionRoute.view ?? 'all', q: String(filters.search ?? '') || undefined, categoria: String(filters.categoria ?? '') || undefined, minLevel: filters.minLevel as number | undefined, maxLevel: filters.maxLevel as number | undefined, favorite: filters.isFavorite === true || undefined })}
-          onViewOrderByChange={order => updateCollection({ order: order as LibraryRoute['order'], ...(order === 'sortOrder' ? { direction: 'asc' } : {}) })}
-          onViewOrderDirectionChange={direction => updateCollection({ direction: direction as LibraryRoute['direction'] })}
+          onChange={updateCollection}
+          onOpenView={navigateTo}
           onOpenTemplates={() => { setTemplatesLoading(true); setTemplatesError(undefined); setShowTemplateGallery(true); }}
-        /></>
+        />
       ) : (
         <><LibraryView onSelect={section => navigateTo({ section })} />
         <section className={styles.recent}><h2>Continuar estudando</h2>
@@ -587,6 +643,40 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
         </section></>
       )}
     </main>
+    <dialog id={searchId} ref={searchDialog} className="library-search" aria-label="Busca na biblioteca"
+      onKeyDown={event => {
+        containModalTab(event);
+        if (event.key === 'Escape' && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeSearch(true);
+        }
+      }}
+      onCancel={event => { event.preventDefault(); closeSearch(true); }}>
+      <label>Buscar em toda a biblioteca
+        <Input ref={searchInput} value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setSearchPage(1); }}
+          placeholder="Digite pelo menos 2 caracteres" />
+      </label>
+      <Button onClick={() => closeSearch(true)}>Fechar busca</Button>
+      {searchQuery.trim().length >= 2 && (searchLoading ? <p role="status">Buscando…</p> : searchError ? (
+        <p role="alert">{searchError}<Button onClick={() => setRetryKey(key => key + 1)}>Tentar busca novamente</Button></p>
+      ) : <>
+        <p role="status">{searchPagination?.total ?? 0} resultados em toda a biblioteca.</p>
+        <ul>{searchResults.map(item => <li key={item.id}>
+          <Button onClick={() => {
+            closeSearch(false);
+            setDrawerOpen(false);
+            navigateFromLibrary({ pageId: item.id }, true);
+          }}>{item.nome}</Button>
+          <small>{librarySections.find(section => section.value === item.section)?.label} / {pageAncestors(areas, item.parentId).map(page => page.nome).join(' / ') || 'Página principal'}</small>
+        </li>)}</ul>
+        {searchPagination && searchPagination.totalPages > 1 && <nav aria-label="Paginação da busca global">
+          <Button disabled={searchPage <= 1} onClick={() => setSearchPage(value => value - 1)}>Resultados anteriores</Button>
+          <span>Página {searchPage} de {searchPagination.totalPages}</span>
+          <Button disabled={searchPage >= searchPagination.totalPages} onClick={() => setSearchPage(value => value + 1)}>Próximos resultados</Button>
+        </nav>}
+      </>)}
+    </dialog>
     {showTemplateGallery && (
       <TemplateGallery
         templates={templates}
@@ -641,23 +731,69 @@ function LibraryView({ onSelect }: { onSelect: (section: Section) => void }) { r
   <div className={styles.sectionGrid}>{sections.map(section => <Button key={section.value} className={styles.sectionCard} onClick={() => onSelect(section.value)}><span aria-hidden="true">{section.icon}</span><strong>{section.label}</strong><span aria-hidden="true">→</span></Button>)}</div>
 </>; }
 
-function SubSectionView({ savedViews, creationHint, title, onStatusChange, manualOrder, subSection, areas, pagination, userId, isLoading, error, onBack, onCreate, onEdit, onUpdate, onReload, onPageChange, onRetry, onDelete, onToggleTrash, showTrash = false, trashItems = [], onRestore, onFavoriteChange, onAreasChange, onDuplicate, viewLayout = "LIST", viewScope = "ROOTS", viewFilters = {}, viewOrderBy = "updatedAt", viewOrderDirection = "desc", onViewLayoutChange, onViewScopeChange, onViewFiltersChange, onViewOrderByChange, onViewOrderDirectionChange, onOpenTemplates }: { savedViews?: ReactNode; creationHint: string; title: string; onStatusChange: (status?: SubSection) => void; manualOrder: boolean; section: (typeof sections)[number]; subSection?: (typeof subsections)[number]; areas: Area[]; pagination: AreaPage["pagination"]; userId: string; isLoading: boolean; error?: string; onBack: () => void; onCreate: () => void; onEdit: (area: Area) => void; onUpdate: UpdateStudy; onReload: ReloadStudy; onPageChange: (page: number) => void; onRetry: () => void; onDelete: (areaId: string) => void; onToggleTrash: () => void; showTrash?: boolean; trashItems?: Area[]; onRestore?: (areaId: string) => void; onFavoriteChange?: (updatedArea: Area) => void; onAreasChange?: (areas: Area[]) => void; onDuplicate?: (copied: Area) => void; viewLayout?: "LIST" | "TABLE" | "BOARD"; viewScope?: "ROOTS" | "ALL"; viewFilters?: Record<string, unknown>; viewOrderBy?: string; viewOrderDirection?: string; onViewLayoutChange: (layout: "LIST" | "TABLE" | "BOARD") => void; onViewScopeChange: (scope: "ROOTS" | "ALL") => void; onViewFiltersChange: (filters: Record<string, unknown>) => void; onViewOrderByChange: (orderBy: string) => void; onViewOrderDirectionChange: (direction: string) => void; onOpenTemplates?: () => void; }) {
+type SubSectionViewProps = {
+  route: LibraryRoute;
+  categories?: string[];
+  statusCounts?: StatusCounts;
+  request: LibraryRequest;
+  creationHint: string;
+  areas: Area[];
+  pagination: AreaPage['pagination'];
+  userId: string;
+  isLoading: boolean;
+  error?: string;
+  onCreate: () => void;
+  onEdit: (area: Area) => void;
+  onUpdate: UpdateStudy;
+  onReload: ReloadStudy;
+  onRetry: () => void;
+  onDelete: (areaId: string) => void;
+  onReturnFromTrash: () => void;
+  trashItems: Area[];
+  onRestore: (areaId: string) => void;
+  onDuplicate: (copied: Area) => void;
+  onChange: (patch: Partial<LibraryRoute>) => void;
+  onOpenView: (route: LibraryRoute) => void;
+  onOpenTemplates: () => void;
+};
+
+function SubSectionView({
+  route, categories, statusCounts, request, creationHint, areas, pagination, userId, isLoading, error,
+  onCreate, onEdit, onUpdate, onReload, onRetry, onDelete, onReturnFromTrash, trashItems,
+  onRestore, onDuplicate, onChange, onOpenView, onOpenTemplates,
+}: SubSectionViewProps) {
+  const showTrash = route.view === 'trash';
+  const languages = isLanguagesCollection(route);
+  const viewLayout = collectionLayout(route);
+  const filters = advancedFilters(route);
+  const hasOtherFilters = Boolean(route.q || filters.categoria || filters.minLevel !== undefined || filters.maxLevel !== undefined || filters.favorite);
+  const hasFilters = hasOtherFilters || Boolean(route.subSection || filters.scope);
+  const { order, direction } = collectionOrder(route);
+  const manualOrder = order === 'sortOrder' && direction === 'asc' && viewLayout === 'LIST'
+    && Boolean(route.section && route.subSection) && filters.scope === 'ROOTS' && !hasOtherFilters
+    && (!route.view || route.view === 'all');
   const [deleteError, setDeleteError] = useState<string>();
   const [restoreNotice, setRestoreNotice] = useState<string>();
   const [deletingAreaId, setDeletingAreaId] = useState<string>();
-  const [favoriteAreaId, setFavoriteAreaId] = useState<string>();
+  const [pendingFavorites, setPendingFavorites] = useState(new Set<string>());
   const [dragOverId, setDragOverId] = useState<string>();
+  const [pageToMove, setPageToMove] = useState<Area>();
+  const collectionHeader = useRef<HTMLElement>(null);
 
   const toggleFavorite = async (area: Area) => {
     if (!userId) return;
-    setFavoriteAreaId(area.id);
+    setDeleteError(undefined);
+    setPendingFavorites(current => new Set(current).add(area.id));
     try {
-      const updated = await onUpdate(area, { isFavorite: !area.isFavorite });
-      onFavoriteChange?.(updated);
+      await onUpdate(area, { isFavorite: !area.isFavorite });
     } catch (favoriteError) {
       setDeleteError(favoriteError instanceof Error ? favoriteError.message : "Não foi possível atualizar o favorito.");
     } finally {
-      setFavoriteAreaId(undefined);
+      setPendingFavorites(current => {
+        const next = new Set(current);
+        next.delete(area.id);
+        return next;
+      });
     }
   };
 
@@ -709,8 +845,7 @@ function SubSectionView({ savedViews, creationHint, title, onStatusChange, manua
         const errorPayload = await response.json().catch(() => null);
         throw new Error(getApiErrorMessage(errorPayload, "Não foi possível duplicar esta página."));
       }
-      const copied = await response.json() as Area;
-      if (onDuplicate) onDuplicate(copied); else onAreasChange?.([copied, ...areas]);
+      onDuplicate(await response.json() as Area);
     } catch (duplicateError) {
       setDeleteError(duplicateError instanceof Error ? duplicateError.message : "Não foi possível duplicar esta página.");
     }
@@ -751,174 +886,132 @@ function SubSectionView({ savedViews, creationHint, title, onStatusChange, manua
   };
 
   const listItems = showTrash ? trashItems : areas;
-  const listTitle = showTrash ? "Lixeira" : title;
-  const countLabel = showTrash ? `${trashItems.length} item${trashItems.length === 1 ? '' : 's'}` : `${pagination.total} ${pagination.total === 1 ? 'página' : 'páginas'}`;
+  const collectionTitle = route.view === 'favorites' ? 'Favoritos' : route.view === 'recent' ? 'Recentes' : undefined;
+  const sectionTitle = librarySections.find(section => section.value === route.section)?.label ?? 'Todas as páginas';
+  const countLabel = showTrash
+    ? `${trashItems.length} ${trashItems.length === 1 ? 'item' : 'itens'}`
+    : `${pagination.total} ${pagination.total === 1 ? 'resultado' : 'resultados'}`;
+  const resultLabel = isLoading ? 'Carregando páginas…' : error ? '' : countLabel;
+  const noMatches = !showTrash && !isLoading && !error && !listItems.length && hasFilters && statusCounts?.total !== 0;
   return <>
-  <Button className={styles.backButton} onClick={onBack}>← Início</Button>
-  <div className={styles.listHeader}>
-    <div>
-      <p className={styles.breadcrumb}>Biblioteca / {listTitle}{!showTrash && ` / ${subSection?.label ?? "Todos os status"}`}</p>
-      <h1>{listTitle}</h1>
-    </div>
-    <div className={styles.listActions}>
-      <span className={styles.count}>{countLabel}</span>
-      {!showTrash && (
+    <header ref={collectionHeader} tabIndex={-1} className={styles.collectionHeader}>
+      <div className={styles.collectionContext}>
+        {languages && <span className={styles.collectionEmblem}><Icon name="globe" /></span>}
+        <div>
+          <h1 className={languages || showTrash || collectionTitle ? undefined : 'sr-only'}>{showTrash ? 'Lixeira' : collectionTitle ?? sectionTitle}</h1>
+          {statusCounts && <p className={styles.collectionTotal}>
+            {statusCounts.total} {statusCounts.total === 1 ? 'página nesta área' : 'páginas nesta área'}
+          </p>}
+        </div>
+        {!languages && !showTrash && <Select className={collectionTitle ? styles.collectionAreaSecondary : styles.collectionArea}
+          aria-label="Área da coleção" value={route.section ?? ''} onChange={event => onChange({
+            section: (event.target.value || undefined) as LibraryRoute['section'],
+          })}>
+          <option value="">Todas as áreas</option>
+          {librarySections.map(section => <option key={section.value} value={section.value}>{section.label}</option>)}
+        </Select>}
+      </div>
+      <div className={styles.collectionActions}>
+        {showTrash ? <Button onClick={onReturnFromTrash}>Voltar à coleção</Button> : <>
+          <Button className={styles.collectionButton} data-template-trigger onClick={onOpenTemplates}><Icon name="template" />Modelos</Button>
+          <Button className={`${styles.collectionButton} ${styles.collectionPrimary}`} onClick={onCreate} title={creationHint} aria-description={creationHint}>
+            <Icon name="plus" />Nova página
+          </Button>
+        </>}
+      </div>
+    </header>
+    {!showTrash && <ViewConfiguration key={`${route.section ?? ''}:${collectionTitle ?? ''}`}
+      route={route} categories={categories} statusCounts={statusCounts} resultLabel={resultLabel}
+      noMatches={noMatches} manualOrder={manualOrder}
+      request={request} onChange={onChange} onOpenView={onOpenView} />}
+
+    {deleteError && <div className={styles.collectionError} role="alert">{deleteError}</div>}
+    {restoreNotice && <p role="status">{restoreNotice}</p>}
+    {!noMatches && <section className={styles.collectionResults} aria-label="Resultados da coleção">
+      {showTrash && <p className={styles.resultCount} role="status" aria-atomic="true">{resultLabel}</p>}
+      {isLoading ? null : error ? (
+        <div className={styles.collectionError} role="alert">
+          <p>{error}</p><Button onClick={onRetry}>Tentar novamente</Button>
+        </div>
+      ) : listItems.length === 0 ? (
+        <div className={styles.collectionEmpty}>
+          <h2>{showTrash ? 'Lixeira vazia' : languages ? 'Idiomas ainda não tem páginas' : 'Esta coleção está vazia'}</h2>
+          {showTrash ? <p>As páginas excluídas aparecem aqui.</p> :
+            <Button className={styles.collectionPrimary} onClick={onCreate}>Criar primeira página</Button>}
+        </div>
+      ) : (
         <>
-          <Button className={styles.primaryButton} onClick={onCreate}>+ Nova página</Button>
-          {onOpenTemplates && (
-            <Button data-template-trigger className={styles.secondaryButton} onClick={onOpenTemplates}>Modelos</Button>
+          {!showTrash && viewLayout === "TABLE" ? (
+            <TableView areas={listItems} onEdit={onEdit} onUpdate={onUpdate} onReload={onReload} />
+          ) : !showTrash && viewLayout === "BOARD" ? (
+            <BoardView areas={listItems} onEdit={onEdit} onUpdate={onUpdate} onReload={onReload} />
+          ) : (
+            <div className={styles.resultCards} data-layout={viewLayout}>
+              {listItems.map((area, index) => (
+                <CollectionCard
+                  key={area.id}
+                  area={area}
+                  onEdit={() => onEdit(area)}
+                  onDelete={() => void removeArea(area)}
+                  onPurge={() => void purgeArea(area)}
+                  onFavoriteToggle={() => void toggleFavorite(area)}
+                  onDuplicate={() => void duplicateArea(area)}
+                  onMoveUp={() => void moveArea(area, "up")}
+                  onMoveDown={() => void moveArea(area, "down")}
+                  canMoveUp={manualOrder && index > 0}
+                  canMoveDown={manualOrder && index < listItems.length - 1}
+                  isDeleting={deletingAreaId === area.id}
+                  isAnyDeleting={deletingAreaId !== undefined}
+                  isFavoriteLoading={pendingFavorites.has(area.id)}
+                  onMove={() => setPageToMove(area)}
+                  showTrash={showTrash}
+                  manualOrder={manualOrder}
+                  isDropTarget={dragOverId === area.id}
+                  onDragOver={() => setDragOverId(area.id)}
+                  onDragLeave={() => setDragOverId((current) => (current === area.id ? undefined : current))}
+                  onDrop={(sourceId) => {
+                    setDragOverId(undefined);
+                    void reorderArea(sourceId, area.id, "before");
+                  }}
+                />
+              ))}
+            </div>
+          )}
+          {!showTrash && pagination.totalPages > 1 && (
+            <nav className={styles.pagination} aria-label="Paginação de páginas">
+              <Button
+                className={styles.secondaryButton}
+                disabled={pagination.page === 1}
+                onClick={() => onChange({ listPage: pagination.page > 2 ? pagination.page - 1 : undefined })}
+              >
+                Anterior
+              </Button>
+              <span>Página {pagination.page} de {pagination.totalPages}</span>
+              <Button
+                className={styles.secondaryButton}
+                disabled={pagination.page === pagination.totalPages}
+                onClick={() => onChange({ listPage: pagination.page + 1 })}
+              >
+                Próxima
+              </Button>
+            </nav>
           )}
         </>
       )}
-      <Button className={styles.secondaryButton} onClick={onToggleTrash}>
-        {showTrash ? "Voltar ao painel" : "Lixeira"}
-      </Button>
-    </div>
-  </div>
-  {!showTrash && <p className={styles.creationHint}>{creationHint}</p>}
-  {!showTrash && <div className={styles.statusFilters} role="group" aria-label="Status da coleção">
-    <Button aria-pressed={!subSection} onClick={() => onStatusChange()}>Todos os status</Button>
-    {subsections.map(status => <Button key={status.value} aria-pressed={subSection?.value === status.value} onClick={() => onStatusChange(status.value)}>{status.label}</Button>)}
-    {viewOrderBy === 'sortOrder' && !manualOrder && <p>Para reorganizar, selecione uma área, um status o escopo Páginas principais e a direção Ascendente, sem filtros.</p>}
-  </div>}
-  {!showTrash && onViewLayoutChange && (
-    <ViewConfiguration
-      key={JSON.stringify(viewFilters)}
-      currentLayout={viewLayout}
-      currentScope={viewScope}
-      currentFilters={viewFilters}
-      currentOrderBy={viewOrderBy}
-      currentOrderDirection={viewOrderDirection}
-      onLayoutChange={onViewLayoutChange}
-      onScopeChange={onViewScopeChange}
-      onFiltersChange={onViewFiltersChange}
-      onOrderByChange={onViewOrderByChange}
-      onOrderDirectionChange={onViewOrderDirectionChange}
-    />
-  )}
-  {savedViews}
-  {deleteError && <div className={`${styles.status} ${styles.error}`} role="alert">{deleteError}</div>}
-  {restoreNotice && <p role="status">{restoreNotice}</p>}
-  {isLoading ? (
-    <div className={styles.status} role="status">
-      Abrindo esta estante<span className={styles.loadingDots}>...</span>
-    </div>
-  ) : error ? (
-    <div className={`${styles.status} ${styles.error}`} role="alert">
-      {error}<Button onClick={onRetry}>Tentar novamente</Button>
-    </div>
-  ) : listItems.length === 0 ? (
-    <div className={styles.empty}>
-      <span>✦</span>
-      <h2>{showTrash ? "Nada foi enviado para a lixeira." : "Nenhuma página por aqui ainda."}</h2>
-      <p>
-        {showTrash
-          ? "Itens removidos ficam aqui até que você os restaure ou confirme a exclusão."
-          : "Quando novos conhecimentos chegarem, eles vão aparecer nesta estante."}
-      </p>
-      {!showTrash && (
-        <Button className={styles.primaryButton} onClick={onCreate}>
-          Criar primeira página
-        </Button>
-      )}
-    </div>
-  ) : (
-    <>
-      {!showTrash && viewLayout === "TABLE" ? (
-        <TableView areas={listItems} onEdit={onEdit} onUpdate={onUpdate} onReload={onReload} />
-      ) : !showTrash && viewLayout === "BOARD" ? (
-        <BoardView areas={listItems} onEdit={onEdit} onUpdate={onUpdate} onReload={onReload} />
-      ) : (
-        <div className={styles.areaGrid}>
-          {listItems.map((area, index) => (
-            <AreaCard
-              key={area.id}
-              area={area}
-              onEdit={() => onEdit(area)}
-              onDelete={() => removeArea(area)}
-              onPurge={() => void purgeArea(area)}
-              onFavoriteToggle={() => void toggleFavorite(area)}
-              onDuplicate={() => void duplicateArea(area)}
-              onMoveUp={() => void moveArea(area, "up")}
-              onMoveDown={() => void moveArea(area, "down")}
-              canMoveUp={manualOrder && index > 0}
-              canMoveDown={manualOrder && index < listItems.length - 1}
-              isDeleting={deletingAreaId === area.id}
-              isAnyDeleting={deletingAreaId !== undefined}
-              isFavorite={Boolean(area.isFavorite)}
-              isFavoriteLoading={favoriteAreaId === area.id}
-              showTrash={showTrash}
-              manualOrder={manualOrder}
-              isDropTarget={dragOverId === area.id}
-              onDragStart={() => undefined}
-              onDragOver={() => setDragOverId(area.id)}
-              onDragLeave={() => setDragOverId((current) => (current === area.id ? undefined : current))}
-              onDrop={(sourceId) => {
-                setDragOverId(undefined);
-                void reorderArea(sourceId, area.id, "before");
-              }}
-            />
-          ))}
-        </div>
-      )}
-      {!showTrash && pagination.totalPages > 1 && (
-        <nav className={styles.pagination} aria-label="Paginação de páginas">
-          <Button
-            className={styles.secondaryButton}
-            disabled={pagination.page === 1}
-            onClick={() => onPageChange(pagination.page - 1)}
-          >
-            Anterior
-          </Button>
-          <span>Página {pagination.page} de {pagination.totalPages}</span>
-          <Button
-            className={styles.secondaryButton}
-            disabled={pagination.page === pagination.totalPages}
-            onClick={() => onPageChange(pagination.page + 1)}
-          >
-            Próxima
-          </Button>
-        </nav>
-      )}
-    </>
-  )}
-</>; }
-
-function AreaCard({ manualOrder, area, onEdit, onDelete, onPurge, onFavoriteToggle, onDuplicate, onMoveUp, onMoveDown, canMoveUp, canMoveDown, isDeleting, isAnyDeleting, isFavorite, isFavoriteLoading, showTrash, isDropTarget, onDragOver, onDragLeave, onDrop }: { manualOrder?: boolean; area: Area; onEdit: () => void; onDelete: () => void; onPurge?: () => void; onFavoriteToggle: () => void; onDuplicate?: () => void; onMoveUp?: () => void; onMoveDown?: () => void; canMoveUp?: boolean; canMoveDown?: boolean; isDeleting?: boolean; isAnyDeleting?: boolean; isFavorite?: boolean; isFavoriteLoading?: boolean; showTrash?: boolean; isDropTarget?: boolean; onDragStart?: () => void; onDragOver?: () => void; onDragLeave?: () => void; onDrop?: (sourceId: string) => void }) {
-  const level = Math.min(5, Math.max(0, area.nivelEntendimento));
-  const percentage = level * 20;
-  return <article
-    className={`${styles.areaCard}${isDropTarget ? ` ${styles.areaCardDrop}` : ""}`}
-    draggable={!showTrash && manualOrder}
-    onDragStart={(event) => { event.dataTransfer.setData("text/area-id", area.id); event.dataTransfer.effectAllowed = "move"; }}
-    onDragOver={(event) => { if (showTrash || !manualOrder) return; event.preventDefault(); onDragOver?.(); }}
-    onDragLeave={() => onDragLeave?.()}
-    onDrop={(event) => { if (showTrash || !manualOrder) return; event.preventDefault(); const sourceId = event.dataTransfer.getData("text/area-id"); if (sourceId) onDrop?.(sourceId); }}
-  >
-    <div className={styles.areaTop}><span className={styles.areaIcon}>{area.icone || "✦"}</span><span className={styles.level}>Entendimento {level}/5</span></div>
-    <h2><Button className={styles.pageTitle} onClick={onEdit} disabled={isAnyDeleting || showTrash}>{area.nome}</Button></h2><p>{area.categoria} · {area.subSection === "ESTUDADO" ? "Estudado" : "Estudando"}</p>
-    <div className={styles.progress}><span style={{ width: `${percentage}%` }} /></div>
-    <div className={styles.cardActions}>
-      <Button onClick={onFavoriteToggle} disabled={isAnyDeleting || isFavoriteLoading || showTrash} aria-label={isFavorite ? "Desfavoritar" : "Favoritar"}>{isFavoriteLoading ? "..." : isFavorite ? "★" : "☆"}</Button>
-      <details className={styles.pageActions} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); event.currentTarget.open = false; event.currentTarget.querySelector('summary')?.focus(); } }}>
-      <summary>Ações da página<span className="sr-only">: {area.nome}</span></summary><div>
-      {!showTrash && <Button onClick={onEdit} disabled={isAnyDeleting}>Abrir página</Button>}
-      {!showTrash && <Button onClick={onDuplicate} disabled={isAnyDeleting}>Duplicar</Button>}
-      {!showTrash && manualOrder && <Button onClick={onMoveUp} disabled={isAnyDeleting || !canMoveUp} aria-label="Mover para cima">↑</Button>}
-      {!showTrash && manualOrder && <Button onClick={onMoveDown} disabled={isAnyDeleting || !canMoveDown} aria-label="Mover para baixo">↓</Button>}
-      {showTrash ? <Button onClick={onDelete} disabled={isAnyDeleting} aria-busy={isDeleting}>{isDeleting ? "Restaurando..." : "Restaurar"}</Button> : <Button onClick={onDelete} disabled={isAnyDeleting} aria-busy={isDeleting}>{isDeleting ? "Enviando..." : "Excluir"}</Button>}
-      {showTrash && <Button onClick={onPurge} disabled={isAnyDeleting}>Excluir definitivamente</Button>}
-      </div></details>
-    </div>
-  </article>;
+    </section>}
+    {pageToMove && !showTrash && <MovePageDialog area={pageToMove} onMove={onUpdate} onClose={moved => {
+      setPageToMove(undefined);
+      if (moved) collectionHeader.current?.focus();
+    }} />}
+  </>;
 }
 
-function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, ownerId, recoveryDraft, onRecoveryHandled, navigation, navigationError, onCheckpointSaved, section, subSection, area, parentOptions, userId, onCancel, onSaved, onDeleted, onDuplicated, registerNavigationGuard }: { initialParentId: string | null; onCreateChild: (area: Area) => Promise<void>; onNavigate: (route: LibraryRoute) => void; onPersisted: (area: Area, moved: boolean) => void; ownerId: string; recoveryDraft?: LocalDraft; onRecoveryHandled?: () => void; navigation?: ReactNode; navigationError?: string; onCheckpointSaved: () => void; section: Section; subSection: SubSection; area: Area | null; parentOptions?: Area[]; userId?: string; onCancel: () => void; onSaved: (area: Area) => void; onDeleted: (areaId: string) => void; onDuplicated?: (copied: Area) => void; registerNavigationGuard: (guard: (() => Promise<void>) | null) => void }) {
+function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, ownerId, recoveryDraft, onRecoveryHandled, navigationError, onCheckpointSaved, section, subSection, area, parentOptions, userId, onCancel, onSaved, onDeleted, onDuplicated, registerNavigationGuard }: { initialParentId: string | null; onCreateChild: (area: Area) => Promise<void>; onNavigate: (route: LibraryRoute) => void; onPersisted: (area: Area, moved: boolean) => void; ownerId: string; recoveryDraft?: LocalDraft; onRecoveryHandled?: () => void; navigationError?: string; onCheckpointSaved: () => void; section: Section; subSection: SubSection; area: Area | null; parentOptions?: Area[]; userId?: string; onCancel: () => void; onSaved: (area: Area) => void; onDeleted: (areaId: string) => void; onDuplicated?: (copied: Area) => void; registerNavigationGuard: (guard: (() => Promise<void>) | null) => void }) {
   const [portabilityMode, setPortabilityMode] = useState<"export" | "revisions" | null>(null);
   const [portabilityBusy, setPortabilityBusy] = useState(false);
   const [values, setValues] = useState<AreaFormValues>({ nome: area?.nome ?? "Sem título", categoria: area?.categoria ?? "Geral", nivelEntendimento: area?.nivelEntendimento ?? 0, icone: area?.icone ?? "✦", parentId: area ? area.parentId ?? null : initialParentId, targetPageId: area?.targetPageId ?? null, coverAttachmentId: area?.coverAttachmentId ?? null, coverPosition: area?.coverPosition ?? 50, fullWidth: Boolean(area?.fullWidth), conteudo: getEditorContent(area?.conteudo), updatedAt: area?.updatedAt });
   const [unsupportedContent] = useState(() => unsupportedEditorFeatures(getEditorContent(area?.conteudo)));
-  const [isSaving, setIsSaving] = useState(false); const [error, setError] = useState<string>(); const [tab, setTab] = useState<"blocos" | "indice">("blocos"); const [query, setQuery] = useState("");
+  const [isSaving, setIsSaving] = useState(false); const [error, setError] = useState<string>();
   const applyFocus = useRef<HTMLElement | null>(null);
   const [materialsLoading, setMaterialsLoading] = useState(Boolean(area?.id));
   const [materialsLoadError, setMaterialsLoadError] = useState<string>();
@@ -980,6 +1073,14 @@ function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, own
     valuesRef.current = next; setValues(next); coordinator.update(payload(next));
   };
   const editor = useEditor({ extensions: editorExtensions, content: unsupportedContent.length ? { type: 'doc', content: [{ type: 'paragraph' }] } : values.conteudo, editable: !unsupportedContent.length, editorProps: { attributes: { role: 'textbox', 'aria-label': 'Conteúdo da página', 'aria-multiline': 'true' } }, immediatelyRender: false, onUpdate: ({ editor: current }) => { if (!unsupportedContent.length) updateValue('conteudo', editedDocumentContent(current.getJSON(), valuesRef.current.conteudo)); } });
+  const subscribeToDocument = useCallback((notify: () => void) => {
+    if (!editor) return () => {};
+    editor.on('transaction', notify);
+    return () => { editor.off('transaction', notify); };
+  }, [editor]);
+  const getDocument = useCallback(() => editor?.state.doc ?? null, [editor]);
+  const outlineDocument = useSyncExternalStore(subscribeToDocument, getDocument, () => null);
+  const headings = useMemo(() => outlineDocument ? documentHeadings(outlineDocument) : [], [outlineDocument]);
   const [resourcePicker, setResourcePicker] = useState<{ kind: ResourceInsertKind; insertion: DocumentInsertion } | null>(null);
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const navigateResource = useRef(onNavigate);
@@ -1203,27 +1304,21 @@ function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, own
       setIsSaving(false);
     }
   };
-  const selectSidebarItem = (id: string) => {
-    if (tab !== "indice" || !editor) return;
-    const headingMatch = /^heading-(\d+)$/.exec(id);
-    if (!headingMatch) return;
-    const targetIndex = Number(headingMatch[1]);
-    let headingIndex = 0;
-    let position: number | undefined;
-    editor.state.doc.descendants((node, nodePosition) => {
-      if (node.type.name !== "heading") return;
-      if (headingIndex === targetIndex) {
-        position = nodePosition + 1;
-        return false;
-      }
-      headingIndex += 1;
-    });
-    if (position !== undefined) {
-      editor.chain().focus().setTextSelection(position).scrollIntoView().run();
-    }
+  const selectOutlineHeading = (key: string) => {
+    if (!editor || editor.isDestroyed) return;
+    const { doc } = editor.state;
+    // Uma posição local só é válida para o documento que gerou a lista.
+    const currentHeadings = doc === outlineDocument ? headings : key.startsWith('id:') ? documentHeadings(doc) : [];
+    const heading = currentHeadings.find(item => item.key === key);
+    if (!heading) return;
+
+    const { view } = editor;
+    const target = view.nodeDOM(heading.position);
+    if (!(target instanceof HTMLElement) || !target.isConnected || target.parentElement !== view.dom || target.tagName !== `H${heading.level}`) return;
+    target.scrollIntoView({ block: 'start', inline: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   };
   const attachmentItems: AttachmentItem[] = attachments.map((attachment) => ({ id: attachment.id, kind: attachment.tipo === "LINK" ? "link" : attachment.tipo === "IMAGEM" ? "image" : "file", label: attachment.nome ?? attachment.url, href: attachment.url, previewUrl: attachment.tipo === "IMAGEM" ? attachment.url : undefined }));
-  const items = useMemo(() => { const source = tab === "indice" ? contentHeadings(values.conteudo).map((name, index) => ({ id: `heading-${index}`, icon: "#", name, level: 1 })) : [{ id: area?.id ?? "new", icon: values.icone, name: values.nome || "Nova página", level: values.nivelEntendimento }]; return source.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())); }, [area?.id, query, tab, values]);
+  const outline = headings.length > 0 && !resourcePicker && !saveTemplateOpen && !portabilityMode && <EditorOutline headings={headings} onSelect={selectOutlineHeading} />;
   const activeBlock: BlockKind | null = editor?.isActive("heading", { level: 1 }) ? "h1" : editor?.isActive("heading", { level: 2 }) ? "h2" : editor?.isActive("heading", { level: 3 }) ? "h3" : editor?.isActive("heading", { level: 4 }) ? "h4" : editor?.isActive("heading", { level: 5 }) ? "h5" : editor?.isActive("heading", { level: 6 }) ? "h6" : editor?.isActive("paragraph") ? "p" : null;
   const marks: Partial<Record<MarkKind, boolean>> = { bold: editor?.isActive("bold"), italic: editor?.isActive("italic"), strike: editor?.isActive("strike"), bulletList: editor?.isActive("bulletList"), orderedList: editor?.isActive("orderedList"), taskList: editor?.isActive("taskList"), blockquote: editor?.isActive("blockquote"), codeBlock: editor?.isActive("codeBlock"), toggleBlock: editor?.isActive("toggleBlock"), callout: editor?.isActive("callout") };
   const iconSlot = <Button type="button" className="icon-picker" aria-label="Escolher ícone" onClick={() => { const next = window.prompt("Ícone da página (vazio remove)", values.icone); if (next === null) return; updateValue("icone", next.trim()); }}>{values.icone || "＋"}</Button>;
@@ -1232,5 +1327,5 @@ function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, own
   const parentOptionsList = parentCandidates(parentOptions ?? [], area?.id).filter(item => item.section === section);
   const referenceOptionsList = (parentOptions ?? []).filter((item) => item.id !== area?.id && !item.deletedAt);
   const coverAttachment = attachments.find((item) => item.id === values.coverAttachmentId && item.tipo === "IMAGEM");
-  return <>{saveTemplateOpen && area && <SaveTemplateDialog pageId={area.id} name={values.nome} checkpoint={checkpoint} request={documentRequest} onClose={() => setSaveTemplateOpen(false)} />}{resourcePicker && <DocumentResourcePicker kind={resourcePicker.kind} insertion={resourcePicker.insertion} areaId={area?.id} attachments={attachments} request={documentRequest} onAttachment={attachment => setAttachments(current => [attachment, ...current])} onClose={() => setResourcePicker(null)} />}{coordinator.blocked && <section role="alert"><p>A versão remota mudou. Seu rascunho local foi preservado.</p><Button onClick={() => downloadDraft(coordinator.draft)}>Baixar rascunho atual</Button><Button onClick={() => { void coordinator.durable().then(() => window.location.reload()).catch(() => setError('Não foi possível guardar o rascunho antes de recarregar.')); }}>Reabrir versão remota</Button></section>}{recoveryDraft && <section aria-label="Recuperação de rascunho"><p>Rascunho local disponível: {recoveryDraft.snapshot.nome}. Recuperar exige conferir a versão remota.</p><Button onClick={() => void recoverLocalDraft()}>Recuperar para edição</Button><Button onClick={() => downloadDraft(recoveryDraft)}>Baixar rascunho para comparar</Button></section>}<div inert={portabilityBusy || isSaving}> <EditorLayout fullWidth={values.fullWidth} properties={<EditorProperties level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} saving={isSaving} onApply={area ? () => { applyFocus.current = document.activeElement as HTMLElement; setIsSaving(true); setError(undefined); void checkpoint().catch(cause => setError(cause instanceof Error ? cause.message : "Não foi possível aplicar as propriedades.")).finally(() => setIsSaving(false)); } : undefined}><div className="ui-properties"><Field label="Categoria"><Input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} /></Field><Field label="Página mãe"><Select value={values.parentId ?? ""} onChange={(event) => updateValue("parentId", event.target.value || null)}><option value="">Página principal</option>{parentOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field><Field label="Página referenciada"><Select value={values.targetPageId ?? ""} onChange={(event) => updateValue("targetPageId", event.target.value || null)}><option value="">Sem referência</option>{referenceOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field></div></EditorProperties>} attachmentCount={attachments.length} sidebar={<EditorSidebar navigation={navigation} title={section === "LINGUAGENS" ? "Idiomas" : sections.find((item) => item.value === section)?.label ?? "Páginas"} query={query} onQuery={setQuery} tab={tab} onTab={setTab} items={items} onSelect={selectSidebarItem} onNew={onCancel} />} topbar={<><PageBreadcrumb pages={parentOptions ?? []} parentId={values.parentId} section={section} name={values.nome} onNavigate={onNavigate} /><EditorTopBar onStartWriting={() => editor?.commands.focus()} selectName={!area} iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} saveStatus={getSavePresentation({ isNew: !area, saving: isSaving, autosaving: isAutosaving, contentDirty: isContentDirty, metadataDirty: coordinator.dirty, error: error ?? navigationError ?? coordinator.error })} saveHint={area ? "Conteúdo e propriedades são salvos automaticamente. Conflitos preservam o rascunho local." : "Crie a página para confirmar o rascunho e habilitar anexos."} /></>} cover={<><Input ref={coverInputRef} type="file" accept="image/*" onChange={uploadCover} hidden /><PageCover imageUrl={coverAttachment?.url} position={values.coverPosition} onPosition={(value) => updateValue("coverPosition", value)} onPick={() => { if (!area?.id) { setAttachmentError("Salve a página antes de adicionar uma capa."); return; } const existing = attachments.find((item) => item.tipo === "IMAGEM"); if (existing && window.confirm("Usar uma imagem já anexada como capa?")) { updateValue("coverAttachmentId", existing.id); return; } coverInputRef.current?.click(); }} onRemove={() => updateValue("coverAttachmentId", null)} disabled={!area?.id} /></>} editor={unsupportedContent.length ? <section aria-label="Conteúdo original preservado"><p role="alert">Esta página contém conteúdo ainda não compatível com o editor. A edição do corpo está bloqueada para preservar o original. Materiais e exportação continuam disponíveis.</p><p style={{ whiteSpace: "pre-wrap" }}>{originalDocumentText(values.conteudo)}</p></section> : editor ? <BlockControls editor={editor} onInsertResource={insertResource}><EditorContent editor={editor} /></BlockControls> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<><Input ref={fileInputRef} type="file" accept={fileAccept} onChange={uploadAttachment} hidden /><AttachmentsPanel items={attachmentItems} onAdd={addAttachment} onRemove={removeAttachment} onInsert={unsupportedContent.length ? undefined : insertExistingAttachment} loading={materialsLoading} loadError={materialsLoadError} onRetry={() => { setMaterialsLoading(true); setMaterialsLoadError(undefined); setMaterialsRetry(value => value + 1); }} /></>} format={unsupportedContent.length ? <p>A formatação está indisponível para preservar o conteúdo original.</p> : <FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} fullWidth={values.fullWidth} onFullWidth={(value) => updateValue("fullWidth", value)} onBlock={block => transformBlock(block === "p" ? "paragraph" : block)} onMark={mark => { if (!editor) return; if (mark === "bold" || mark === "italic" || mark === "strike") editor.chain().focus().toggleMark(mark).run(); else if (["bulletList", "orderedList", "taskList", "blockquote", "codeBlock", "toggleBlock", "callout"].includes(mark)) transformBlock(mark as BlockType); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); if (color) { chain.toggleHighlight({ color }).run(); } else { chain.unsetHighlight().run(); } } }} onClear={() => editor?.chain().focus().unsetAllMarks().run()} />} error={error ?? navigationError ?? coordinator.error ?? attachmentError} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} saving={isSaving} saveLabel={area ? "Salvar e voltar" : "Criar página"} menuItems={[...(area ? [{ label: "Nova subpágina", onClick: () => { void onCreateChild(area); } }, { label: "Salvar como modelo", onClick: () => setSaveTemplateOpen(true) }, { label: "Exportar", onClick: () => setPortabilityMode("export") }, { label: "Versões", onClick: () => setPortabilityMode("revisions") }] : []), ...(area ? [{ label: `Mover para ${targetSubSection === "ESTUDADO" ? "Estudado" : "Estudando"}`, onClick: () => void handleSubmit(targetSubSection) }, { label: "Duplicar página", onClick: () => void duplicateFromEditor(false) }, { label: "Duplicar com subpáginas", onClick: () => void duplicateFromEditor(true) }] : []), ...(area ? [{ label: "Excluir página", danger: true, onClick: () => void deleteArea() }] : []), { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva a página. Esc volta, salvando pendências de páginas existentes; não desfaz alterações.") }]} />} /></div>{area && userId && portabilityMode && <PortabilityDialog mode={portabilityMode} areaId={area.id} request={(path, init) => apiFetch(`${apiUrl}${path}`, { ...init, headers: { "Content-Type": "application/json", ...authHeaders(userId) } }, userId)} checkpoint={checkpoint} onBusy={busy => { setPortabilityBusy(busy); editor?.setEditable(!busy); }} onRestored={saved => { setPortabilityMode(null); onSaved(saved); }} onClose={() => setPortabilityMode(null)} />}</>;
+  return <>{saveTemplateOpen && area && <SaveTemplateDialog pageId={area.id} name={values.nome} checkpoint={checkpoint} request={documentRequest} onClose={() => setSaveTemplateOpen(false)} />}{resourcePicker && <DocumentResourcePicker kind={resourcePicker.kind} insertion={resourcePicker.insertion} areaId={area?.id} attachments={attachments} request={documentRequest} onAttachment={attachment => setAttachments(current => [attachment, ...current])} onClose={() => setResourcePicker(null)} />}{coordinator.blocked && <section role="alert"><p>A versão remota mudou. Seu rascunho local foi preservado.</p><Button onClick={() => downloadDraft(coordinator.draft)}>Baixar rascunho atual</Button><Button onClick={() => { void coordinator.durable().then(() => window.location.reload()).catch(() => setError('Não foi possível guardar o rascunho antes de recarregar.')); }}>Reabrir versão remota</Button></section>}{recoveryDraft && <section aria-label="Recuperação de rascunho"><p>Rascunho local disponível: {recoveryDraft.snapshot.nome}. Recuperar exige conferir a versão remota.</p><Button onClick={() => void recoverLocalDraft()}>Recuperar para edição</Button><Button onClick={() => downloadDraft(recoveryDraft)}>Baixar rascunho para comparar</Button></section>}<div inert={portabilityBusy || isSaving}> <EditorLayout fullWidth={values.fullWidth} properties={<EditorProperties level={values.nivelEntendimento} onLevel={(level) => updateValue("nivelEntendimento", level)} saving={isSaving} onApply={area ? () => { applyFocus.current = document.activeElement as HTMLElement; setIsSaving(true); setError(undefined); void checkpoint().catch(cause => setError(cause instanceof Error ? cause.message : "Não foi possível aplicar as propriedades.")).finally(() => setIsSaving(false)); } : undefined}><div className="ui-properties"><Field label="Categoria"><Input value={values.categoria} onChange={(event) => updateValue("categoria", event.target.value)} /></Field><Field label="Página mãe"><Select value={values.parentId ?? ""} onChange={(event) => updateValue("parentId", event.target.value || null)}><option value="">Página principal</option>{parentOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field><Field label="Página referenciada"><Select value={values.targetPageId ?? ""} onChange={(event) => updateValue("targetPageId", event.target.value || null)}><option value="">Sem referência</option>{referenceOptionsList.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</Select></Field></div></EditorProperties>} attachmentCount={attachments.length} outline={outline} topbar={<><PageBreadcrumb pages={parentOptions ?? []} parentId={values.parentId} section={section} name={values.nome} onNavigate={onNavigate} /><EditorTopBar onStartWriting={() => editor?.commands.focus()} selectName={!area} iconSlot={iconSlot} name={values.nome} onName={(value) => updateValue("nome", value)} saveStatus={getSavePresentation({ isNew: !area, saving: isSaving, autosaving: isAutosaving, contentDirty: isContentDirty, metadataDirty: coordinator.dirty, error: error ?? navigationError ?? coordinator.error })} saveHint={area ? "Conteúdo e propriedades são salvos automaticamente. Conflitos preservam o rascunho local." : "Crie a página para confirmar o rascunho e habilitar anexos."} /></>} cover={<><Input ref={coverInputRef} type="file" accept="image/*" onChange={uploadCover} hidden /><PageCover imageUrl={coverAttachment?.url} position={values.coverPosition} onPosition={(value) => updateValue("coverPosition", value)} onPick={() => { if (!area?.id) { setAttachmentError("Salve a página antes de adicionar uma capa."); return; } const existing = attachments.find((item) => item.tipo === "IMAGEM"); if (existing && window.confirm("Usar uma imagem já anexada como capa?")) { updateValue("coverAttachmentId", existing.id); return; } coverInputRef.current?.click(); }} onRemove={() => updateValue("coverAttachmentId", null)} disabled={!area?.id} /></>} editor={unsupportedContent.length ? <section aria-label="Conteúdo original preservado"><p role="alert">Esta página contém conteúdo ainda não compatível com o editor. A edição do corpo está bloqueada para preservar o original. Materiais e exportação continuam disponíveis.</p><p style={{ whiteSpace: "pre-wrap" }}>{originalDocumentText(values.conteudo)}</p></section> : editor ? <BlockControls editor={editor} onInsertResource={insertResource}><EditorContent editor={editor} /></BlockControls> : <p>Carregando editor...</p>} wordCount={wordCount(values.conteudo)} attachments={<><Input ref={fileInputRef} type="file" accept={fileAccept} onChange={uploadAttachment} hidden /><AttachmentsPanel items={attachmentItems} onAdd={addAttachment} onRemove={removeAttachment} onInsert={unsupportedContent.length ? undefined : insertExistingAttachment} loading={materialsLoading} loadError={materialsLoadError} onRetry={() => { setMaterialsLoading(true); setMaterialsLoadError(undefined); setMaterialsRetry(value => value + 1); }} /></>} format={unsupportedContent.length ? <p>A formatação está indisponível para preservar o conteúdo original.</p> : <FormatPanel activeBlock={activeBlock} activeMarks={marks} disabledMarks={["underline", "link"]} fullWidth={values.fullWidth} onFullWidth={(value) => updateValue("fullWidth", value)} onBlock={block => transformBlock(block === "p" ? "paragraph" : block)} onMark={mark => { if (!editor) return; if (mark === "bold" || mark === "italic" || mark === "strike") editor.chain().focus().toggleMark(mark).run(); else if (["bulletList", "orderedList", "taskList", "blockquote", "codeBlock", "toggleBlock", "callout"].includes(mark)) transformBlock(mark as BlockType); }} onColor={(color) => { if (editor) { const chain = editor.chain().focus(); if (color) { chain.toggleHighlight({ color }).run(); } else { chain.unsetHighlight().run(); } } }} onClear={() => editor?.chain().focus().unsetAllMarks().run()} />} error={error ?? navigationError ?? coordinator.error ?? attachmentError} rail={<ActionRail onBack={onCancel} onSave={() => void handleSubmit()} saving={isSaving} saveLabel={area ? "Salvar e voltar" : "Criar página"} menuItems={[...(area ? [{ label: "Nova subpágina", onClick: () => { void onCreateChild(area); } }, { label: "Salvar como modelo", onClick: () => setSaveTemplateOpen(true) }, { label: "Exportar", onClick: () => setPortabilityMode("export") }, { label: "Versões", onClick: () => setPortabilityMode("revisions") }] : []), ...(area ? [{ label: `Mover para ${targetSubSection === "ESTUDADO" ? "Estudado" : "Estudando"}`, onClick: () => void handleSubmit(targetSubSection) }, { label: "Duplicar página", onClick: () => void duplicateFromEditor(false) }, { label: "Duplicar com subpáginas", onClick: () => void duplicateFromEditor(true) }] : []), ...(area ? [{ label: "Excluir página", danger: true, onClick: () => void deleteArea() }] : []), { label: "Atalhos de teclado", onClick: () => window.alert("Ctrl+S salva a página. Esc volta, salvando pendências de páginas existentes; não desfaz alterações.") }]} />} /></div>{area && userId && portabilityMode && <PortabilityDialog mode={portabilityMode} areaId={area.id} request={(path, init) => apiFetch(`${apiUrl}${path}`, { ...init, headers: { "Content-Type": "application/json", ...authHeaders(userId) } }, userId)} checkpoint={checkpoint} onBusy={busy => { setPortabilityBusy(busy); editor?.setEditable(!busy); }} onRestored={saved => { setPortabilityMode(null); onSaved(saved); }} onClose={() => setPortabilityMode(null)} />}</>;
 }

@@ -4,7 +4,7 @@ jest.mock('./EditorLayout.module.css', () => ({}));
 afterEach(cleanup);
 
 test('trocar ferramentas mantém documento, campos pendentes e retorna foco por Escape', () => {
-  render(<EditorLayout sidebar={<p>Navegação</p>} topbar={<h1>Página</h1>} editor={<textarea aria-label="Documento" defaultValue="Texto preservado" />} properties={<input aria-label="Categoria" defaultValue="Inicial" />} attachments={<p>Materiais reais</p>} format={<p>Comandos</p>} rail={<button>Voltar</button>} wordCount={2} attachmentCount={0} />);
+  render(<EditorLayout topbar={<h1>Página</h1>} editor={<textarea aria-label="Documento" defaultValue="Texto preservado" />} properties={<input aria-label="Categoria" defaultValue="Inicial" />} attachments={<p>Materiais reais</p>} format={<p>Comandos</p>} rail={<button>Voltar</button>} wordCount={2} attachmentCount={0} />);
   const document = screen.getByRole('textbox', { name: 'Documento' });
   const properties = screen.getByRole('button', { name: 'Propriedades' });
   fireEvent.click(properties);
@@ -20,7 +20,7 @@ test('trocar ferramentas mantém documento, campos pendentes e retorna foco por 
 
 test('Escape sai do modo foco sem acionar a saída da página', () => {
   const exit = jest.fn();
-  render(<EditorLayout sidebar={null} topbar={null} editor={<textarea aria-label="Documento" />} properties={null} attachments={null} format={null} rail={<button onClick={exit}>Voltar</button>} wordCount={0} attachmentCount={0} />);
+  render(<EditorLayout topbar={null} editor={<textarea aria-label="Documento" />} properties={null} attachments={null} format={null} rail={<button onClick={exit}>Voltar</button>} wordCount={0} attachmentCount={0} />);
   fireEvent.click(screen.getByRole('button', { name: 'Modo foco' }));
   expect(screen.getByTestId('editor-root')).toHaveAttribute('data-focus-mode', 'true');
   fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape', isComposing: true });
@@ -34,7 +34,7 @@ test.each([
   { isComposing: true, keyCode: 0 },
   { isComposing: false, keyCode: 229 },
 ])('Escape de composição preserva foco e ferramenta: %o', composing => {
-  render(<EditorLayout sidebar={null} topbar={null} editor={<textarea className="tiptap" aria-label="Documento" defaultValue="日本語" />} properties={<input aria-label="Categoria" defaultValue="Pendente" />} attachments={null} format={null} rail={null} wordCount={1} attachmentCount={0} />);
+  render(<EditorLayout topbar={null} editor={<textarea className="tiptap" aria-label="Documento" defaultValue="日本語" />} properties={<input aria-label="Categoria" defaultValue="Pendente" />} attachments={null} format={null} rail={null} wordCount={1} attachmentCount={0} />);
   const document = screen.getByRole('textbox', { name: 'Documento' });
   fireEvent.click(screen.getByRole('button', { name: 'Modo foco' }));
   expect(fireEvent.keyDown(document, { key: 'Escape', ...composing })).toBe(true);

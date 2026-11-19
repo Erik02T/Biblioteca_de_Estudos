@@ -3,6 +3,9 @@ import { PageTree, PageBreadcrumb } from './LibraryNavigation';
 import { parentCandidates, pageAncestors } from './page-hierarchy';
 import type { Area } from './page';
 
+jest.mock('./EditorLayout.module.css', () => ({}));
+jest.mock('./LibraryNavigation.module.css', () => ({}));
+
 const page = (id: string, nome: string, parentId: string | null = null, subSection: Area['subSection'] = 'ESTUDANDO'): Area => ({ id, nome, parentId, subSection, section: 'LINGUAGENS', categoria: 'Geral', icone: '✦', nivelEntendimento: 0, updatedAt: '2026-11-16T12:00:00.000Z' });
 const pages = [page('a', 'Japonês'), page('b', 'Partículas', 'a', 'ESTUDADO'), page('c', 'は e が', 'b'), page('d', 'Gramática')];
 

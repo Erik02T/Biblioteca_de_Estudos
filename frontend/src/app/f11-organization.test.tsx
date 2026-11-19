@@ -8,6 +8,8 @@ import { collectionParameters, viewBody, viewRoute } from './collection-query';
 import { libraryUrl, readLibraryRoute, type LibraryRoute } from './library-route';
 import type { Area } from './page';
 
+jest.mock('./page.module.css', () => ({}));
+
 const area: Area = { id: '11111111-1111-4111-8111-111111111111', nome: 'Álgebra', categoria: 'Exatas', nivelEntendimento: 3, subSection: 'ESTUDANDO', section: 'FACULDADE', icone: '✦', updatedAt: '2026-11-16T12:00:00Z' };
 const reply = (value: unknown, status = 200) => Promise.resolve({ ok: status < 400, status, json: async () => value } as Response);
 afterEach(cleanup);
@@ -26,6 +28,16 @@ test('URL e configuração salva preservam todos os filtros, inclusive nível ze
   expect(collectionParameters({ order: 'sortOrder' }).get('orderDirection')).toBe('asc');
   expect(viewBody({ order: 'sortOrder', direction: 'desc' }).orderDirection).toBe('desc');
   expect(() => readLibraryRoute(new URL('http://localhost/?minLevel=5&maxLevel=1'))).toThrow('Nível mínimo');
+});
+
+test('a visão salva de Idiomas mantém Grade como padrão e reabre Lista quando escolhida explicitamente', () => {
+  const route: LibraryRoute = { section: 'LINGUAGENS', subSection: 'ESTUDANDO', q: 'verbos', categoria: 'Vocabulário' };
+  const grid = viewBody(route);
+  expect(grid.layout).toBe('GRID');
+  const address = libraryUrl(viewRoute({ ...grid, id: 'grid', name: 'Gramática' }));
+  expect(readLibraryRoute(new URL(address, 'http://localhost'))).toMatchObject({ ...route, layout: 'GRID' });
+  expect(address).not.toContain('view=all');
+  expect(viewRoute({ ...grid, layout: 'LIST', id: 'list', name: 'Lista antiga' }).layout).toBe('LIST');
 });
 
 test('tabela envia somente propriedades alteradas com o mesmo ID e preserva rascunho no conflito', async () => {
@@ -58,25 +70,29 @@ test('visualização nomeada transmite nome e filtros e reabre a configuração 
   const record = { id: 'v1', name: 'Minha revisão', ...viewBody(route) };
   const request = jest.fn().mockImplementation((path: string, init?: RequestInit) => reply(init?.method === 'POST' ? record : []));
   const apply = jest.fn();
-  render(<SavedViews route={route} request={request} onApply={apply} />);
-  await waitFor(() => expect(request).toHaveBeenCalled());
-  fireEvent.change(screen.getByRole('textbox', { name: 'Nome da visualização' }), { target: { value: 'Minha revisão' } });
+  const onClose = jest.fn();
+  render(<SavedViews route={route} request={request} onApply={apply} onClose={onClose} />);
+  await screen.findByText('Nenhuma visão salva.');
+  expect(screen.queryByRole('textbox', { name: 'Nome da visão' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Salvar como nova' }));
-  await screen.findByText('Visualização salva.');
+  fireEvent.change(screen.getByRole('textbox', { name: 'Nome da visão' }), { target: { value: 'Minha revisão' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Salvar visão atual' }));
+  await screen.findByText('Visão salva.');
   const posted = request.mock.calls.find(([, init]) => init?.method === 'POST');
   expect(JSON.parse(posted![1].body)).toMatchObject({ name: 'Minha revisão', layout: 'TABLE', filters: { search: 'Revisão', minLevel: 0 } });
-  fireEvent.click(screen.getByRole('button', { name: 'Abrir visualização' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir visão' }));
   expect(apply).toHaveBeenCalledWith(expect.objectContaining({ q: 'Revisão', layout: 'TABLE', minLevel: 0 }));
+  expect(onClose).toHaveBeenCalled();
 });
 
 test('configuração antiga incompatível não é aplicada silenciosamente', async () => {
   const invalid = { id: 'old', name: 'Antiga', ...viewBody({}), configurationError: 'Filtro desconhecido' };
   const request = jest.fn().mockImplementation(() => reply([invalid]));
   const apply = jest.fn();
-  render(<SavedViews route={{}} request={request} onApply={apply} />);
+  render(<SavedViews route={{}} request={request} onApply={apply} onClose={jest.fn()} />);
   await screen.findByRole('option', { name: 'Antiga (incompatível)' });
-  fireEvent.change(screen.getByRole('combobox', { name: 'Visualização salva' }), { target: { value: 'old' } });
-  expect(screen.getByRole('button', { name: 'Abrir visualização' })).toBeDisabled();
+  fireEvent.change(screen.getByRole('combobox', { name: 'Visão salva' }), { target: { value: 'old' } });
+  expect(screen.getByRole('button', { name: 'Abrir visão' })).toBeDisabled();
   expect(screen.getByRole('alert')).toHaveTextContent('Filtro desconhecido');
   expect(screen.getByRole('button', { name: 'Corrigir com configuração atual' })).toBeEnabled();
   expect(apply).not.toHaveBeenCalled();

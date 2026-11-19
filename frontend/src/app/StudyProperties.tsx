@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Area } from './page';
 import { Button, Input, Select } from './ui';
 
-export type StudyPatch = Partial<Pick<Area, 'nome' | 'categoria' | 'nivelEntendimento' | 'subSection' | 'isFavorite'>>;
+export type StudyPatch = Partial<Pick<Area, 'nome' | 'categoria' | 'nivelEntendimento' | 'section' | 'subSection' | 'parentId' | 'isFavorite'>>;
 export type UpdateStudy = (area: Area, patch: StudyPatch) => Promise<Area>;
 export type ReloadStudy = (id: string) => Promise<Area>;
 const values = (area: Area) => ({ nome: area.nome, categoria: area.categoria, nivelEntendimento: area.nivelEntendimento, subSection: area.subSection });
@@ -29,14 +29,14 @@ export function PropertyRow({ area, onEdit, onUpdate, onReload }: { area: Area; 
     catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível recarregar.'); }
     finally { setBusy(false); }
   };
-  return <tr data-page-id={area.id} aria-busy={busy}>
-    <td><Input form={'properties-' + area.id} aria-label={`Título de ${area.nome}`} maxLength={255} required disabled={busy} value={displayed.nome} onChange={event => change({ nome: event.target.value })} /></td>
-    <td><Input form={'properties-' + area.id} aria-label={`Categoria de ${area.nome}`} maxLength={255} required disabled={busy} value={displayed.categoria} onChange={event => change({ categoria: event.target.value })} /></td>
-    <td><Select aria-label={`Nível de ${area.nome}`} disabled={busy} value={displayed.nivelEntendimento} onChange={event => change({ nivelEntendimento: Number(event.target.value) })}>{[0, 1, 2, 3, 4, 5].map(level => <option key={level} value={level}>{level}/5</option>)}</Select></td>
-    <td><Select aria-label={`Status de ${area.nome}`} disabled={busy} value={displayed.subSection} onChange={event => change({ subSection: event.target.value as Area['subSection'] })}><option value="ESTUDANDO">Estudando</option><option value="ESTUDADO">Estudado</option></Select></td>
-    <td><FavoriteButton area={area} onUpdate={onUpdate} /></td>
-    <td>{new Date(area.updatedAt).toLocaleDateString('pt-BR')}</td>
-    <td><form id={'properties-' + area.id} onSubmit={event => { event.preventDefault(); void save(); }}><Button type="submit" disabled={!draft || busy}>Salvar propriedades</Button></form><Button disabled={busy} onClick={() => onEdit(area)}>Abrir página</Button>
+  return <tr role="row" data-page-id={area.id} aria-busy={busy}>
+    <td role="cell"><span className="table-field-label" aria-hidden="true">Nome</span><Input form={'properties-' + area.id} aria-label={`Título de ${area.nome}`} maxLength={255} required disabled={busy} value={displayed.nome} onChange={event => change({ nome: event.target.value })} /></td>
+    <td role="cell"><span className="table-field-label" aria-hidden="true">Categoria</span><Input form={'properties-' + area.id} aria-label={`Categoria de ${area.nome}`} maxLength={255} required disabled={busy} value={displayed.categoria} onChange={event => change({ categoria: event.target.value })} /></td>
+    <td role="cell"><span className="table-field-label" aria-hidden="true">Nível</span><Select aria-label={`Nível de ${area.nome}`} disabled={busy} value={displayed.nivelEntendimento} onChange={event => change({ nivelEntendimento: Number(event.target.value) })}>{[0, 1, 2, 3, 4, 5].map(level => <option key={level} value={level}>{level}/5</option>)}</Select></td>
+    <td role="cell"><span className="table-field-label" aria-hidden="true">Status</span><Select aria-label={`Status de ${area.nome}`} disabled={busy} value={displayed.subSection} onChange={event => change({ subSection: event.target.value as Area['subSection'] })}><option value="ESTUDANDO">Estudando</option><option value="ESTUDADO">Estudado</option></Select></td>
+    <td role="cell"><span className="table-field-label" aria-hidden="true">Favorito</span><FavoriteButton area={area} onUpdate={onUpdate} /></td>
+    <td role="cell"><span className="table-field-label" aria-hidden="true">Atualizado</span>{new Date(area.updatedAt).toLocaleDateString('pt-BR')}</td>
+    <td role="cell"><form id={'properties-' + area.id} onSubmit={event => { event.preventDefault(); void save(); }}><Button type="submit" disabled={!draft || busy}>Salvar propriedades</Button></form><Button disabled={busy} onClick={() => onEdit(area)}>Abrir página</Button>
       {error && <div role="alert">{error}<p>As alterações digitadas foram preservadas.</p><Button disabled={busy} onClick={() => void reload()}>Recarregar propriedades</Button></div>}
     </td>
   </tr>;

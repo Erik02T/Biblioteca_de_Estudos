@@ -1,10 +1,11 @@
 import '@testing-library/jest-dom';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import Home, { type Area } from './page';
 import { draftStore } from './draft-store';
 
 jest.mock('./page.module.css', () => ({}));
 jest.mock('./EditorLayout.module.css', () => ({}));
+jest.mock('./LibraryNavigation.module.css', () => ({}));
 jest.mock('./PortabilityDialog.module.css', () => ({}));
 jest.mock('./BlockControls.module.css', () => ({}));
 jest.mock('@tiptap/react', () => ({ useEditor: () => null, EditorContent: () => null }));
@@ -47,6 +48,59 @@ async function renderHome() {
   return view;
 }
 
+test('busca da coleção espera o fim da composição e aplica após 300 ms', async () => {
+  window.history.replaceState(null, '', '/?section=LINGUAGENS');
+  await renderHome();
+  await screen.findByRole('heading', { name: 'Página persistida' });
+  const search = screen.getByRole('searchbox', { name: 'Buscar nesta área' });
+  jest.useFakeTimers();
+  try {
+    fireEvent.compositionStart(search);
+    fireEvent.change(search, { target: { value: 'にほんご' } });
+    fireEvent.keyDown(search, { key: 'Enter', isComposing: true });
+    await act(async () => { jest.advanceTimersByTime(350); });
+    expect(window.location.search).toBe('?section=LINGUAGENS');
+    fireEvent.change(search, { target: { value: '日本語' } });
+    fireEvent.compositionEnd(search, { data: '日本語' });
+    await act(async () => { jest.advanceTimersByTime(299); });
+    expect(window.location.search).toBe('?section=LINGUAGENS');
+    await act(async () => { jest.advanceTimersByTime(1); });
+    expect(new URLSearchParams(window.location.search).get('q')).toBe('日本語');
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
+test('uma resposta antiga da coleção não substitui resultados nem corrige a página atual', async () => {
+  window.history.replaceState(null, '', '/?section=LINGUAGENS');
+  const baseFetch = global.fetch;
+  let signal: AbortSignal | null | undefined;
+  let respond!: (value: Response) => void;
+  const delayed = new Promise<Response>(resolve => { respond = resolve; });
+  const result = (name: string) => ({ items: [{ ...page, nome: name }], pagination: { page: 1, limit: 20, total: 1, totalPages: 1 } });
+  global.fetch = jest.fn().mockImplementation((input: string, init?: RequestInit) => {
+    const url = new URL(input);
+    if (url.pathname === '/areas' && url.searchParams.get('q') === 'antiga') {
+      signal = init?.signal;
+      return delayed;
+    }
+    if (url.pathname === '/areas' && url.searchParams.get('q') === 'atual') return response(result('Consulta atual'));
+    return baseFetch(input, init);
+  });
+  await renderHome();
+  const search = await screen.findByRole('searchbox', { name: 'Buscar nesta área' });
+  fireEvent.change(search, { target: { value: 'antiga' } });
+  fireEvent.keyDown(search, { key: 'Enter' });
+  expect(new URLSearchParams(window.location.search).get('q')).toBe('antiga');
+  fireEvent.change(search, { target: { value: 'atual' } });
+  fireEvent.keyDown(search, { key: 'Enter' });
+  await screen.findByRole('heading', { name: 'Consulta atual' });
+  expect(signal?.aborted).toBe(true);
+  await act(async () => { respond(await response(result('Resposta antiga'))); });
+  expect(screen.queryByRole('heading', { name: 'Resposta antiga' })).not.toBeInTheDocument();
+  expect(new URLSearchParams(window.location.search).get('q')).toBe('atual');
+});
+
 
 test('F12: editar título de raiz desconhecida não sobrescreve seu JSON com documento vazio', async () => {
   const original = { futureFormat: { value: 'Preservar 日本語' } };
@@ -68,7 +122,7 @@ test('F12: abrir documento reutiliza metadados da árvore; voltar à coleção o
   await screen.findByRole('heading', { name: 'Página persistida' });
   const calls = () => (global.fetch as jest.Mock).mock.calls.filter(([url]) => new URL(url).pathname === '/areas/navigation').length;
   const before = calls();
-  fireEvent.click(screen.getByRole('button', { name: 'Página persistida' }));
+  fireEvent.click(within(screen.getByRole('region', { name: 'Resultados da coleção' })).getByRole('link', { name: 'Página persistida' }));
   await screen.findByRole('textbox', { name: 'Nome da página' });
   expect(calls()).toBe(before);
   fireEvent.click(screen.getByRole('button', { name: 'Voltar' }));
@@ -89,12 +143,15 @@ test('F12: purge exige confirmação e transmite a revisão exibida; falha conse
   });
   await renderHome();
   await screen.findByRole('heading', { name: 'Página persistida' });
-  fireEvent.click(screen.getByText('Ações da página', { exact: false }));
+  const menu = screen.getByLabelText('Ações da página: Página persistida');
+  fireEvent.click(menu);
   fireEvent.click(screen.getByRole('button', { name: 'Excluir definitivamente' }));
   expect((global.fetch as jest.Mock).mock.calls.filter(([url]) => String(url).endsWith('/purge'))).toHaveLength(0);
   confirm.mockReturnValue(true);
+  fireEvent.click(menu);
   fireEvent.click(screen.getByRole('button', { name: 'Excluir definitivamente' }));
   await screen.findByText('Limpeza interrompida. Tente novamente.');
+  fireEvent.click(menu);
   expect(screen.getByRole('button', { name: 'Excluir definitivamente' })).toBeEnabled();
   const write = (global.fetch as jest.Mock).mock.calls.find(([url]) => String(url).endsWith('/purge'))!;
   expect(write[1].method).toBe('DELETE');
@@ -199,7 +256,7 @@ test('página indisponível não exibe conteúdo de outra conta nem deixa formul
 test('criar página adiciona seu endereço ao histórico sem substituir a coleção anterior', async () => {
   window.history.replaceState(null, '', '/?section=LINGUAGENS&status=ESTUDANDO');
   await renderHome();
-  fireEvent.click(await screen.findByRole('button', { name: '+ Nova página' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Nova página' }));
   expect(screen.getByTestId('save-status')).toHaveTextContent('Página ainda não criada');
   fireEvent.change(screen.getByRole('textbox', { name: 'Nome da página' }), { target: { value: 'Página nova' } });
   fireEvent.click(screen.getByRole('button', { name: 'Propriedades' }));
@@ -208,7 +265,7 @@ test('criar página adiciona seu endereço ao histórico sem substituir a coleç
   fireEvent.click(screen.getByRole('button', { name: 'Criar página' }));
   await waitFor(() => expect(window.location.search).toBe('?page=22222222-2222-4222-8222-222222222222'));
   window.history.back();
-  await screen.findByRole('button', { name: '+ Nova página' });
+  await screen.findByRole('button', { name: 'Nova página' });
   expect(window.location.search).toBe('?section=LINGUAGENS&status=ESTUDANDO');
 });
 
@@ -317,12 +374,13 @@ test('área abre diretamente a coleção e status sobrevive à recarga', async (
   fireEvent.click(await screen.findByRole('link', { name: 'Idiomas' }));
   await screen.findByRole('heading', { name: 'Página persistida' });
   expect(window.location.search).toBe('?section=LINGUAGENS');
-  expect(screen.getByRole('button', {name:'Todos os status'})).toHaveAttribute('aria-pressed','true');
-  fireEvent.click(screen.getByRole('button', {name:'Estudando'}));
+  const status = () => within(screen.getByRole('group', { name: 'Status da coleção' }));
+  expect(status().getByRole('button', {name:/^Todos os status/})).toHaveAttribute('aria-pressed','true');
+  fireEvent.click(status().getByRole('button', {name:/^Estudando/}));
   await waitFor(() => expect(window.location.search).toBe('?section=LINGUAGENS&status=ESTUDANDO'));
   first.unmount(); await renderHome();
   await screen.findByRole('heading', { name: 'Página persistida' });
-  expect(screen.getByRole('button', {name:'Estudando'})).toHaveAttribute('aria-pressed','true');
+  expect(status().getByRole('button', {name:/^Estudando/})).toHaveAttribute('aria-pressed','true');
 });
 
 test('navegação comum no editor preserva metadados antes de trocar de área', async () => {
@@ -340,8 +398,57 @@ test('busca aberta no editor consome Escape e mantém a página', async () => {
   fireEvent.click(screen.getByRole('button', {name:'Buscar páginas'}));
   fireEvent.keyDown(screen.getByRole('textbox', {name:'Buscar em toda a biblioteca'}), {key:'Escape'});
   expect(window.location.search).toBe(`?page=${id}`);
-  expect(screen.queryByRole('region', {name:'Busca na biblioteca'})).not.toBeInTheDocument();
+  expect(screen.queryByRole('dialog', {name:'Busca na biblioteca'})).not.toBeInTheDocument();
   expect(screen.getByRole('button', {name:'Buscar páginas'})).toHaveFocus();
+});
+
+test('área e página alternam o destino ativo sem retirar a árvore após recarregar ou voltar', async () => {
+  page.nome = 'English';
+  window.history.replaceState(null, '', '/?section=LINGUAGENS');
+  const first = await renderHome();
+  const navigation = () => within(screen.getByRole('navigation', { name: 'Biblioteca de Estudos' }));
+  expect(navigation().getByRole('link', { name: 'Idiomas' })).toHaveAttribute('aria-current', 'page');
+  fireEvent.click(await navigation().findByRole('link', { name: 'English' }));
+  await screen.findByRole('textbox', { name: 'Nome da página' });
+  expect(navigation().getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page');
+  expect(navigation().getByRole('link', { name: 'Idiomas' })).not.toHaveAttribute('aria-current');
+
+  first.unmount();
+  await renderHome();
+  expect(await navigation().findByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page');
+  await act(async () => window.history.back());
+  await waitFor(() => expect(navigation().getByRole('link', { name: 'Idiomas' })).toHaveAttribute('aria-current', 'page'));
+  window.history.forward();
+  await waitFor(() => expect(navigation().getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page'));
+});
+
+test('painel móvel volta ao acionador ao sair e foca o conteúdo ao navegar', async () => {
+  const media = jest.spyOn(window, 'matchMedia').mockImplementation(query => ({
+    matches: false, media: query, onchange: null, addEventListener: jest.fn(), removeEventListener: jest.fn(),
+    addListener: jest.fn(), removeListener: jest.fn(), dispatchEvent: jest.fn(),
+  }));
+  try {
+    page.nome = 'English';
+    window.history.replaceState(null, '', '/?section=LINGUAGENS');
+    await renderHome();
+    const trigger = screen.getByRole('button', { name: 'Navegação' });
+    expect(screen.getByRole('main')).toBeVisible();
+    fireEvent.click(trigger);
+    const drawer = () => within(screen.getByRole('dialog', { name: 'Biblioteca de Estudos' }));
+    const close = drawer().getByRole('button', { name: 'Fechar navegação' });
+    expect(close).toHaveFocus();
+    fireEvent.keyDown(close, { key: 'Escape' });
+    expect(trigger).toHaveFocus();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(trigger);
+    fireEvent.click(drawer().getByRole('link', { name: 'English' }));
+    await waitFor(() => expect(screen.getByRole('main', { name: 'English' })).toHaveFocus());
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('dialog', { name: 'Biblioteca de Estudos' })).not.toBeInTheDocument();
+  } finally {
+    media.mockRestore();
+  }
 });
 
 test('retorno do editor recupera filtros e visualização da coleção', async () => {
@@ -349,12 +456,12 @@ test('retorno do editor recupera filtros e visualização da coleção', async (
   window.history.replaceState(null, '', collection);
   // Settle identity and the initial collection loads before selecting its card.
   await renderHome();
-  fireEvent.click(screen.getByRole('button', {name:'Página persistida'}));
+  fireEvent.click(within(screen.getByRole('region', { name: 'Resultados da coleção' })).getByRole('link', {name:'Página persistida'}));
   await screen.findByRole('textbox', {name:'Nome da página'});
   fireEvent.click(screen.getByRole('button', {name:'Voltar'}));
   await screen.findByRole('heading', {name:'Página persistida'});
   expect(new URLSearchParams(window.location.search).get('q')).toBe('Página');
-  expect(screen.getByRole('combobox', {name:'Ordenar por:'})).toHaveValue('nome');
+  expect(screen.getByRole('combobox', {name:'Ordem'})).toHaveValue('nome:asc');
 });
 
 test('duplicação grava propriedades pendentes antes de criar a cópia', async () => {

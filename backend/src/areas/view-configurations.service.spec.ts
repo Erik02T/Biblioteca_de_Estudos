@@ -93,4 +93,25 @@ describe('ViewConfigurationsService (integração)', () => {
     expect(reloaded.orderBy).toBe('nome');
     expect(reloaded.orderDirection).toBe('asc');
   });
+
+  it('salva Grade de Idiomas com filtros e reabre a configuração sem incompatibilidade', async () => {
+    const settings = {
+      layout: ViewLayout.GRID,
+      scope: ViewScope.ALL,
+      section: SectionType.LINGUAGENS,
+      subSection: SubSectionType.ESTUDANDO,
+      filters: { search: 'verbos', categoria: 'Vocabulário' },
+      orderBy: 'updatedAt',
+      orderDirection: 'desc',
+    };
+    const view = await service.create(userId, {
+      name: 'Vocabulário',
+      ...settings,
+    });
+    const views = await service.findAll(userId, 'LINGUAGENS');
+    expect(views.find(({ id }) => id === view.id)).toMatchObject({
+      ...settings,
+      configurationError: null,
+    });
+  });
 });
