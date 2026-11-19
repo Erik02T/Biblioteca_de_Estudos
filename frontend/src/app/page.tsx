@@ -4,7 +4,7 @@ import { Button, Input, Select, Field, containModalTab } from './ui';
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { ActionRail, AttachmentsPanel, EditorLayout, EditorOutline, EditorTopBar, EditorProperties, FormatPanel, PageCover, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
+import { ActionRail, AttachmentsPanel, EditorLayout, EditorOutline, EditorTopBar, EditorProperties, FormatPanel, Icon, PageCover, type AttachmentItem, type BlockKind, type MarkKind } from "./EditorLayout";
 import { wordCount } from "./AreaEditor";
 import { documentHeadings } from './document-outline';
 import { editorExtensions } from "./extensions";
@@ -20,6 +20,7 @@ import { PageSaveCoordinator, PageSaveError, type SavedPage } from './page-save-
 import { TableView } from "./TableView";
 import { BoardView } from "./BoardView";
 import { ViewConfiguration } from "./ViewConfiguration";
+import { CollectionCard, MovePageDialog } from './CollectionCard';
 import { TemplateGallery } from "./TemplateGallery";
 import { SaveTemplateDialog } from './SaveTemplateDialog';
 import { PortabilityDialog } from "./PortabilityDialog";
@@ -29,7 +30,7 @@ import { getSavePresentation } from './save-status';
 import styles from "./page.module.css";
 import { LibraryNavigation, librarySections, PageBreadcrumb } from './LibraryNavigation';
 import { pageAncestors, parentCandidates } from './page-hierarchy';
-import { advancedFilters, collectionOrder, collectionParameters, responseValue, type LibraryRequest } from './collection-query';
+import { advancedFilters, collectionLayout, collectionOrder, collectionParameters, isLanguagesCollection, responseValue, type LibraryRequest, type StatusCounts } from './collection-query';
 import type { UpdateStudy, ReloadStudy } from './StudyProperties';
 
 type Section = "LINGUAGENS" | "FACULDADE" | "PROJETOS" | "OUTROS";
@@ -254,6 +255,9 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
   }, [userId]);
   const navigateTo = useCallback((route: LibraryRoute) => { void applyRoute(libraryUrl(route), 'push'); }, [applyRoute]);
   const navigateFromLibrary = (route: LibraryRoute, focusContent: boolean) => {
+    if (route.view === 'trash' && collectionRoute.view !== 'trash') {
+      trashOrigin.current = { url: libraryUrl(route), route: collectionRoute };
+    }
     void applyRoute(libraryUrl(route), 'push').then(() => {
       if (focusContent) setFocusRequest(value => value + 1);
     });
@@ -448,6 +452,17 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
     const names = new Set(areas.filter(area => !collectionRoute.section || area.section === collectionRoute.section).map(area => area.categoria.trim()).filter(Boolean));
     return [...names].sort((first, second) => first.localeCompare(second, 'pt-BR'));
   }, [areas, collectionRoute.section, error, isLoading]);
+  const languageCounts = useMemo(() => {
+    if (!isLanguagesCollection(collectionRoute) || isLoading || error) return undefined;
+    const counts: StatusCounts = { total: 0, ESTUDANDO: 0, ESTUDADO: 0 };
+    for (const area of areas) {
+      if (area.section === 'LINGUAGENS' && !area.deletedAt) {
+        counts.total++;
+        counts[area.subSection]++;
+      }
+    }
+    return counts;
+  }, [areas, collectionRoute, error, isLoading]);
   const updateCollection = (patch: Partial<LibraryRoute>) => {
     const next = { ...collectionRoute, listPage: 'layout' in patch ? collectionRoute.listPage : undefined, ...patch };
     if (!next.section && !next.view) next.view = 'all';
@@ -456,12 +471,6 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
   const returnFromTrash = () => {
     const previous = trashOrigin.current;
     navigateTo(previous?.url === libraryUrl(collectionRoute) ? previous.route : { ...collectionRoute, view: collectionRoute.section ? undefined : 'all' });
-  };
-  const toggleTrash = () => {
-    if (showTrash) { returnFromTrash(); return; }
-    const route = { ...collectionRoute, view: 'trash' as const, listPage: undefined };
-    trashOrigin.current = { url: libraryUrl(route), route: collectionRoute };
-    navigateTo(route);
   };
   const integratePage = (saved: Area) => {
     setAreas(items => items.map(item => item.id === saved.id ? { ...item, ...saved } : item));
@@ -604,6 +613,7 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
         <SubSectionView
           route={collectionRoute}
           categories={categories}
+          statusCounts={languageCounts}
           request={request}
           creationHint={`Novas páginas: ${currentSection?.label ?? 'Idiomas'} / ${currentSubSection?.label ?? 'Estudando'}.`}
           areas={visibleAreas}
@@ -617,11 +627,9 @@ function LibraryHome({ ownerId }: { ownerId: string }) {
           onReload={reloadProperties}
           onRetry={() => setRetryKey((key) => key + 1)}
           onDelete={handleAreaDeleted}
-          onToggleTrash={toggleTrash}
+          onReturnFromTrash={returnFromTrash}
           trashItems={trashAreas}
           onRestore={() => { setTrashAreas([]); setRetryKey(key => key + 1); returnFromTrash(); }}
-          onFavoriteChange={(updatedArea) => { setAreas((current) => current.map((area) => area.id === updatedArea.id ? { ...area, isFavorite: updatedArea.isFavorite } : area)); setSearchResults((current) => current.map((area) => area.id === updatedArea.id ? { ...area, isFavorite: updatedArea.isFavorite } : area)); }}
-          onAreasChange={updated => setAreas(current => current.map(item => updated.find(next => next.id === item.id) ?? item))}
           onDuplicate={handleAreaDuplicated}
           onChange={updateCollection}
           onOpenView={navigateTo}
@@ -726,6 +734,7 @@ function LibraryView({ onSelect }: { onSelect: (section: Section) => void }) { r
 type SubSectionViewProps = {
   route: LibraryRoute;
   categories?: string[];
+  statusCounts?: StatusCounts;
   request: LibraryRequest;
   creationHint: string;
   areas: Area[];
@@ -739,11 +748,9 @@ type SubSectionViewProps = {
   onReload: ReloadStudy;
   onRetry: () => void;
   onDelete: (areaId: string) => void;
-  onToggleTrash: () => void;
+  onReturnFromTrash: () => void;
   trashItems: Area[];
   onRestore: (areaId: string) => void;
-  onFavoriteChange: (updatedArea: Area) => void;
-  onAreasChange: (areas: Area[]) => void;
   onDuplicate: (copied: Area) => void;
   onChange: (patch: Partial<LibraryRoute>) => void;
   onOpenView: (route: LibraryRoute) => void;
@@ -751,12 +758,13 @@ type SubSectionViewProps = {
 };
 
 function SubSectionView({
-  route, categories, request, creationHint, areas, pagination, userId, isLoading, error,
-  onCreate, onEdit, onUpdate, onReload, onRetry, onDelete, onToggleTrash, trashItems,
-  onRestore, onFavoriteChange, onAreasChange, onDuplicate, onChange, onOpenView, onOpenTemplates,
+  route, categories, statusCounts, request, creationHint, areas, pagination, userId, isLoading, error,
+  onCreate, onEdit, onUpdate, onReload, onRetry, onDelete, onReturnFromTrash, trashItems,
+  onRestore, onDuplicate, onChange, onOpenView, onOpenTemplates,
 }: SubSectionViewProps) {
   const showTrash = route.view === 'trash';
-  const viewLayout = route.layout ?? 'LIST';
+  const languages = isLanguagesCollection(route);
+  const viewLayout = collectionLayout(route);
   const filters = advancedFilters(route);
   const hasOtherFilters = Boolean(route.q || filters.categoria || filters.minLevel !== undefined || filters.maxLevel !== undefined || filters.favorite);
   const hasFilters = hasOtherFilters || Boolean(route.subSection || filters.scope);
@@ -767,19 +775,25 @@ function SubSectionView({
   const [deleteError, setDeleteError] = useState<string>();
   const [restoreNotice, setRestoreNotice] = useState<string>();
   const [deletingAreaId, setDeletingAreaId] = useState<string>();
-  const [favoriteAreaId, setFavoriteAreaId] = useState<string>();
+  const [pendingFavorites, setPendingFavorites] = useState(new Set<string>());
   const [dragOverId, setDragOverId] = useState<string>();
+  const [pageToMove, setPageToMove] = useState<Area>();
+  const collectionHeader = useRef<HTMLElement>(null);
 
   const toggleFavorite = async (area: Area) => {
     if (!userId) return;
-    setFavoriteAreaId(area.id);
+    setDeleteError(undefined);
+    setPendingFavorites(current => new Set(current).add(area.id));
     try {
-      const updated = await onUpdate(area, { isFavorite: !area.isFavorite });
-      onFavoriteChange?.(updated);
+      await onUpdate(area, { isFavorite: !area.isFavorite });
     } catch (favoriteError) {
       setDeleteError(favoriteError instanceof Error ? favoriteError.message : "Não foi possível atualizar o favorito.");
     } finally {
-      setFavoriteAreaId(undefined);
+      setPendingFavorites(current => {
+        const next = new Set(current);
+        next.delete(area.id);
+        return next;
+      });
     }
   };
 
@@ -831,8 +845,7 @@ function SubSectionView({
         const errorPayload = await response.json().catch(() => null);
         throw new Error(getApiErrorMessage(errorPayload, "Não foi possível duplicar esta página."));
       }
-      const copied = await response.json() as Area;
-      if (onDuplicate) onDuplicate(copied); else onAreasChange?.([copied, ...areas]);
+      onDuplicate(await response.json() as Area);
     } catch (duplicateError) {
       setDeleteError(duplicateError instanceof Error ? duplicateError.message : "Não foi possível duplicar esta página.");
     }
@@ -877,12 +890,20 @@ function SubSectionView({
   const sectionTitle = librarySections.find(section => section.value === route.section)?.label ?? 'Todas as páginas';
   const countLabel = showTrash
     ? `${trashItems.length} ${trashItems.length === 1 ? 'item' : 'itens'}`
-    : `${pagination.total} ${pagination.total === 1 ? 'página' : 'páginas'}`;
+    : `${pagination.total} ${pagination.total === 1 ? 'resultado' : 'resultados'}`;
+  const resultLabel = isLoading ? 'Carregando páginas…' : error ? '' : countLabel;
+  const noMatches = !showTrash && !isLoading && !error && !listItems.length && hasFilters && statusCounts?.total !== 0;
   return <>
-    <header className={styles.collectionHeader}>
+    <header ref={collectionHeader} tabIndex={-1} className={styles.collectionHeader}>
       <div className={styles.collectionContext}>
-        <h1 className={showTrash || collectionTitle ? undefined : 'sr-only'}>{showTrash ? 'Lixeira' : collectionTitle ?? sectionTitle}</h1>
-        {!showTrash && <Select className={collectionTitle ? styles.collectionAreaSecondary : styles.collectionArea}
+        {languages && <span className={styles.collectionEmblem}><Icon name="globe" /></span>}
+        <div>
+          <h1 className={languages || showTrash || collectionTitle ? undefined : 'sr-only'}>{showTrash ? 'Lixeira' : collectionTitle ?? sectionTitle}</h1>
+          {statusCounts && <p className={styles.collectionTotal}>
+            {statusCounts.total} {statusCounts.total === 1 ? 'página nesta área' : 'páginas nesta área'}
+          </p>}
+        </div>
+        {!languages && !showTrash && <Select className={collectionTitle ? styles.collectionAreaSecondary : styles.collectionArea}
           aria-label="Área da coleção" value={route.section ?? ''} onChange={event => onChange({
             section: (event.target.value || undefined) as LibraryRoute['section'],
           })}>
@@ -891,34 +912,32 @@ function SubSectionView({
         </Select>}
       </div>
       <div className={styles.collectionActions}>
-        {!showTrash && <>
-          <Button className={styles.collectionPrimary} onClick={onCreate} title={creationHint} aria-description={creationHint}>
-            <span aria-hidden="true">+ </span>Nova página
+        {showTrash ? <Button onClick={onReturnFromTrash}>Voltar à coleção</Button> : <>
+          <Button className={styles.collectionButton} data-template-trigger onClick={onOpenTemplates}><Icon name="template" />Modelos</Button>
+          <Button className={`${styles.collectionButton} ${styles.collectionPrimary}`} onClick={onCreate} title={creationHint} aria-description={creationHint}>
+            <Icon name="plus" />Nova página
           </Button>
-          <Button data-template-trigger onClick={onOpenTemplates}>Modelos</Button>
         </>}
-        <Button onClick={onToggleTrash}>{showTrash ? 'Voltar à coleção' : 'Lixeira'}</Button>
       </div>
     </header>
     {!showTrash && <ViewConfiguration key={`${route.section ?? ''}:${collectionTitle ?? ''}`}
-      route={route} categories={categories} manualOrder={manualOrder}
+      route={route} categories={categories} statusCounts={statusCounts} resultLabel={resultLabel}
+      noMatches={noMatches} manualOrder={manualOrder}
       request={request} onChange={onChange} onOpenView={onOpenView} />}
 
     {deleteError && <div className={styles.collectionError} role="alert">{deleteError}</div>}
     {restoreNotice && <p role="status">{restoreNotice}</p>}
-    <section className={styles.collectionResults} aria-label="Resultados da coleção">
-      <p className={styles.resultCount} role="status" aria-atomic="true">
-        {isLoading ? 'Carregando páginas…' : error ? '' : countLabel}
-      </p>
+    {!noMatches && <section className={styles.collectionResults} aria-label="Resultados da coleção">
+      {showTrash && <p className={styles.resultCount} role="status" aria-atomic="true">{resultLabel}</p>}
       {isLoading ? null : error ? (
         <div className={styles.collectionError} role="alert">
           <p>{error}</p><Button onClick={onRetry}>Tentar novamente</Button>
         </div>
       ) : listItems.length === 0 ? (
         <div className={styles.collectionEmpty}>
-          <h2>{showTrash ? 'Lixeira vazia' : hasFilters ? 'Nenhuma página corresponde aos filtros' : 'Esta coleção está vazia'}</h2>
-          {showTrash ? <p>As páginas excluídas aparecem aqui.</p> : hasFilters ? <p>Ajuste a busca ou limpe os filtros para ver mais páginas.</p> :
-            <Button className={styles.collectionPrimary} onClick={onCreate}>Nova página</Button>}
+          <h2>{showTrash ? 'Lixeira vazia' : languages ? 'Idiomas ainda não tem páginas' : 'Esta coleção está vazia'}</h2>
+          {showTrash ? <p>As páginas excluídas aparecem aqui.</p> :
+            <Button className={styles.collectionPrimary} onClick={onCreate}>Criar primeira página</Button>}
         </div>
       ) : (
         <>
@@ -927,13 +946,13 @@ function SubSectionView({
           ) : !showTrash && viewLayout === "BOARD" ? (
             <BoardView areas={listItems} onEdit={onEdit} onUpdate={onUpdate} onReload={onReload} />
           ) : (
-            <div className={styles.areaGrid}>
+            <div className={styles.resultCards} data-layout={viewLayout}>
               {listItems.map((area, index) => (
-                <AreaCard
+                <CollectionCard
                   key={area.id}
                   area={area}
                   onEdit={() => onEdit(area)}
-                  onDelete={() => removeArea(area)}
+                  onDelete={() => void removeArea(area)}
                   onPurge={() => void purgeArea(area)}
                   onFavoriteToggle={() => void toggleFavorite(area)}
                   onDuplicate={() => void duplicateArea(area)}
@@ -943,12 +962,11 @@ function SubSectionView({
                   canMoveDown={manualOrder && index < listItems.length - 1}
                   isDeleting={deletingAreaId === area.id}
                   isAnyDeleting={deletingAreaId !== undefined}
-                  isFavorite={Boolean(area.isFavorite)}
-                  isFavoriteLoading={favoriteAreaId === area.id}
+                  isFavoriteLoading={pendingFavorites.has(area.id)}
+                  onMove={() => setPageToMove(area)}
                   showTrash={showTrash}
                   manualOrder={manualOrder}
                   isDropTarget={dragOverId === area.id}
-                  onDragStart={() => undefined}
                   onDragOver={() => setDragOverId(area.id)}
                   onDragLeave={() => setDragOverId((current) => (current === area.id ? undefined : current))}
                   onDrop={(sourceId) => {
@@ -980,37 +998,12 @@ function SubSectionView({
           )}
         </>
       )}
-    </section>
+    </section>}
+    {pageToMove && !showTrash && <MovePageDialog area={pageToMove} onMove={onUpdate} onClose={moved => {
+      setPageToMove(undefined);
+      if (moved) collectionHeader.current?.focus();
+    }} />}
   </>;
-}
-
-function AreaCard({ manualOrder, area, onEdit, onDelete, onPurge, onFavoriteToggle, onDuplicate, onMoveUp, onMoveDown, canMoveUp, canMoveDown, isDeleting, isAnyDeleting, isFavorite, isFavoriteLoading, showTrash, isDropTarget, onDragOver, onDragLeave, onDrop }: { manualOrder?: boolean; area: Area; onEdit: () => void; onDelete: () => void; onPurge?: () => void; onFavoriteToggle: () => void; onDuplicate?: () => void; onMoveUp?: () => void; onMoveDown?: () => void; canMoveUp?: boolean; canMoveDown?: boolean; isDeleting?: boolean; isAnyDeleting?: boolean; isFavorite?: boolean; isFavoriteLoading?: boolean; showTrash?: boolean; isDropTarget?: boolean; onDragStart?: () => void; onDragOver?: () => void; onDragLeave?: () => void; onDrop?: (sourceId: string) => void }) {
-  const level = Math.min(5, Math.max(0, area.nivelEntendimento));
-  const percentage = level * 20;
-  return <article
-    className={`${styles.areaCard}${isDropTarget ? ` ${styles.areaCardDrop}` : ""}`}
-    draggable={!showTrash && manualOrder}
-    onDragStart={(event) => { event.dataTransfer.setData("text/area-id", area.id); event.dataTransfer.effectAllowed = "move"; }}
-    onDragOver={(event) => { if (showTrash || !manualOrder) return; event.preventDefault(); onDragOver?.(); }}
-    onDragLeave={() => onDragLeave?.()}
-    onDrop={(event) => { if (showTrash || !manualOrder) return; event.preventDefault(); const sourceId = event.dataTransfer.getData("text/area-id"); if (sourceId) onDrop?.(sourceId); }}
-  >
-    <div className={styles.areaTop}><span className={styles.areaIcon}>{area.icone || "✦"}</span><span className={styles.level}>Entendimento {level}/5</span></div>
-    <h2><Button className={styles.pageTitle} onClick={onEdit} disabled={isAnyDeleting || showTrash}>{area.nome}</Button></h2><p>{area.categoria} · {area.subSection === "ESTUDADO" ? "Estudado" : "Estudando"}</p>
-    <div className={styles.progress}><span style={{ width: `${percentage}%` }} /></div>
-    <div className={styles.cardActions}>
-      <Button onClick={onFavoriteToggle} disabled={isAnyDeleting || isFavoriteLoading || showTrash} aria-label={isFavorite ? "Desfavoritar" : "Favoritar"}>{isFavoriteLoading ? "..." : isFavorite ? "★" : "☆"}</Button>
-      <details className={styles.pageActions} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); event.currentTarget.open = false; event.currentTarget.querySelector('summary')?.focus(); } }}>
-      <summary>Ações da página<span className="sr-only">: {area.nome}</span></summary><div>
-      {!showTrash && <Button onClick={onEdit} disabled={isAnyDeleting}>Abrir página</Button>}
-      {!showTrash && <Button onClick={onDuplicate} disabled={isAnyDeleting}>Duplicar</Button>}
-      {!showTrash && manualOrder && <Button onClick={onMoveUp} disabled={isAnyDeleting || !canMoveUp} aria-label="Mover para cima">↑</Button>}
-      {!showTrash && manualOrder && <Button onClick={onMoveDown} disabled={isAnyDeleting || !canMoveDown} aria-label="Mover para baixo">↓</Button>}
-      {showTrash ? <Button onClick={onDelete} disabled={isAnyDeleting} aria-busy={isDeleting}>{isDeleting ? "Restaurando..." : "Restaurar"}</Button> : <Button onClick={onDelete} disabled={isAnyDeleting} aria-busy={isDeleting}>{isDeleting ? "Enviando..." : "Excluir"}</Button>}
-      {showTrash && <Button onClick={onPurge} disabled={isAnyDeleting}>Excluir definitivamente</Button>}
-      </div></details>
-    </div>
-  </article>;
 }
 
 function AreaForm({ initialParentId, onCreateChild, onNavigate, onPersisted, ownerId, recoveryDraft, onRecoveryHandled, navigationError, onCheckpointSaved, section, subSection, area, parentOptions, userId, onCancel, onSaved, onDeleted, onDuplicated, registerNavigationGuard }: { initialParentId: string | null; onCreateChild: (area: Area) => Promise<void>; onNavigate: (route: LibraryRoute) => void; onPersisted: (area: Area, moved: boolean) => void; ownerId: string; recoveryDraft?: LocalDraft; onRecoveryHandled?: () => void; navigationError?: string; onCheckpointSaved: () => void; section: Section; subSection: SubSection; area: Area | null; parentOptions?: Area[]; userId?: string; onCancel: () => void; onSaved: (area: Area) => void; onDeleted: (areaId: string) => void; onDuplicated?: (copied: Area) => void; registerNavigationGuard: (guard: (() => Promise<void>) | null) => void }) {

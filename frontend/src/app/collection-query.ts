@@ -1,6 +1,15 @@
 import type { LibraryRoute } from './library-route';
 
 export type AdvancedFilters = Pick<LibraryRoute, 'categoria' | 'minLevel' | 'maxLevel' | 'scope' | 'favorite'>;
+export type StatusCounts = { total: number; ESTUDANDO: number; ESTUDADO: number };
+
+export function isLanguagesCollection(route: LibraryRoute) {
+  return route.section === 'LINGUAGENS' && (!route.view || route.view === 'all');
+}
+
+export function collectionLayout(route: LibraryRoute) {
+  return route.layout ?? (isLanguagesCollection(route) ? 'GRID' : 'LIST');
+}
 
 export function advancedFilters(route: LibraryRoute): AdvancedFilters {
   return {
@@ -31,7 +40,7 @@ export function collectionParameters(route: LibraryRoute): URLSearchParams {
 export function viewBody(route: LibraryRoute) {
   const { order, direction } = collectionOrder(route);
   return { section: route.section ?? null, subSection: route.subSection ?? null,
-    layout: route.layout ?? 'LIST', scope: route.scope ?? 'ALL',
+    layout: collectionLayout(route), scope: route.scope ?? 'ALL',
     orderBy: order, orderDirection: direction,
     filters: { ...(route.q ? { search: route.q } : {}), ...(route.categoria ? { categoria: route.categoria } : {}),
       ...(route.minLevel === undefined ? {} : { minLevel: route.minLevel }), ...(route.maxLevel === undefined ? {} : { maxLevel: route.maxLevel }),
@@ -43,10 +52,11 @@ export function viewBody(route: LibraryRoute) {
 export type SavedView = ReturnType<typeof viewBody> & { id: string; name: string; configurationError?: string | null };
 export function viewRoute(view: SavedView): LibraryRoute {
   if (view.configurationError) throw new Error(view.configurationError);
-  const collection = view.filters.recent ? 'recent' : view.filters.isFavorite && !view.section ? 'favorites' : 'all';
+  const collection = view.filters.recent ? 'recent' :
+    view.section ? undefined : view.filters.isFavorite ? 'favorites' : 'all';
   return { view: collection,
     section: view.section ?? undefined, subSection: view.subSection ?? undefined,
-    layout: view.layout as LibraryRoute['layout'], scope: view.scope as LibraryRoute['scope'],
+    layout: view.layout, scope: view.scope,
     q: view.filters.search, categoria: view.filters.categoria, minLevel: view.filters.minLevel, maxLevel: view.filters.maxLevel,
     favorite: collection !== 'favorites' && view.filters.isFavorite ? true : undefined, order: view.orderBy, direction: view.orderDirection,
   };

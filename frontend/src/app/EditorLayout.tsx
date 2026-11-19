@@ -32,6 +32,11 @@ const PATHS = {
   trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
   logout: "M9 4H5v16h4M16 8l4 4-4 4M20 12H9",
   chevron: "m9 6 6 6-6 6",
+  globe: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18-3-3-3-15 0-18",
+  filters: "M4 6h16M7 12h10M10 18h4",
+  template: "M4 4h16v6H4zM4 14h7v6H4zM15 14h5v6h-5z",
+  bookmark: "M6 4h12v17l-6-4-6 4z",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
 } as const;
 export type IconName = keyof typeof PATHS;
 

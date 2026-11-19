@@ -30,6 +30,16 @@ test('URL e configuração salva preservam todos os filtros, inclusive nível ze
   expect(() => readLibraryRoute(new URL('http://localhost/?minLevel=5&maxLevel=1'))).toThrow('Nível mínimo');
 });
 
+test('a visão salva de Idiomas mantém Grade como padrão e reabre Lista quando escolhida explicitamente', () => {
+  const route: LibraryRoute = { section: 'LINGUAGENS', subSection: 'ESTUDANDO', q: 'verbos', categoria: 'Vocabulário' };
+  const grid = viewBody(route);
+  expect(grid.layout).toBe('GRID');
+  const address = libraryUrl(viewRoute({ ...grid, id: 'grid', name: 'Gramática' }));
+  expect(readLibraryRoute(new URL(address, 'http://localhost'))).toMatchObject({ ...route, layout: 'GRID' });
+  expect(address).not.toContain('view=all');
+  expect(viewRoute({ ...grid, layout: 'LIST', id: 'list', name: 'Lista antiga' }).layout).toBe('LIST');
+});
+
 test('tabela envia somente propriedades alteradas com o mesmo ID e preserva rascunho no conflito', async () => {
   const update = jest.fn().mockRejectedValue(new Error('Conflito de revisão'));
   const reload = jest.fn().mockResolvedValue({ ...area, nome: 'Atualizada remotamente' });

@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useId, useRef, useState, type FormEvent } from 'react';
 import { Button, Input, Select } from './ui';
-import { advancedFilters, collectionOrder, type AdvancedFilters, type LibraryRequest } from './collection-query';
+import { Icon } from './EditorLayout';
+import { advancedFilters, collectionLayout, collectionOrder, isLanguagesCollection, type AdvancedFilters, type LibraryRequest, type StatusCounts } from './collection-query';
 import type { LibraryRoute } from './library-route';
 import { SavedViews } from './SavedViews';
 import styles from './page.module.css';
@@ -41,9 +42,12 @@ function appliedChips(route: LibraryRoute) {
   return { chips: [...chips, ...advanced], advancedCount: advanced.length };
 }
 
-export function ViewConfiguration({ route, categories, manualOrder, request, onChange, onOpenView }: {
+export function ViewConfiguration({ route, categories, statusCounts, resultLabel, noMatches, manualOrder, request, onChange, onOpenView }: {
   route: LibraryRoute;
   categories?: string[];
+  statusCounts?: StatusCounts;
+  resultLabel: string;
+  noMatches: boolean;
   manualOrder: boolean;
   request: LibraryRequest;
   onChange: (patch: Partial<LibraryRoute>) => void;
@@ -62,6 +66,7 @@ export function ViewConfiguration({ route, categories, manualOrder, request, onC
   const filtersId = useId();
   const { order, direction } = collectionOrder(route);
   const { chips, advancedCount } = appliedChips(route);
+  const searchLabel = isLanguagesCollection(route) ? 'Buscar nesta área' : 'Buscar por título ou categoria';
 
   const applySearch = (value: string) => {
     const q = value.trim() || undefined;
@@ -123,14 +128,14 @@ export function ViewConfiguration({ route, categories, manualOrder, request, onC
   return <div className={styles.collectionControls}>
     <div className={styles.collectionToolbar} role="group" aria-label="Controles da coleção">
       <label className={styles.collectionSearch}>
-        <span className="sr-only">Buscar por título ou categoria</span>
-        <span className={styles.searchIcon} aria-hidden="true" />
+        <span className="sr-only">{searchLabel}</span>
+        <span className={styles.searchIcon}><Icon name="search" /></span>
         <Input
           ref={searchInput}
           type="search"
           value={search.text}
           maxLength={255}
-          placeholder="Buscar por título ou categoria"
+          placeholder={searchLabel}
           onChange={event => setSearch({ applied: route.q, text: event.target.value })}
           onCompositionStart={() => {
             clearTimeout(searchTimer.current);
@@ -154,7 +159,7 @@ export function ViewConfiguration({ route, categories, manualOrder, request, onC
         aria-label={advancedCount ? `Filtros, ${advancedCount} ${advancedCount === 1 ? 'ativo' : 'ativos'}` : undefined}
         data-active={advancedCount > 0}
         onClick={() => filtersOpen ? closeFilters() : setFiltersOpen(true)}>
-        Filtros{advancedCount > 0 && <span className={styles.filterCount} aria-hidden="true">{advancedCount}</span>}
+        <Icon name="filters" />Filtros{advancedCount > 0 && <span className={styles.filterCount} aria-hidden="true">{advancedCount}</span>}
       </Button>
       <label className={styles.collectionChoice}>
         <span>Ordem</span>
@@ -167,23 +172,19 @@ export function ViewConfiguration({ route, categories, manualOrder, request, onC
       </label>
       <label className={styles.collectionChoice}>
         <span>Exibição</span>
-        <Select value={route.layout ?? 'LIST'} onChange={event => onChange({ layout: event.target.value as LibraryRoute['layout'] })}>
+        <Select value={collectionLayout(route)} onChange={event => onChange({ layout: event.target.value as LibraryRoute['layout'] })}>
           <option value="LIST">Lista</option>
+          <option value="GRID">Grade</option>
           <option value="TABLE">Tabela</option>
           <option value="BOARD">Quadro</option>
         </Select>
       </label>
-      <Button ref={viewsButton} aria-haspopup="dialog" aria-expanded={viewsOpen} onClick={() => {
+      <Button ref={viewsButton} className={styles.collectionButton} aria-haspopup="dialog" aria-expanded={viewsOpen} onClick={() => {
         setFiltersOpen(false);
         clearTimeout(searchTimer.current);
-        setSearch({ applied: route.q, text: route.q ?? '' });
+        if (!composing.current) applySearch(search.text);
         setViewsOpen(true);
-      }}>Visões salvas</Button>
-    </div>
-
-    <div className={styles.statusFilters} role="group" aria-label="Status da coleção">
-      {statuses.map(({ value, label }) => <Button key={label} aria-pressed={route.subSection === value}
-        onClick={() => { if (route.subSection !== value) onChange({ subSection: value }); }}>{label}</Button>)}
+      }}><Icon name="bookmark" />Visões salvas</Button>
     </div>
 
     <div id={filtersId} hidden={!filtersOpen}>
@@ -210,6 +211,22 @@ export function ViewConfiguration({ route, categories, manualOrder, request, onC
       </ul>
       <Button className={styles.clearFilters} onClick={clearFilters}>Limpar filtros</Button>
     </div>}
+
+    <div className={styles.collectionStatus}>
+      <div className={styles.statusFilters} role="group" aria-label="Status da coleção">
+        {statuses.map(({ value, label }) => <Button key={label} aria-pressed={route.subSection === value}
+          onClick={() => { if (route.subSection !== value) onChange({ subSection: value }); }}>
+          {label}{statusCounts && <span className={styles.statusCount}>{statusCounts[value ?? 'total']}</span>}
+        </Button>)}
+      </div>
+      <p className={styles.resultCount} role="status" aria-atomic="true">{resultLabel}</p>
+    </div>
+
+    {noMatches && <section className={styles.collectionEmpty} aria-label="Resultados da coleção">
+      <h2>Nenhuma página encontrada</h2>
+      <p>Ajuste a busca ou limpe os filtros para ver mais páginas.</p>
+      <Button onClick={clearFilters}>Limpar busca e filtros</Button>
+    </section>}
 
     {viewsOpen && <SavedViews route={route} request={request} onClose={closeViews} onApply={onOpenView} />}
   </div>;

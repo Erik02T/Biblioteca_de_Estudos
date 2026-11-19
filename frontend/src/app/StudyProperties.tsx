@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Area } from './page';
 import { Button, Input, Select } from './ui';
 
-export type StudyPatch = Partial<Pick<Area, 'nome' | 'categoria' | 'nivelEntendimento' | 'subSection' | 'isFavorite'>>;
+export type StudyPatch = Partial<Pick<Area, 'nome' | 'categoria' | 'nivelEntendimento' | 'section' | 'subSection' | 'parentId' | 'isFavorite'>>;
 export type UpdateStudy = (area: Area, patch: StudyPatch) => Promise<Area>;
 export type ReloadStudy = (id: string) => Promise<Area>;
 const values = (area: Area) => ({ nome: area.nome, categoria: area.categoria, nivelEntendimento: area.nivelEntendimento, subSection: area.subSection });

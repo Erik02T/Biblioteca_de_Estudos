@@ -52,7 +52,7 @@ test('busca da coleção espera o fim da composição e aplica após 300 ms', as
   window.history.replaceState(null, '', '/?section=LINGUAGENS');
   await renderHome();
   await screen.findByRole('heading', { name: 'Página persistida' });
-  const search = screen.getByRole('searchbox', { name: 'Buscar por título ou categoria' });
+  const search = screen.getByRole('searchbox', { name: 'Buscar nesta área' });
   jest.useFakeTimers();
   try {
     fireEvent.compositionStart(search);
@@ -88,7 +88,7 @@ test('uma resposta antiga da coleção não substitui resultados nem corrige a p
     return baseFetch(input, init);
   });
   await renderHome();
-  const search = await screen.findByRole('searchbox', { name: 'Buscar por título ou categoria' });
+  const search = await screen.findByRole('searchbox', { name: 'Buscar nesta área' });
   fireEvent.change(search, { target: { value: 'antiga' } });
   fireEvent.keyDown(search, { key: 'Enter' });
   expect(new URLSearchParams(window.location.search).get('q')).toBe('antiga');
@@ -122,7 +122,7 @@ test('F12: abrir documento reutiliza metadados da árvore; voltar à coleção o
   await screen.findByRole('heading', { name: 'Página persistida' });
   const calls = () => (global.fetch as jest.Mock).mock.calls.filter(([url]) => new URL(url).pathname === '/areas/navigation').length;
   const before = calls();
-  fireEvent.click(screen.getByRole('button', { name: 'Página persistida' }));
+  fireEvent.click(within(screen.getByRole('region', { name: 'Resultados da coleção' })).getByRole('link', { name: 'Página persistida' }));
   await screen.findByRole('textbox', { name: 'Nome da página' });
   expect(calls()).toBe(before);
   fireEvent.click(screen.getByRole('button', { name: 'Voltar' }));
@@ -143,12 +143,15 @@ test('F12: purge exige confirmação e transmite a revisão exibida; falha conse
   });
   await renderHome();
   await screen.findByRole('heading', { name: 'Página persistida' });
-  fireEvent.click(screen.getByText('Ações da página', { exact: false }));
+  const menu = screen.getByLabelText('Ações da página: Página persistida');
+  fireEvent.click(menu);
   fireEvent.click(screen.getByRole('button', { name: 'Excluir definitivamente' }));
   expect((global.fetch as jest.Mock).mock.calls.filter(([url]) => String(url).endsWith('/purge'))).toHaveLength(0);
   confirm.mockReturnValue(true);
+  fireEvent.click(menu);
   fireEvent.click(screen.getByRole('button', { name: 'Excluir definitivamente' }));
   await screen.findByText('Limpeza interrompida. Tente novamente.');
+  fireEvent.click(menu);
   expect(screen.getByRole('button', { name: 'Excluir definitivamente' })).toBeEnabled();
   const write = (global.fetch as jest.Mock).mock.calls.find(([url]) => String(url).endsWith('/purge'))!;
   expect(write[1].method).toBe('DELETE');
@@ -371,12 +374,13 @@ test('área abre diretamente a coleção e status sobrevive à recarga', async (
   fireEvent.click(await screen.findByRole('link', { name: 'Idiomas' }));
   await screen.findByRole('heading', { name: 'Página persistida' });
   expect(window.location.search).toBe('?section=LINGUAGENS');
-  expect(screen.getByRole('button', {name:'Todos os status'})).toHaveAttribute('aria-pressed','true');
-  fireEvent.click(screen.getByRole('button', {name:'Estudando'}));
+  const status = () => within(screen.getByRole('group', { name: 'Status da coleção' }));
+  expect(status().getByRole('button', {name:/^Todos os status/})).toHaveAttribute('aria-pressed','true');
+  fireEvent.click(status().getByRole('button', {name:/^Estudando/}));
   await waitFor(() => expect(window.location.search).toBe('?section=LINGUAGENS&status=ESTUDANDO'));
   first.unmount(); await renderHome();
   await screen.findByRole('heading', { name: 'Página persistida' });
-  expect(screen.getByRole('button', {name:'Estudando'})).toHaveAttribute('aria-pressed','true');
+  expect(status().getByRole('button', {name:/^Estudando/})).toHaveAttribute('aria-pressed','true');
 });
 
 test('navegação comum no editor preserva metadados antes de trocar de área', async () => {
@@ -452,7 +456,7 @@ test('retorno do editor recupera filtros e visualização da coleção', async (
   window.history.replaceState(null, '', collection);
   // Settle identity and the initial collection loads before selecting its card.
   await renderHome();
-  fireEvent.click(screen.getByRole('button', {name:'Página persistida'}));
+  fireEvent.click(within(screen.getByRole('region', { name: 'Resultados da coleção' })).getByRole('link', {name:'Página persistida'}));
   await screen.findByRole('textbox', {name:'Nome da página'});
   fireEvent.click(screen.getByRole('button', {name:'Voltar'}));
   await screen.findByRole('heading', {name:'Página persistida'});
